@@ -209,6 +209,8 @@ async function discover(release = false) {
         const wasChecked = !!f.catalogCheckedAt, added = [];
         for (const g of fams) {
           if (have.has(g.u)) continue;
+          // weekly check: only genuinely new families; popularity reshuffles shouldn't keep growing the list
+          if (release && wasChecked && !g.fresh) continue;
           const id = `${f.id}--${slugify(g.family)}`;
           if (f.cfg?.fonts?.[slugify(g.family)]?.skip) continue;
           const rec = googleFontRecord(f, g, id, ++order, release && wasChecked);
