@@ -59,6 +59,7 @@ foundries:
     tags: [ Display ]
     order: 5
     addedAt: 2026-11-22T08:00:00Z
+    price: 21 USD
   - id: mckl
     name: MCKL
     by: Jeremy Mickel
@@ -66,6 +67,7 @@ foundries:
     kind: Foundry
     order: 6
     addedAt: 2026-11-22T08:00:00Z
+    price: 50 USD
   - id: avantt
     name: Avantt
     by: Displaay
@@ -95,6 +97,7 @@ foundries:
     kind: Foundry
     order: 10
     addedAt: 2026-11-22T08:00:00Z
+    price: 50 CHF
   - id: w-type-foundry
     name: W Type Foundry
     url: https://wtypefoundry.com/typefaces
@@ -192,6 +195,7 @@ foundries:
     order: 23
     addedAt: 2026-11-22T08:00:00Z
     catalogUrl: https://klim.co.nz/fonts/
+    price: 60 USD
   - id: uncut
     name: UNCUT
     url: https://uncut.wtf/?ref=uigoodies.com
@@ -251,12 +255,14 @@ foundries:
     kind: Foundry
     order: 31
     addedAt: 2026-11-22T08:00:00Z
+    price: 40 GBP
   - id: the-designers
     name: The Designers Foundry
     url: https://www.thedesignersfoundry.com/typefaces
     kind: Foundry
     order: 32
     addedAt: 2026-11-22T08:00:00Z
+    price: 40 USD
   - id: grilli
     name: Grilli Type
     url: https://www.grillitype.com/
@@ -280,6 +286,7 @@ foundries:
     kind: Foundry
     order: 35
     addedAt: 2026-11-22T08:00:00Z
+    price: 90 EUR
   - id: bueno
     name: Bueno
     by: Rajesh Rajput
@@ -355,6 +362,7 @@ foundries:
     kind: Foundry
     order: 46
     addedAt: 2026-11-22T08:00:00Z
+    price: 70 EUR
   - id: brandon-nickerson-display
     name: Brandon Nickerson — Display
     by: Brandon Nickerson
@@ -377,6 +385,7 @@ foundries:
     kind: Foundry
     order: 49
     addedAt: 2026-11-22T08:00:00Z
+    price: 45 GBP
   - id: source
     name: Source Type
     url: https://www.sourcetype.com/typefaces/
@@ -402,6 +411,7 @@ foundries:
     kind: Foundry
     order: 53
     addedAt: 2026-11-22T08:00:00Z
+    price: 50 EUR
   - id: emtype
     name: Emtype
     url: https://emtype.net/
@@ -409,6 +419,7 @@ foundries:
     tags: [ Spain ]
     order: 54
     addedAt: 2026-11-22T08:00:00Z
+    price: 59 EUR
   - id: tropical
     name: Tropical Type
     url: https://tropicaltype.com/
@@ -481,6 +492,7 @@ foundries:
     kind: Foundry
     order: 64
     addedAt: 2026-11-22T08:00:00Z
+    price: 50 EUR
   - id: limitype
     name: Limitype
     url: https://limitype.com/
@@ -567,6 +579,7 @@ foundries:
     kind: Foundry
     order: 77
     addedAt: 2026-11-22T08:00:00Z
+    price: 25 USD
   - id: rand
     name: Rand
     by: Optimo
@@ -623,6 +636,7 @@ foundries:
     kind: Foundry
     order: 85
     addedAt: 2026-11-22T08:00:00Z
+    price: 40 EUR
   - id: best-free
     name: Best Free Fonts
     url: https://bestfreefonts.com/
@@ -651,6 +665,7 @@ foundries:
     tags: [ Hebrew ]
     order: 89
     addedAt: 2026-11-22T12:00:00Z
+    price: 500 ILS
   - id: alefalefalef
     name: Alefalefalef
     url: https://alefalefalef.co.il/
@@ -658,6 +673,7 @@ foundries:
     tags: [ Hebrew ]
     order: 90
     addedAt: 2026-11-22T12:00:00Z
+    price: 450 ILS
   - id: hafontia
     name: Hafontia
     url: https://hafontia.com/
@@ -665,6 +681,7 @@ foundries:
     tags: [ Hebrew ]
     order: 91
     addedAt: 2026-11-22T12:00:00Z
+    price: 400 ILS
   - id: google-fonts
     name: Google Fonts
     by: Google

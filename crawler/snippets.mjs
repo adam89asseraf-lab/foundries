@@ -222,3 +222,22 @@ export function priceScan() {
   const buy = [...document.querySelectorAll("a[href]")].filter(a => a.host === location.host && /^(buy|buy now|buy font|buy fonts|purchase|licen[cs]e|licen[cs]ing|shop|add to cart|get (it|this font)|pricing|trial & buy|buy & try)$/i.test((a.innerText || "").trim())).map(a => a.href);
   return { prices: out, buy: [...new Set(buy)].slice(0, 2) };
 }
+
+/**
+ * Per-style price from a buy table: after the page is fully scrolled, the amount that repeats down the
+ * list of styles (Hagilda "₪500 ₪500 ₪500…", W Type "USD 25.00" per style). Returns the most repeated
+ * non-zero amount seen at least 3 times, with its count, or null.
+ */
+export function repeatedPrice() {
+  const t = document.body.innerText.replace(/\s+/g, " ");
+  const re = /(US\$|CA\$|AU\$|NZ\$|\$|€|£|₪|CHF|USD|EUR|GBP|ILS|NZD|AUD|CAD|SEK|DKK|NOK)\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\d)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s?(€|₪|CHF|USD|EUR|GBP|ILS|NZD|SEK|DKK|NOK|kr)(?![a-z])/gi;
+  const counts = new Map();
+  for (const m of t.matchAll(re)) {
+    const cur = (m[1] || m[4]).toUpperCase(); let num = (m[2] || m[3]).replace(/\s/g, "");
+    num = /,\d{1,2}$/.test(num) ? num.replace(/\./g, "").replace(",", ".") : num.replace(/,/g, "");
+    const amt = parseFloat(num); if (!(amt > 0)) continue;
+    const k = cur + " " + amt; counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  const best = [...counts].filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1] || parseFloat(a[0].split(" ")[1]) - parseFloat(b[0].split(" ")[1]))[0];
+  return best ? { price: best[0], count: best[1], all: [...counts].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, c]) => k + "×" + c).join(", ") } : null;
+}
