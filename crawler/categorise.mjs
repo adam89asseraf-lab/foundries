@@ -47,9 +47,7 @@ export function categorise(t) {
     if (n >= 1 && n <= 200 && (!styles || n > styles)) styles = n;
   }
   const variable = /\bvariable\s+(font|axes|axis|version|weight|typeface)s?\b|\bvariable\b(?=[^.\n]{0,40}\b(included|available|axis|axes)\b)|\bVF\b/i.test(all);
-  let free = null;
-  if (/\b(free\s+(for\s+(personal|commercial)|download|font|typeface)|download\s+(it\s+)?for\s+free|100%\s+free|SIL\s+Open\s+Font|open\s+font\s+licen[sc]e|\bOFL\b)/i.test(all)) free = true;
-
+  const free = null; // not guessed from page text: too many false positives ("free trial")
   return { category, styles, variable, free, source: category ? "rules" : "none" };
 }
 

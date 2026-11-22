@@ -347,7 +347,9 @@ async function finishFont(page, font, f, q) {
     category: ov.category || category || font.category || null,
     styles: ov.styles ?? c.styles ?? font.styles ?? null,
     variable: ov.variable ?? (c.variable || !!font.variable),
-    free: ov.free ?? c.free ?? font.free ?? null,
+    // "free" is never guessed from page text (it matched "download free trial fonts"); it comes from
+    // a price of 0 in foundries.yaml, Google Fonts, or an explicit `free: true` override
+    free: ov.free ?? null,
   });
   if (best.q.ok) { delete font.quality; delete font.qualityNote; }
   else { font.quality = "low"; font.qualityNote = best.q.reasons.join("; "); }

@@ -101,6 +101,7 @@ foundries:
     kind: Foundry
     order: 11
     addedAt: 2026-11-22T08:00:00Z
+    price: 25 USD
   - id: open
     name: Open Foundry
     url: https://open-foundry.com/
