@@ -133,6 +133,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .row .edit{opacity:.0}
 .row:hover .edit,.row .edit:focus-visible{opacity:1}
 
+.sentinel{height:1px;margin-bottom:64px}
+.fgrid:has(+ .sentinel),.list:has(+ .sentinel){margin-bottom:0}
 .empty,.status{padding:48px 0;color:var(--muted);font-size:15px}
 .status{padding:10px 0;font:400 12px var(--mono)}
 .status:empty{display:none}
@@ -297,7 +299,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
   const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
-  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:120 };
+  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : "fonts";
   let shuffleKey = Math.random();
   const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
@@ -428,6 +430,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
     $("#fontBar").hidden = t !== "fonts"; $("#foundryBar").hidden = t !== "foundries";
     updateFilterCounts();
     if (t === "fonts") return renderFonts();
+    if (io) { io.disconnect(); io = null; } pumpNow = null;
+    if (io) { io.disconnect(); io = null; }
     renderStats(); renderChips();
     if ($("#status").textContent.includes("queued")) $("#status").textContent = $("#status").dataset.base || "";
     $("#vGrid").setAttribute("aria-pressed", state.view==="grid");
@@ -445,7 +449,14 @@ input[type=range]{accent-color:var(--accent);width:120px}
   let fontsVisible = [];
   const fIsNew = f => f.newSince && (Date.now() - Date.parse(f.newSince)) < NEW_DAYS*864e5;
   function hashN(s){ let h = 0; for (const c of s) h = (h*31 + c.charCodeAt(0)) | 0; return h; }
+  const PAGE = 60;
+  let io = null, pumpNow = null;
+  let pumpQueued = false;
+  const onScroll = () => { if (!pumpNow || pumpQueued) return; pumpQueued = true; setTimeout(() => { pumpQueued = false; pumpNow && pumpNow(); }, 100); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
   function renderFonts(){
+    if (io) { io.disconnect(); io = null; } pumpNow = null;
     const byId = new Map(items.map(i => [i.id, i]));
     const s = $("#stats"); s.replaceChildren();
     const done = fonts.filter(f => f.shotId), queued = fonts.filter(f => !f.shotId && f.scan !== "failed");
@@ -468,15 +479,15 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const isFree = f => f.free === true || ftags(f).includes("Free");
     const PROPS = { Variable: f => !!f.variable, Free: isFree };
     ch.append(mkc("All", null, !fstate.cat, () => { fstate.cat = null; render(); }));
-    CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = 120; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
+    CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = PAGE; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
     ch.append(Object.assign(el("span","sep"), {ariaHidden:"true"}));
-    Object.entries(PROPS).forEach(([k, fn]) => { const n = done.filter(fn).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = 120; render(); })); });
+    Object.entries(PROPS).forEach(([k, fn]) => { const n = done.filter(fn).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = PAGE; render(); })); });
     const maxStyles = Math.max(1, ...done.map(f => +f.styles || 0));
     const sl = $("#fStyles"); sl.max = Math.max(2, Math.min(60, maxStyles)); sl.value = fstate.minStyles; sl.disabled = maxStyles < 2;
     $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
     out_card();
     const tc = new Map(); done.forEach(f => ftags(f).forEach(t => tc.set(t, (tc.get(t)||0)+1)));
-    const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = 120; render(); })));
+    const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = PAGE; render(); })));
     tg.parentElement.hidden = !tc.size;
     $("#fvGrid").setAttribute("aria-pressed", state.view === "grid"); $("#fvList").setAttribute("aria-pressed", state.view === "list");
     const nNew = done.filter(fIsNew).length;
@@ -510,26 +521,19 @@ input[type=range]{accent-color:var(--accent);width:120px}
     if (!done.length) { out.append(el("p","empty", items.length ? "No font screenshots yet. They appear here as the crawl captures each foundry's catalogue." : "")); return; }
     if (!list.length) { out.append(el("p","empty","No fonts match. Clear the search or pick another foundry.")); return; }
     fontsVisible = list;
-    if (state.view === "list") {
-      const box = el("div","list");
-      list.slice(0, fstate.limit).forEach((f, i) => {
-        const fd = byId.get(f.foundryId) || {};
-        const r = el("div","row");
-        const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || ""}`);
-        const img = el("img","rthumb"); img.src = shotUrl(f); img.alt = ""; img.loading = "lazy";
-        const nm = el("span","rname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
-        const fb = el("button","linkbtn rby", fd.name || ""); fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; render(); };
-        const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
-        const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
-        r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span"));
-        box.append(r);
-      });
-      out.append(box);
-      if (list.length > fstate.limit) { const more = el("button","btn","Show more (" + (list.length - fstate.limit) + " left)"); more.style.margin = "0 0 64px"; more.onclick = () => { fstate.limit += 120; render(); }; out.append(more); }
-      return;
-    }
-    const grid = el("div","fgrid");
-    list.slice(0, fstate.limit).forEach(f => {
+    const rowFor = (f, i) => {
+      const fd = byId.get(f.foundryId) || {};
+      const r = el("div","row");
+      const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || ""}`);
+      const img = el("img","rthumb"); img.src = shotUrl(f); img.alt = ""; img.loading = "lazy";
+      const nm = el("span","rname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
+      const fb = el("button","linkbtn rby", fd.name || ""); fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
+      const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
+      const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
+      r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span"));
+      return r;
+    };
+    const cardFor = f => {
       const fd = byId.get(f.foundryId) || {};
       const c = el("article","fcard");
       const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || "unknown foundry"}`);
@@ -538,16 +542,35 @@ input[type=range]{accent-color:var(--accent);width:120px}
       const nm = el("div","fname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
       const meta = el("div","fmeta");
       const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
-      fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; window.scrollTo({top:0}); render(); };
+      fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
       meta.append(fb, el("span", null, host(f.url)));
       body.append(nm, meta);
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       if (pr.length) { const pp = el("div","fprops"); pr.forEach(x => pp.append(el("span","tag",x))); body.append(pp); }
       if (fIsNew(f)) { const tg = el("div","tags"); tg.append(el("span","tag new","New")); body.append(tg); }
-      c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : ""))); grid.append(c);
-    });
-    out.append(grid);
-    if (list.length > fstate.limit) { const more = el("button","btn","Show more (" + (list.length - fstate.limit) + " left)"); more.style.margin = "0 0 64px"; more.onclick = () => { fstate.limit += 120; render(); }; out.append(more); }
+      c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : "")));
+      return c;
+    };
+    // Endless scroll: append the next page when the sentinel nears the viewport (no re-render, no jump).
+    const box = el("div", state.view === "list" ? "list" : "fgrid");
+    let shown = 0;
+    const more = n => {
+      const end = Math.min(list.length, shown + n);
+      const frag = document.createDocumentFragment();
+      for (let i = shown; i < end; i++) frag.append(state.view === "list" ? rowFor(list[i], i) : cardFor(list[i]));
+      box.append(frag); shown = end; fstate.limit = Math.max(PAGE, shown);
+      if (shown >= list.length) { if (io) io.disconnect(); io = null; pumpNow = null; sentinel.remove(); }
+    };
+    const sentinel = el("div","sentinel"); sentinel.setAttribute("aria-hidden", "true");
+    out.append(box, sentinel);
+    more(Math.max(PAGE, fstate.limit));
+    if (shown < list.length) {
+      // keep filling until the sentinel is out of range (an observer only fires on a change of state)
+      const pump = () => { if (shown < list.length && sentinel.isConnected && sentinel.getBoundingClientRect().top < innerHeight + 1500) { more(PAGE); setTimeout(pump, 30); } };
+      pumpNow = pump; // scroll/resize backstop (see controls)
+      io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) pump(); }, { rootMargin: "1500px 0px" });
+      io.observe(sentinel);
+    }
   }
 
   /* ---------- controls ---------- */
@@ -561,12 +584,12 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
     if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
   }
-  window.addEventListener("hashchange", () => { fstate.limit = 120; render(); window.scrollTo({top:0}); });
+  window.addEventListener("hashchange", () => { fstate.limit = PAGE; render(); window.scrollTo({top:0}); });
   function out_card(){ document.documentElement.style.setProperty("--card", fstate.card + "px"); const v = fstate.card; $("#fSizeOut").textContent = v <= 200 ? "XS" : v <= 240 ? "S" : v <= 300 ? "M" : v <= 400 ? "L" : "XL"; }
-  $("#fStyles").addEventListener("input", e => { fstate.minStyles = +e.target.value; fstate.limit = 120; render(); });
+  $("#fStyles").addEventListener("input", e => { fstate.minStyles = +e.target.value; fstate.limit = PAGE; render(); });
   $("#fSize").addEventListener("input", e => { fstate.card = +e.target.value; out_card(); try { localStorage.setItem("fdx-card", fstate.card); } catch(_){} });
   try { const c = +localStorage.getItem("fdx-card"); if (c) { fstate.card = c; $("#fSize").value = c; } } catch(_){}
-  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, limit:120 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
+  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
   $("#fvGrid").onclick = () => setView("grid");
   $("#fvList").onclick = () => setView("list");
   $("#fCopy").onclick = async () => {
@@ -574,8 +597,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const md = fontsVisible.map(f => `- [${f.name}](${f.url}) — ${(byId.get(f.foundryId)||{}).name || ""}`).join("\n");
     try { await navigator.clipboard.writeText(md); toast(`Copied ${fontsVisible.length} font links as Markdown`); } catch(e){ toast("Your browser blocked copying. Try again from the page itself."); }
   };
-  $("#fq").addEventListener("input", e => { fstate.q = e.target.value; fstate.limit = 120; render(); });
-  $("#fFoundry").addEventListener("change", e => { fstate.foundry = e.target.value; fstate.limit = 120; render(); });
+  $("#fq").addEventListener("input", e => { fstate.q = e.target.value; fstate.limit = PAGE; render(); });
+  $("#fFoundry").addEventListener("change", e => { fstate.foundry = e.target.value; fstate.limit = PAGE; render(); });
   $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
