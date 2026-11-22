@@ -407,7 +407,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     tags.append(el("span","tag kind", it.kind || "Foundry"));
     if (isNew(it)) tags.append(el("span","tag new","New"));
     (it.tags||[]).forEach(t => tags.append(el("span","tag",t)));
-    if (it.price) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
+    if (it.price && !(it.price.amount === 0 && (it.tags||[]).includes("Free"))) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
     foot.append(tags);
     const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
     if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; foot.append(b); }
