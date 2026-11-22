@@ -5,7 +5,7 @@
 // With no phase flags it runs homepages + discover + capture (the nightly incremental run).
 import fs from "node:fs";
 import path from "node:path";
-import { loadData, saveData, forSave, loadYamlDoc, yamlEntries, merge, clearRescanFlags, slugify, now, ROOT } from "./lib/store.mjs";
+import { loadData, saveData, forSave, dump, loadYamlDoc, yamlEntries, merge, clearRescanFlags, slugify, now, ROOT } from "./lib/store.mjs";
 import { launch, open, prepare, shoot, writeShot, removeShot, pool } from "./lib/browser.mjs";
 import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners } from "./snippets.mjs";
 import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
@@ -29,6 +29,7 @@ const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 
 /* ---------- load + merge ---------- */
 const data = loadData();
+const baseline = dump(forSave({ ...data, updatedAt: null }));
 const entries = yamlEntries(loadYamlDoc());
 const { rescans, removed } = merge(data, entries);
 data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
@@ -41,9 +42,15 @@ const matchOnly = id => !ONLY.length || ONLY.some(o => id === o || id.startsWith
 const foundries = data.foundries.filter(f => matchOnly(f.id) && !f.cfg?.skip);
 const byId = new Map(data.foundries.map(f => [f.id, f]));
 
+// Only write (and bump updatedAt) when something real changed, so idle runs don't commit.
+const body = d => dump(forSave({ ...d, updatedAt: null }));
+let lastBody = baseline;
 let dirty = 0;
 const save = (force = false) => {
   if (force || ++dirty % 25 === 0) {
+    const b = body(data);
+    if (b === lastBody) return;
+    lastBody = b;
     data.updatedAt = now();
     if (saveData(forSave(data))) log("saved data.json");
   }
