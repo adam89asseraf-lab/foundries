@@ -74,6 +74,7 @@ foundries:
     tags: [ Sans ]
     order: 7
     addedAt: 2026-11-22T08:00:00Z
+    price: 75 EUR
   - id: font-brief
     name: Font Brief
     url: https://www.fontbrief.com/fontbrief
@@ -161,6 +162,7 @@ foundries:
     fontLinkPattern: ^https://type\.today/en/[^/]+$
     exclude:
       - /en/(fonts|catalog|cart|search|journal|collections?|designers?|store|shop|in-use|info|account|services|custom)$
+    price: 60 USD
   - id: collletttivo
     name: Collletttivo
     url: https://www.collletttivo.it/
@@ -203,6 +205,7 @@ foundries:
     tags: [ Swiss ]
     order: 25
     addedAt: 2026-11-22T08:00:00Z
+    price: 160 CHF
   - id: free-faces
     name: Free Faces
     url: https://www.freefaces.gallery/
@@ -268,6 +271,7 @@ foundries:
     tags: [ Free to try ]
     order: 34
     addedAt: 2026-11-22T08:00:00Z
+    price: 35 EUR
   - id: dinamo
     name: Dinamo
     by: ABC Dinamo
@@ -290,6 +294,7 @@ foundries:
     kind: Foundry
     order: 37
     addedAt: 2026-11-22T08:00:00Z
+    price: 35 USD
   - id: mango-grotesque
     name: Mango Grotesque
     by: Rajesh Rajput
@@ -326,6 +331,7 @@ foundries:
     tags: [ Sans ]
     order: 42
     addedAt: 2026-11-22T08:00:00Z
+    price: 55 EUR
   - id: advercase
     name: Advercase
     by: Indieground
@@ -341,6 +347,7 @@ foundries:
     kind: Foundry
     order: 45
     addedAt: 2026-11-22T08:00:00Z
+    price: 40 EUR
   - id: schick-toikka
     name: Schick Toikka
     url: https://www.schick-toikka.com/
@@ -407,6 +414,7 @@ foundries:
     kind: Foundry
     order: 55
     addedAt: 2026-11-22T08:00:00Z
+    price: 16 USD
   - id: sociotype
     name: Sociotype
     url: https://socio-type.com/
@@ -491,6 +499,7 @@ foundries:
     tags: [ Swiss ]
     order: 67
     addedAt: 2026-11-22T08:00:00Z
+    price: 70 CHF
   - id: studio-feixen
     name: Studio Feixen Fonts
     url: https://fonts.studiofeixen.ch/
@@ -565,6 +574,7 @@ foundries:
     tags: [ Swiss ]
     order: 78
     addedAt: 2026-11-22T08:00:00Z
+    price: 150 CHF
   - id: edito
     name: Edito Type
     url: https://edito-type.com/
@@ -578,6 +588,7 @@ foundries:
     tags: [ Swiss ]
     order: 80
     addedAt: 2026-11-22T08:00:00Z
+    price: 50 CHF
   - id: featured
     name: Featured Type
     url: https://www.featuredtype.com/
@@ -597,6 +608,7 @@ foundries:
     kind: Foundry
     order: 83
     addedAt: 2026-11-22T08:00:00Z
+    price: 75 ILS
   - id: a-foundry
     name: a.Foundry
     url: https://a-foundry.com/

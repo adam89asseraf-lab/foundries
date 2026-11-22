@@ -254,6 +254,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     <div class="bar-row"><div class="chips" id="fTagChips" role="group" aria-label="Filter fonts by foundry tag"></div></div>
     <div class="bar-row sliders">
       <div class="slider"><label for="fStyles">Styles</label><input id="fStyles" type="range" min="1" max="20" value="1"><output id="fStylesOut">Any</output></div>
+      <div class="slider"><label for="fPrice">Price / weight</label><input id="fPrice" type="range" min="0" max="200" step="5" value="200"><output id="fPriceOut">Any</output></div>
       <div class="slider"><label for="fSize">Card size</label><input id="fSize" type="range" min="180" max="560" step="20" value="260"><output id="fSizeOut">M</output></div>
       <button type="button" class="btn small" id="fReset">Reset filters</button>
     </div>
@@ -303,7 +304,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
   const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
-  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
+  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, maxPrice:null, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : "fonts";
   let shuffleKey = Math.random();
   const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
@@ -493,6 +494,11 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const maxStyles = Math.max(1, ...done.map(f => +f.styles || 0));
     const sl = $("#fStyles"); sl.max = Math.max(2, Math.min(60, maxStyles)); sl.value = fstate.minStyles; sl.disabled = maxStyles < 2;
     $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
+    const priced = done.filter(f => f.price), maxUsd = Math.max(10, ...priced.map(f => f.price.usd));
+    const ps = $("#fPrice"); ps.max = Math.ceil(maxUsd / 10) * 10; ps.disabled = !priced.length;
+    ps.value = fstate.maxPrice == null ? ps.max : fstate.maxPrice;
+    $("#fPriceOut").textContent = fstate.maxPrice == null ? "Any" : fstate.maxPrice === 0 ? "Free" : "≤ $" + fstate.maxPrice;
+    ps.title = "Basic price for one weight, roughly converted to US$. Fonts without a price are hidden while this is set.";
     out_card();
     const tc = new Map(); done.forEach(f => ftags(f).forEach(t => tc.set(t, (tc.get(t)||0)+1)));
     const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = PAGE; render(); })));
@@ -508,6 +514,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
       if (fstate.cat && f.category !== fstate.cat) return false;
       for (const k of fstate.props) if (!PROPS[k](f)) return false;
       if (fstate.minStyles > 1 && !((+f.styles||0) >= fstate.minStyles)) return false;
+      if (fstate.maxPrice != null && !(f.price && f.price.usd <= fstate.maxPrice)) return false;
       for (const t of fstate.tags) if (!ftags(f).includes(t)) return false;
       if (q) { const fd = byId.get(f.foundryId); const hay = (f.name + " " + (fd ? fd.name + " " + (fd.tags||[]).join(" ") : "")).toLowerCase(); if (!hay.includes(q)) return false; }
       return true;
@@ -589,7 +596,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const open = !bar.classList.contains("open"); bar.classList.toggle("open", open); b.setAttribute("aria-expanded", open);
   });
   function updateFilterCounts(){
-    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
+    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + (fstate.maxPrice!=null?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
     const nD = (state.kind?1:0) + state.tags.size + (state.onlyNew?1:0);
     const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
     if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
@@ -597,9 +604,10 @@ input[type=range]{accent-color:var(--accent);width:120px}
   window.addEventListener("hashchange", () => { fstate.limit = PAGE; render(); window.scrollTo({top:0}); });
   function out_card(){ document.documentElement.style.setProperty("--card", fstate.card + "px"); const v = fstate.card; $("#fSizeOut").textContent = v <= 200 ? "XS" : v <= 240 ? "S" : v <= 300 ? "M" : v <= 400 ? "L" : "XL"; }
   $("#fStyles").addEventListener("input", e => { fstate.minStyles = +e.target.value; fstate.limit = PAGE; render(); });
+  $("#fPrice").addEventListener("input", e => { const v = +e.target.value; fstate.maxPrice = v >= +e.target.max ? null : v; fstate.limit = PAGE; render(); });
   $("#fSize").addEventListener("input", e => { fstate.card = +e.target.value; out_card(); try { localStorage.setItem("fdx-card", fstate.card); } catch(_){} });
   try { const c = +localStorage.getItem("fdx-card"); if (c) { fstate.card = c; $("#fSize").value = c; } } catch(_){}
-  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
+  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, maxPrice:null, limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
   $("#fvGrid").onclick = () => setView("grid");
   $("#fvList").onclick = () => setView("list");
   $("#fCopy").onclick = async () => {
