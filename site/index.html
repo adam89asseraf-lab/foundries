@@ -6,7 +6,7 @@
 <title>Found it! — Type &amp; foundry index</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Young+Serif&family=Rethink+Sans:wght@700&family=Host+Grotesk:wght@700&family=Funnel+Display:wght@700&family=Crimson+Pro:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Young+Serif&family=Rethink+Sans:wght@700&family=Inter+Tight:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=Host+Grotesk:wght@700&family=Funnel+Display:wght@700&family=Crimson+Pro:wght@700&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=sharpie@700&f[]=clash-grotesk@700&display=swap" rel="stylesheet">
 <style>
 /* Layout idea: a type-specimen index. Bordered tiles share hairlines like a printed specimen grid; one sticky toolbar filters, tests and adds. */
@@ -229,20 +229,84 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .lightbox a{color:#fff}
 .tag.low{border-style:dashed}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== Figma v2 (Nov 2026): green accent, square controls, joined tags, Rethink/Inter Tight/IBM Plex Mono ===== */
+:root{--accent:#00b318;--accent-ink:#ffffff;--ui:"Inter Tight","Instrument Sans",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--tagmono:"DM Mono",ui-monospace,Menlo,monospace;--stat:"Rethink Sans","Instrument Sans",Arial,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent:#2fd94a;--accent-ink:#0e0e11}}
+:root[data-theme="dark"]{--accent:#2fd94a;--accent-ink:#0e0e11}
+body{letter-spacing:.01em}
+/* masthead: title left; stats over the view toggle on the right */
+header.mast{grid-template-columns:1fr auto;align-items:end}
+.mast h1{display:flex;align-items:flex-end;gap:0;white-space:nowrap;text-wrap:nowrap}
+.mast h1 .title{height:.85em;line-height:.85;overflow:visible;display:inline-block}  /* fixed height: swapping faces never moves the header */
+.mast h1 sup{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;margin:0 0 .5em 12px;align-self:flex-end;vertical-align:baseline}
+.mright{display:flex;flex-direction:column;align-items:flex-end;gap:24px}
+.stats{gap:40px;font:400 11px/1.3 var(--mono);letter-spacing:.01em}
+.stats b{font:700 28px/1 var(--stat);letter-spacing:-.02em;margin-bottom:4px}
+.tabs-main{margin-top:0;gap:16px;align-items:center}
+.tabs-main .seg2{display:inline-flex}
+.tabs-main .seg2 a{border-radius:0;font:600 15px/1 var(--ui);padding:10px 16px;border:1px solid var(--line)}
+.tabs-main .seg2 a + a{margin-left:-1px}
+.tabs-main .seg2 a[aria-current="page"]{position:relative;z-index:1}
+.tabs-main a .n{font:400 12px var(--mono)}
+.tabs-main a.editlink{font:400 12px/1 var(--mono);text-decoration:underline;border:0;padding:0;border-radius:0;color:var(--muted);background:none}
+/* toolbar: underline fields, square chips and buttons */
+.search{border:0;border-bottom:1px solid var(--ink);border-radius:0;background:transparent;padding:0 14px}
+select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;background:transparent;padding:0 14px}
+.chip{border-radius:0;padding:5px 12px 6px;font:500 12px/1 var(--mono);letter-spacing:.01em}
+.chip.cat{font:500 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.01em}
+.btn{border-radius:0;height:33px;padding:0 16px;font:600 15px/1 var(--ui);letter-spacing:.01em}
+.btn.small{height:33px;font-size:15px}
+.seg button{font:500 12px/1 var(--mono);letter-spacing:.01em}
+.slider label,.slider output,.moods .moodtitle{font-family:var(--mono);letter-spacing:.01em}
+.slider.mood .pole{font-family:var(--ui)}
+/* sliders: grey track, green fill, green diamond handles */
+.slider input[type=range]:not(.range input){-webkit-appearance:none;appearance:none;height:16px;background:linear-gradient(var(--accent),var(--accent)) 0 50%/var(--p,0%) 4px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 4px no-repeat;cursor:pointer}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;margin-top:0;border-radius:0;transform:rotate(45deg);background:var(--accent);border:0;box-shadow:none;cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:0;transform:rotate(45deg);background:var(--accent);border:0;box-shadow:none;cursor:pointer}
+.range input::-webkit-slider-thumb{margin-top:4.5px}
+.range .rtrack,.range .rfill{border-radius:0}
+/* tags: square, joined into one strip */
+.tag{border-radius:0;font:500 10.5px/1 var(--tagmono);letter-spacing:.02em;padding:5px 10px}
+.tags.joined{gap:0}
+.tags.joined .tag + .tag{margin-left:-1px}
+.tag.price{border-color:var(--ink)}
+/* font card: no box; screenshot in its own rounded frame; small mono foundry above the name */
+.fcard{background:transparent;border:0;border-radius:0;overflow:visible}
+.fcard .fshot{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.fcard:hover{border-color:transparent}
+.fcard:hover .fshot{border-color:var(--ink)}
+.fcard .fbody{padding:12px 14px 14px;gap:14px}
+.fcard .fhead{display:grid;gap:2px}
+.fcard .fmeta{justify-content:flex-start}
+.fcard .fmeta .linkbtn{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+.fcard .fprops{gap:0}
+.fcard .zoom{top:10px;right:10px}
+/* foundry card: name on top, screenshot, note, tags + "N fonts →" */
+.card{padding:16px 16px 0}
+.card .cname{font:700 26px/1 var(--stat);letter-spacing:-.02em;font-variation-settings:normal}
+.card .shot{margin:12px 0 0;border-radius:6px}
+.card .foot{padding:14px 0 16px;gap:16px}
+.card .note{font:400 13px/1.4 var(--ui)}
+.card .footline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card .morefonts{margin:0;white-space:nowrap;font:400 14px/1.4 var(--body)}
+.card .zoom{top:22px;right:22px}
+.row .rname{font-family:var(--stat)}
+.status{font-family:var(--mono)}
+@media (max-width:700px){.mright{align-items:flex-start;gap:16px} header.mast{grid-template-columns:1fr;align-items:start} .stats{gap:16px} .mast h1 .title{height:.85em}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="mast">
-    <div>
-      <h1><span class="title" id="title">Found it!</span><sup>Type &amp; foundry index</sup></h1>
+    <h1><span class="title" id="title">Found it!</span><sup>Type &amp; foundry index</sup></h1>
+    <div class="mright">
+      <div class="stats" id="stats" aria-live="polite"></div>
       <nav class="tabs-main" aria-label="Views">
-        <a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a>
-        <a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a>
+        <span class="seg2"><a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a><a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a></span>
         <a class="editlink" id="editLink" href="#" target="_blank" rel="noopener" hidden title="Edit foundries.yaml on GitHub">Edit list</a>
       </nav>
     </div>
-    <div class="stats" id="stats" aria-live="polite"></div>
   </header>
 </div>
 
@@ -343,7 +407,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
   const NEW_DAYS = 30;
   // basic price per weight (set in foundries.yaml)
   const CUR = { USD:"$", EUR:"€", GBP:"£", ILS:"₪", JPY:"¥", NZD:"NZ$", AUD:"A$", CAD:"C$", CHF:"CHF ", SEK:"SEK ", DKK:"DKK ", NOK:"NOK " };
-  const fmtPrice = p => !p ? null : p.amount === 0 ? "Free" : (CUR[p.currency] || p.currency + " ") + (Number.isInteger(p.amount) ? p.amount : p.amount.toFixed(2)) + " / weight";
+  const fmtPrice = p => !p ? null : p.amount === 0 ? "Free" : (CUR[p.currency] || p.currency + " ") + (Number.isInteger(p.amount) ? p.amount : p.amount.toFixed(2)) + "/weight";
   const isNew = it => Array.isArray(it.newReleases) && it.newReleases.length && it.newSince && (Date.now() - Date.parse(it.newSince)) < NEW_DAYS*864e5;
   const shot = (id, at, full) => id ? "shots/" + id.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (at ? "?v=" + (Date.parse(at) || 0) : "") : null;
   const shotUrl = (it, full) => shot(it.shotId, it.shotAt, full);
@@ -406,31 +470,25 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const c = el("article","card");
     const a = el("a","hit"); a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", it.name + " — open " + host(it.url));
     c.append(a);
-    const meta = el("div","meta");
-    const tf = (it.typefaces||[]).length;
-    meta.append(el("span","num", String(i+1).padStart(3,"0") + (tf ? " · " + tf + (tf === 1 ? " face" : " faces") : "")), el("span", null, host(it.url) + " ↗"));
-    c.append(meta);
-
+    const nm = el("div","cname", it.name); if (isRTL(it.name)) nm.dir = "rtl";
+    c.append(nm);
     const sh = el("div","shot");
     if (it.shotId) { const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", it.name); if (isRTL(it.name)) fbk.dir = "rtl"; img.replaceWith(fbk); }; setImg(img, it, 400); img.alt = "Screenshot of " + host(it.url); img.loading = "lazy"; img.decoding = "async"; sh.append(img); c.append(zoomBtn(it, it.name)); }
     else if (it.scan === "failed") { const fb = el("div","fallback", it.name); if (isRTL(it.name)) fb.dir = "rtl"; sh.append(fb); }
     else sh.append(el("div","pending","Screenshot on the way"));
     c.append(sh);
     const foot = el("div","foot");
-    foot.style.paddingTop = "14px";
-    const nm = el("div","cname", it.name); if (isRTL(it.name)) nm.dir = "rtl";
-    foot.append(nm);
     if (isNew(it)) foot.append(el("div","newline", "New: " + it.newReleases.slice(0,4).join(", ")));
-    if (it.by) { const b = el("div","by"); b.textContent = it.by; foot.append(b); }
     if (it.note) foot.append(el("div","note", it.note));
-    const tags = el("div","tags");
-    tags.append(el("span","tag kind", it.kind || "Foundry"));
+    const line = el("div","footline");
+    const tags = el("div","tags joined");
     if (isNew(it)) tags.append(el("span","tag new","New"));
     (it.tags||[]).forEach(t => tags.append(el("span","tag",t)));
     if (it.price && !(it.price.amount === 0 && (it.tags||[]).includes("Free"))) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
-    foot.append(tags);
+    line.append(tags);
     const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
-    if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; foot.append(b); }
+    if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; line.append(b); }
+    foot.append(line);
     c.append(foot);
     return c;
   }
@@ -514,6 +572,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const maxStyles = Math.max(1, ...done.map(f => +f.styles || 0));
     const sl = $("#fStyles"); sl.max = Math.max(2, Math.min(60, maxStyles)); sl.value = fstate.minStyles; sl.disabled = maxStyles < 2;
     $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
+    sl.style.setProperty("--p", ((+sl.value - 1) / ((+sl.max - 1) || 1) * 100) + "%");
     const priced = done.filter(f => f.price), maxUsd = Math.max(10, ...priced.map(f => f.price.usd));
     priceRange(Math.ceil(maxUsd / 10) * 10, !priced.length);
     $("#fMoods").hidden = !done.some(f => f.mood); moodRanges();
@@ -578,12 +637,11 @@ input[type=range]{accent-color:var(--accent);width:120px}
       const meta = el("div","fmeta");
       const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
       fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
-      meta.append(fb, el("span", null, host(f.url)));
-      body.append(nm, meta);
+      meta.append(fb);
+      const head = el("div","fhead"); head.append(meta, nm); body.append(head);
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       const pt = fmtPrice(f.price);
-      if (pr.length || pt) { const pp = el("div","fprops"); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
-      if (fIsNew(f)) { const tg = el("div","tags"); tg.append(el("span","tag new","New")); body.append(tg); }
+      if (pr.length || pt || fIsNew(f)) { const pp = el("div","fprops tags joined"); if (fIsNew(f)) pp.append(el("span","tag new","New")); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
       c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : "")));
       return c;
     };
@@ -649,6 +707,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
   }
   window.addEventListener("hashchange", () => { fstate.limit = PAGE; render(); window.scrollTo({top:0}); });
   function out_card(){ document.documentElement.style.setProperty("--card", fstate.card + "px"); const v = fstate.card; $("#fSizeOut").textContent = v <= 200 ? "XS" : v <= 240 ? "S" : v <= 300 ? "M" : v <= 400 ? "L" : "XL"; }
+  const fillSlider = i => i.style.setProperty("--p", ((+i.value - +i.min) / ((+i.max - +i.min) || 1) * 100) + "%");
+  for (const id of ["#fStyles","#fSize"]) { const i = $(id); i.addEventListener("input", () => fillSlider(i)); requestAnimationFrame(() => fillSlider(i)); }
   $("#fStyles").addEventListener("input", e => { fstate.minStyles = +e.target.value; fstate.limit = PAGE; render(); });
   // price range: two thumbs on one track; min at 0 or max at the top means "no limit" on that side
   function priceRange(top, disabled){
