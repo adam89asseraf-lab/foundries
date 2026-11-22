@@ -117,7 +117,7 @@ On Gumroad the font only exists as artwork in the product's cover image (the pag
 
 ### Google Fonts
 
-The `google-fonts` entry has `source: google-fonts` and `limit: 300`: instead of crawling a website, the crawler reads Google's public font metadata, takes the 300 most popular families plus any family added in the last 30 days, and renders each one as its own specimen page via the Google Fonts CSS API (family name large, then a sample line in its lightest, regular and heaviest weights; fonts for Japanese, Korean, Chinese, Arabic, Hebrew, Thai and so on use their own script). Category, number of styles and variable come straight from Google's metadata, and every Google font is marked Free. Raise or lower `limit` in `foundries.yaml` to change how many are included; the weekly release check marks newly added families as New.
+The `google-fonts` entry has `source: google-fonts` and `limit: 50`: instead of crawling a website, the crawler reads Google's public font metadata, takes the 50 most popular families, and renders each one as its own specimen page via the Google Fonts CSS API (family name large, then a sample line in its lightest, regular and heaviest weights; fonts for Japanese, Korean, Chinese, Arabic, Hebrew, Thai and so on use their own script). Category, number of styles and variable come straight from Google's metadata, and every Google font is free. Change `limit` in `foundries.yaml` to include more or fewer: families that drop out of the list are removed with their screenshots on the next run. Add `includeNew: true` to also include every family Google added in the last 30 days (marked New).
 
 ## Prices
 

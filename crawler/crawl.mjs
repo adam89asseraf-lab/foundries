@@ -203,7 +203,12 @@ async function discover(release = false) {
     }
     if (f.cfg?.source === "google-fonts") {
       try {
-        const fams = await googleFamilies({ limit: f.cfg.limit || 300 });
+        // top N by popularity; new releases (last 30 days) only if `includeNew: true` in foundries.yaml
+        const fams = await googleFamilies({ limit: f.cfg.limit || 300, newDays: f.cfg.includeNew ? 30 : 0 });
+        // drop families that fell out of the list (or after lowering `limit`), with their screenshots
+        const keep = new Set(fams.map(g => g.u));
+        for (const x of data.fonts.filter(x => x.foundryId === f.id && !keep.has(x.url))) removeShot(x.shotId || `fonts/${x.id}`);
+        data.fonts = data.fonts.filter(x => x.foundryId !== f.id || keep.has(x.url));
         const have = new Set(data.fonts.filter(x => x.foundryId === f.id).map(x => x.url));
         let order = Math.max(0, ...data.fonts.filter(x => x.foundryId === f.id).map(x => x.order || 0));
         const wasChecked = !!f.catalogCheckedAt, added = [];
