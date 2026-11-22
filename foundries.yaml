@@ -153,6 +153,9 @@ foundries:
     tags: [ Cyrillic ]
     order: 19
     addedAt: 2026-11-22T08:00:00Z
+    fontLinkPattern: ^https://type\.today/en/[^/]+$
+    exclude:
+      - /en/(fonts|catalog|cart|search|journal|collections?|designers?|store|shop|in-use|info|account|services|custom)$
   - id: collletttivo
     name: Collletttivo
     url: https://www.collletttivo.it/

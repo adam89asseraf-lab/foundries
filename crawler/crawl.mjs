@@ -64,7 +64,7 @@ async function homepages() {
     try {
       await open(page, f.url);
       await prepare(page);
-      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.evaluate(() => { try { window.scrollTo(0, 0); } catch (e) { document.scrollingElement.scrollTop = 0; } });
       await sleep(300);
       await writeShot(await shoot(page), f.id);
       Object.assign(f, { scan: "done", shotId: f.id, shotAt: now(), scannedAt: now(), scannedUrl: f.url, attemptAt: now() });
@@ -78,22 +78,30 @@ async function homepages() {
 }
 
 /* ---------- catalogue discovery ---------- */
-const KW = /font|type|famil|product|collection|catalog|retail|^l$|(^|\/)l(\/|$)/i;
-const EXCL = /trial|licen[cs]e|eula|blog|journal|news|gift|merch|cart|checkout|account|log-?in|sign-?in|about|contact|faq|terms|privacy|shipping|in-use|cookie|support|newsletter|press|jobs|career|imprint|impressum|legal|refund|apparel|t-shirt|tote|poster-shop|specimen-pdf/i;
+const KW = /font|type|famil|product|collection|catalog|retail|fonderie|^l$|(^|\/)(l|shop|store|p)(\/|\*|$)/i;
+const EXCL = /trial|licen[cs]e|eula|blog|journal|news|gift|merch|cart|checkout|account|log-?in|sign-?in|about|contact|faq|terms|privacy|shipping|in-use|cookie|support|newsletter|press|jobs|career|imprint|impressum|legal|refund|apparel|t-shirt|tote|poster-shop|specimen-pdf|\.(zip|pdf)$/i;
 const BUNDLE = /bundle|collection-pack|complete-family-pack|\bpack\b/i;
+// top-level pages that are site sections, not fonts
+const NAV = /^(home|index|about|studio|customs?|contact|info|information|shop|shop-new|store|typefaces|fonts|type|trials?|trial-fonts|licen[cs]es?|licensing|eula|faqs?|privacy|privacy-policy|terms.*|cart|basket|bag|account|login|dashboard|checkout|work|projects|services|research|journal|blog|news|editorial|press.*|designers|articles|legal.*|editor|wiki|inuse|fontsinuse|fonts?-in-use|font-in-use|mockups|branding|free-fonts|type-tester|tester|tips|technical-specifications|irregular|disclaimer|imprint|search|newsletter|events|students|hardware|client-work|customize-fonts|collections|pages|products|downloads?|team|people|specimens?|catalogue|catalog|library|retail|[a-z]{2}(-[a-z]{2})?)$/i;
 
 function pickFonts(r, cfg) {
   const excl = (cfg.exclude || []).map(s => new RegExp(s, "i"));
   const bad = l => { const p = new URL(l.u).pathname; return EXCL.test(p) || EXCL.test(l.t) || excl.some(re => re.test(l.u) || re.test(l.t)); };
-  let links;
+  const dedupe = ls => { const seen = new Set(); return ls.filter(l => !seen.has(l.u) && seen.add(l.u)); };
+  let links = [];
   if (cfg.fontLinkPattern) {
     const re = new RegExp(cfg.fontLinkPattern, "i");
-    const seen = new Set();
-    links = r.all.filter(l => re.test(l.u) && !seen.has(l.u) && seen.add(l.u));
+    links = dedupe(r.all.filter(l => re.test(l.u)));
   } else {
-    const g = r.groups.filter(g => KW.test(g.k) && !EXCL.test(g.k)).sort((a, b) => b.n - a.n)[0];
-    if (!g || g.n < 2) return [];
-    links = g.links;
+    const kwGroups = r.groups.filter(g => KW.test(g.k) && !EXCL.test(g.k));
+    const best = gs => gs.filter(g => g.links.some(l => !bad(l))).sort((a, b) => b.n - a.n)[0];
+    // 1) parent-path group with a font-ish name, 2) same for /a/<id>/<slug> prefixes,
+    // 3) fonts living at top-level paths (/gela, /sk_saturnika), 4) a lone product page
+    const top = dedupe(r.all.filter(l => { const p = new URL(l.u).pathname.split("/").filter(Boolean); return p.length === 1 && !NAV.test(p[0]); }));
+    const g = best(kwGroups.filter(g => !g.k.endsWith("/*") && g.n >= 2)) || best(kwGroups.filter(g => g.k.endsWith("/*") && g.n >= 2));
+    if (g) links = g.links;
+    else if (top.filter(l => !bad(l)).length >= 3) links = top;
+    else { const one = best(kwGroups.filter(g => !g.k.endsWith("/*"))); if (one) links = one.links; }
   }
   links = links.filter(l => !bad(l));
   const nonBundle = links.filter(l => !BUNDLE.test(new URL(l.u).pathname) && !BUNDLE.test(l.t));
@@ -103,15 +111,17 @@ function pickFonts(r, cfg) {
 const CTA = /^(explore|view|buy|shop|more|discover|see|try|details|learn more|read more|open|go|font|fonts|typeface|new)$/i;
 function nameFor(text, slug) {
   const words = String(text || "").replace(/[→↗›»]/g, " ").trim().split(/\s+/).filter(Boolean);
+  while (words.length > 1 && /^\d+$/.test(words[0])) words.shift(); // "6 Cyan Mono", catalogue ids
+  slug = slug.replace(/^\d{4,}-/, "");
   // shortest leading run of words whose slug ends with the URL slug ("ABC Areal Explore" + areal -> "ABC Areal")
   for (let k = 1; k <= Math.min(words.length, 8); k++) {
     const s = slugify(words.slice(0, k).join(" "));
-    if (s === slug || s.endsWith("-" + slug)) return words.slice(0, k).join(" ");
+    if (s === slug || s.endsWith("-" + slug) || s === slug.replace(/\d+$/, "")) return words.slice(0, k).join(" ");
   }
   const t = words.join(" ");
   const slugIsWordy = /[a-z]{3,}/.test(slug);
   if (t && t.length <= 32 && /\p{L}/u.test(t) && !CTA.test(t) && !slugIsWordy) return t;
-  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  return slug.replace(/[_-]+/g, " ").replace(/\d+$/, "").trim().split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
 async function discoverOne(page, f) {
@@ -128,12 +138,14 @@ async function discoverOne(page, f) {
     const nav = r.nav.find(n => n.u.startsWith(r.origin) && n.u.replace(/\/$/, "") !== start.replace(/\/$/, ""));
     if (nav) { url = nav.u; r = await tryUrl(url); picked = pickFonts(r, f.cfg || {}); }
   }
+  if (!picked.length && !f.cfg?.catalogUrl && r.shopify) { url = r.origin + "/collections/all"; r = await tryUrl(url); picked = pickFonts(r, f.cfg || {}); }
   return { url, links: picked };
 }
 
 /** Add newly seen links as fonts. Returns the new font records. */
 function addFonts(f, links, markNew) {
-  const have = new Set(data.fonts.filter(x => x.foundryId === f.id).map(x => x.url.replace(/\/$/, "")));
+  // URLs already listed under any foundry (e.g. a "Display" sub-shop entry overlapping the main shop) aren't added twice
+  const have = new Set(data.fonts.map(x => x.url.replace(/\/$/, "")));
   const ids = new Set(data.fonts.map(x => x.id));
   let order = Math.max(0, ...data.fonts.filter(x => x.foundryId === f.id).map(x => x.order || 0));
   const added = [];

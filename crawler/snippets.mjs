@@ -132,13 +132,17 @@ export function discoverLinks() {
     const k = p.slice(0, -1).join("/");
     const m = (g[k] = g[k] || new Map());
     if (!m.get(x.u)) m.set(x.u, x.t);
+    if (p.length >= 3) { // id-style paths: /typefaces/22789/wet-letters
+      const m2 = (g[p[0] + "/*"] = g[p[0] + "/*"] || new Map());
+      if (!m2.get(x.u)) m2.set(x.u, x.t);
+    }
   }
-  const kw = /font|type|famil|product|collection|catalog|retail|^l$/i;
+  const kw = /font|type|famil|product|collection|catalog|retail|fonderie|^l$|(^|\/)(shop|store|p)(\/|$)/i;
   const groups = Object.entries(g).map(([k, m]) => ({ k, n: m.size, kw: kw.test(k), s: m.size * (kw.test(k) ? 3 : 1), links: [...m].map(([u, t]) => ({ u, t })) }))
     .sort((a, b) => b.s - a.s);
   const nav = [...document.querySelectorAll("a[href]")].map(a => ({ u: a.href, t: (a.innerText || "").trim().replace(/\s+/g, " ") }))
     .filter(x => /^(fonts|typefaces|catalogue|catalog|shop|retail|library|all fonts|all typefaces|type)$/i.test(x.t));
-  return { origin: o, groups, nav, all: L };
+  return { origin: o, groups, nav, all: L, shopify: !!window.Shopify };
 }
 
 /** Visible page text for categorising (headings first). */
