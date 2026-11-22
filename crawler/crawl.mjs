@@ -128,7 +128,12 @@ function nameFor(text, slug) {
     if (s === slug || s.endsWith("-" + slug) || s === slug.replace(/\d+$/, "")) return words.slice(0, k).join(" ");
   }
   const t = words.join(" ");
-  if (t && t.length <= 40 && /[\u0590-\u05FF\u0600-\u06FF\u0400-\u04FF]/.test(t) && !CTA.test(t)) return t; // Hebrew/Arabic/Cyrillic names live in the link text, not the URL
+  // Hebrew/Arabic/Cyrillic names: use the link text when the URL isn't Latin, or when the text also carries
+  // a Latin word from the URL ("ראפידה Rapida" for /rapidaheblatar). Skip glyph samples like "א".
+  if (t && t.length >= 3 && t.length <= 40 && /[\u0590-\u05FF\u0600-\u06FF\u0400-\u04FF]{2,}/.test(t) && !CTA.test(t)) {
+    const latin = (t.match(/[A-Za-z]{3,}/g) || []).map(w => w.toLowerCase());
+    if (/^x[0-9a-z]+$/.test(slug) || latin.some(w => slug.replace(/-/g, "").includes(w))) return t;
+  }
   const slugIsWordy = /[a-z]{3,}/.test(slug) && !/^x[0-9a-z]+$/.test(slug);
   if (t && t.length <= 32 && /\p{L}/u.test(t) && !CTA.test(t) && !slugIsWordy) return t;
   return slug.replace(/[_-]+/g, " ").replace(/\d+$/, "").trim().split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
