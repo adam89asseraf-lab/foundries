@@ -51,7 +51,9 @@ export async function googleFamilies({ limit = 300, newDays = 30, include = [] }
 export function specimenHtml(g) {
   const w = g.weights, pick = [...new Set([w[0], w.reduce((a, b) => Math.abs(b - 400) < Math.abs(a - 400) ? b : a), w[w.length - 1]])];
   const fam = g.family.replace(/ /g, "+");
-  const css = `https://fonts.googleapis.com/css2?family=${fam}:wght@${pick.join(";")}&display=block`;
+  const css = g.provider === "fontshare"
+    ? `https://api.fontshare.com/v2/css?f[]=${g.slug}@${pick.join(",")}&display=block`
+    : `https://fonts.googleapis.com/css2?family=${fam}:wght@${pick.join(";")}&display=block`;
   const sample = SAMPLES[g.script] || SAMPLES.latin;
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const name = g.family;
@@ -78,7 +80,7 @@ export function googleFontRecord(f, g, id, order, markNew) {
   return {
     id, foundryId: f.id, name: g.family, url: g.u, order, addedAt: now(), scan: "queued",
     listText: g.designers.slice(0, 120),
-    gf: { family: g.family, weights: g.weights, script: g.script, category: g.category, styles: g.styles, variable: g.variable },
+    gf: { family: g.family, weights: g.weights, script: g.script, category: g.category, styles: g.styles, variable: g.variable, ...(g.provider ? { provider: g.provider, slug: g.slug } : {}) },
     ...(markNew && g.fresh ? { newSince: now() } : {}),
   };
 }

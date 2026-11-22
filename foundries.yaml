@@ -145,10 +145,13 @@ foundries:
     name: Fontshare
     by: Indian Type Foundry
     url: https://www.fontshare.com/
-    kind: Library
+    kind: Foundry
     tags: [ Free ]
     order: 17
     addedAt: 2026-11-22T08:00:00Z
+    source: fontshare
+    price: free
+    note: Full catalogue
   - id: shriftovik
     name: Shriftovik
     url: https://shriftovik.com/

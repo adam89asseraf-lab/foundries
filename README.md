@@ -121,6 +121,10 @@ The `google-fonts` entry has `source: google-fonts` and `limit: 50`: instead of 
 
 To add specific Google families regardless of popularity, list them under `include:` on the same entry (exact Google Fonts names, e.g. `- Instrument Serif`); they're added on the next run and stay even when they're not in the top 50. Unknown names are reported in the crawl log.
 
+### Fontshare
+
+The `fontshare` entry has `source: fontshare`: the crawler reads Fontshare's public API (`api.fontshare.com/v2/fonts`) and lists its **whole catalogue** (100 families), rendered as specimens through Fontshare's CSS API, the same way as Google Fonts. All Fontshare fonts are free (`price: free`). New Fontshare families are added by the weekly check.
+
 ## Prices
 
 Each font can show a **basic price per weight**: the price of one style with the smallest desktop licence. Foundries publish prices in too many different ways to scrape reliably, so prices are set by hand in `foundries.yaml`:
