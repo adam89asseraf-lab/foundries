@@ -69,13 +69,15 @@ jobs:
           FOUNDRIES_HAIKU: ${{ vars.FOUNDRIES_HAIKU }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          ARGS="--limit $LIMIT --max-minutes 45"
+          ARGS="--limit $LIMIT --max-minutes 38"
           [ -n "$ONLY" ] && ARGS="$ARGS --only $ONLY"
           if [ "$MODE" = "release-check" ]; then
             node crawler/crawl.mjs --release-check --capture $ARGS
           else
             node crawler/crawl.mjs $ARGS
           fi
+          # personality: Claude Haiku rates new/changed screenshots (skips itself without the ANTHROPIC_API_KEY secret)
+          node crawler/crawl.mjs --personality --limit 3000 --max-minutes 12 ${ONLY:+--only $ONLY}
 
       - name: Commit changes
         if: always()

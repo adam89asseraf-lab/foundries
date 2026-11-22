@@ -11,12 +11,13 @@ import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText,
 import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
 import { googleFamilies, specimenHtml, googleFontRecord } from "./google-fonts.mjs";
 import { fontshareFamilies } from "./fontshare.mjs";
+import { ratePersonality, personalityEnabled } from "./personality.mjs";
 
 /* ---------- args ---------- */
 const argv = process.argv.slice(2);
 const flag = f => argv.includes(f);
 const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
-const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check") };
+const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check"), personality: flag("--personality") };
 if (!Object.values(PHASES).some(Boolean)) PHASES.homepages = PHASES.discover = PHASES.capture = true;
 const LIMIT = +opt("--limit", Infinity);
 const ONLY = opt("--only", "").split(",").map(s => s.trim()).filter(Boolean);
@@ -396,12 +397,37 @@ async function capture() {
   });
 }
 
+/* ---------- personality (Claude Haiku rates each screenshot once) ---------- */
+async function personality() {
+  if (!personalityEnabled()) { log("personality: skipped (no ANTHROPIC_API_KEY)"); return; }
+  const ids = new Set(foundries.map(f => f.id));
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && (!x.mood || !x.moodAt || x.moodAt < x.shotAt)).slice(0, LIMIT);
+  log(`personality: ${due.length} fonts to rate`);
+  let done = 0, failed = 0;
+  await pool(due, 6, async x => {
+    if (timeUp()) return;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const m = await ratePersonality(x);
+        if (m) { x.mood = m; x.moodAt = now(); done++; }
+        break;
+      } catch (e) {
+        if (attempt === 2 || !/429|529|overloaded|rate/i.test(e.message)) { failed++; log("  ✗ mood", x.id, e.message.slice(0, 80)); break; }
+        await sleep(5000 * (attempt + 1));
+      }
+    }
+    save();
+  });
+  log(`personality: rated ${done}${failed ? `, ${failed} failed` : ""}`);
+}
+
 /* ---------- run ---------- */
 try {
   if (PHASES.release) await discover(true);
   if (PHASES.homepages) await homepages();
   if (PHASES.discover) await discover(false);
   if (PHASES.capture) await capture();
+  if (PHASES.personality) await personality();
 } finally {
   await browser.close();
   save(true);

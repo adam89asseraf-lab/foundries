@@ -139,3 +139,7 @@ Each font can show a **basic price per weight**: the price of one style with the
 ```
 
 Formats: `60 USD`, `€45`, `75 NZD`, `free`. The card shows the foundry's own currency ("€45 / weight"); a rough USD conversion is only used for the "Price, low to high" sort. Fonts without a price just don't show one. `node scripts/price-evidence.mjs` scans foundry pages for clear "per style / styles from" statements to help fill this in.
+
+## Personality
+
+The Fonts view has four **personality** sliders: Calm ↔ Loud, Serious ↔ Playful, Classic ↔ Futuristic, Clean ↔ Rough. Each font gets a 0–100 score on each, from Claude Haiku looking at the font's screenshot once (`crawler/personality.mjs`); fonts are re-rated only when their screenshot changes. This runs in the nightly workflow when the repository has an `ANTHROPIC_API_KEY` secret (Settings → Secrets and variables → Actions); without it the step skips itself and the sliders stay hidden. Rating the whole index costs roughly a dollar; after that only new fonts are rated. Locally: `ANTHROPIC_API_KEY=… node crawler/crawl.mjs --personality`.

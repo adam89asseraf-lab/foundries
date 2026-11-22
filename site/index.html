@@ -164,11 +164,15 @@ input[type=range]{accent-color:var(--accent);width:120px}
 
 .filtersBtn{display:none}
 .sliders{gap:20px!important}
-.range{position:relative;width:160px;height:20px}
+.range{position:relative;flex:none;width:160px;height:20px;margin:0 8px}
+.moods .moodtitle{font:500 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.slider.mood{gap:8px}
+.slider.mood .pole{text-transform:none;letter-spacing:0;font:400 13px/1 var(--body);color:var(--muted);min-width:0}
+.slider.mood .range{width:110px}
 .range .rtrack,.range .rfill{position:absolute;top:8px;height:4px;border-radius:2px}
 .range .rtrack{left:0;right:0;background:var(--line)}
 .range .rfill{background:var(--accent)}
-.range input{position:absolute;inset:0;width:100%;height:20px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.range input{position:absolute;inset:0;width:100%!important;height:20px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
 .range input::-webkit-slider-runnable-track{height:20px;background:transparent}
 .range input::-moz-range-track{height:4px;background:transparent}
 .range input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:16px;height:16px;margin-top:2px;border-radius:50%;background:var(--accent);border:2px solid var(--paper);box-shadow:0 0 0 1px var(--accent);cursor:pointer}
@@ -269,6 +273,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
       <div class="slider"><label for="fSize">Card size</label><input id="fSize" type="range" min="180" max="560" step="20" value="260"><output id="fSizeOut">M</output></div>
       <button type="button" class="btn small" id="fReset">Reset filters</button>
     </div>
+    <div class="bar-row sliders moods" id="fMoods" hidden role="group" aria-label="Filter by personality"><span class="moodtitle">Personality</span></div>
   </div>
 </div>
 
@@ -315,7 +320,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
   const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
-  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
+  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : "fonts";
   let shuffleKey = Math.random();
   const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
@@ -507,6 +512,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
     const priced = done.filter(f => f.price), maxUsd = Math.max(10, ...priced.map(f => f.price.usd));
     priceRange(Math.ceil(maxUsd / 10) * 10, !priced.length);
+    $("#fMoods").hidden = !done.some(f => f.mood); moodRanges();
     out_card();
     const tc = new Map(); done.forEach(f => ftags(f).forEach(t => tc.set(t, (tc.get(t)||0)+1)));
     const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = PAGE; render(); })));
@@ -522,6 +528,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
       if (fstate.cat && f.category !== fstate.cat) return false;
       for (const k of fstate.props) if (!PROPS[k](f)) return false;
       if (fstate.minStyles > 1 && !((+f.styles||0) >= fstate.minStyles)) return false;
+      if (moodActive() && !(f.mood && MOODS.every((_, i) => f.mood[i] >= fstate.mood[i][0] && f.mood[i] <= fstate.mood[i][1]))) return false;
       if ((fstate.minPrice != null || fstate.maxPrice != null) && !(f.price && f.price.usd >= (fstate.minPrice || 0) && f.price.usd <= (fstate.maxPrice ?? Infinity))) return false;
       for (const t of fstate.tags) if (!ftags(f).includes(t)) return false;
       if (q) { const fd = byId.get(f.foundryId); const hay = (f.name + " " + (fd ? fd.name + " " + (fd.tags||[]).join(" ") : "")).toLowerCase(); if (!hay.includes(q)) return false; }
@@ -604,7 +611,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const open = !bar.classList.contains("open"); bar.classList.toggle("open", open); b.setAttribute("aria-expanded", open);
   });
   function updateFilterCounts(){
-    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + ((fstate.minPrice!=null||fstate.maxPrice!=null)?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
+    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + ((fstate.minPrice!=null||fstate.maxPrice!=null)?1:0) + (moodActive()?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
     const nD = (state.kind?1:0) + state.tags.size + (state.onlyNew?1:0);
     const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
     if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
@@ -631,10 +638,33 @@ input[type=range]{accent-color:var(--accent);width:120px}
     fstate.limit = PAGE; render();
   };
   $("#fPriceMin").addEventListener("input", onPrice("min"));
+  // personality: four opposite pairs, each a 0–100 range (scores from Claude looking at each screenshot)
+  const MOODS = [["Calm","Loud"],["Serious","Playful"],["Classic","Futuristic"],["Clean","Rough"]];
+  const moodActive = () => fstate.mood.some(([a, b]) => a > 0 || b < 100);
+  (() => {
+    const row = $("#fMoods");
+    MOODS.forEach(([l, r], i) => {
+      const w = el("div","slider mood");
+      const lo = Object.assign(el("input"), { type:"range", min:0, max:100, step:5, value:0 }); lo.setAttribute("aria-label", `${l} end of ${l}–${r}`);
+      const hi = Object.assign(el("input"), { type:"range", min:0, max:100, step:5, value:100 }); hi.setAttribute("aria-label", `${r} end of ${l}–${r}`);
+      const rg = el("div","range"); rg.append(el("div","rtrack"), Object.assign(el("div","rfill"), { id:"fMoodFill"+i }), lo, hi);
+      lo.id = "fMoodLo"+i; hi.id = "fMoodHi"+i;
+      const on = which => () => { let a = +lo.value, b = +hi.value; if (a > b) { if (which === "lo") a = b; else b = a; } fstate.mood[i] = [a, b]; fstate.limit = PAGE; render(); };
+      lo.addEventListener("input", on("lo")); hi.addEventListener("input", on("hi"));
+      w.append(el("label", "pole", l), rg, el("label", "pole", r)); row.append(w);
+    });
+  })();
+  function moodRanges(){
+    fstate.mood.forEach(([a, b], i) => {
+      const lo = $("#fMoodLo"+i), hi = $("#fMoodHi"+i); if (!lo) return;
+      lo.value = a; hi.value = b;
+      const f = $("#fMoodFill"+i); f.style.left = a + "%"; f.style.width = Math.max(0, b - a) + "%";
+    });
+  }
   $("#fPriceMax").addEventListener("input", onPrice("max"));
   $("#fSize").addEventListener("input", e => { fstate.card = +e.target.value; out_card(); try { localStorage.setItem("fdx-card", fstate.card); } catch(_){} });
   try { const c = +localStorage.getItem("fdx-card"); if (c) { fstate.card = c; $("#fSize").value = c; } } catch(_){}
-  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, minPrice:null, maxPrice:null, limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
+  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
   $("#fvGrid").onclick = () => setView("grid");
   $("#fvList").onclick = () => setView("list");
   $("#fCopy").onclick = async () => {
