@@ -118,3 +118,18 @@ On Gumroad the font only exists as artwork in the product's cover image (the pag
 ### Google Fonts
 
 The `google-fonts` entry has `source: google-fonts` and `limit: 300`: instead of crawling a website, the crawler reads Google's public font metadata, takes the 300 most popular families plus any family added in the last 30 days, and renders each one as its own specimen page via the Google Fonts CSS API (family name large, then a sample line in its lightest, regular and heaviest weights; fonts for Japanese, Korean, Chinese, Arabic, Hebrew, Thai and so on use their own script). Category, number of styles and variable come straight from Google's metadata, and every Google font is marked Free. Raise or lower `limit` in `foundries.yaml` to change how many are included; the weekly release check marks newly added families as New.
+
+## Prices
+
+Each font can show a **basic price per weight**: the price of one style with the smallest desktop licence. Foundries publish prices in too many different ways to scrape reliably, so prices are set by hand in `foundries.yaml`:
+
+```yaml
+  - id: grilli
+    price: 80 USD          # applies to every font from this foundry
+    fonts:
+      gt-maru: { price: 60 USD }   # per-font override
+  - id: google-fonts
+    price: free
+```
+
+Formats: `60 USD`, `€45`, `75 NZD`, `free`. The card shows the foundry's own currency ("€45 / weight"); a rough USD conversion is only used for the "Price, low to high" sort. Fonts without a price just don't show one. `node scripts/price-evidence.mjs` scans foundry pages for clear "per style / styles from" statements to help fill this in.

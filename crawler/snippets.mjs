@@ -197,3 +197,28 @@ export function coverImage() {
   }
   return imgs[0] ? { src: imgs[0].e.currentSrc || imgs[0].e.src, w: imgs[0].e.naturalWidth, h: imgs[0].e.naturalHeight } : null;
 }
+
+/**
+ * Prices visible on the page: every currency amount with ~60 characters of context around it,
+ * plus same-site links that look like a buy/licence page (for a second look when this page shows none).
+ */
+export function priceScan() {
+  const CUR = "(US\\$|CA\\$|AU\\$|NZ\\$|\\$|€|£|₪|¥|CHF|USD|EUR|GBP|ILS|NZD|AUD|CAD|SEK|DKK|NOK|JPY)";
+  const re = new RegExp(`${CUR}\\s?(\\d{1,5}(?:[.,]\\d{3})*(?:[.,]\\d{1,2})?)|(\\d{1,5}(?:[.,]\\d{3})*(?:[.,]\\d{1,2})?)\\s?${CUR}`, "g");
+  const out = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n; (n = walker.nextNode());) {
+    const el = n.parentElement; if (!el) continue;
+    const s = getComputedStyle(el); if (s.display === "none" || s.visibility === "hidden") continue;
+    if (el.closest("del, s, strike")) continue; // crossed-out "was" prices
+    const t = n.textContent; if (!/\d/.test(t)) continue;
+    for (const m of t.matchAll(re)) {
+      const cur = m[1] || m[4], num = m[2] || m[3];
+      const ctx = (el.closest("li, tr, label, button, [class*=price i], [class*=licen i], [class*=style i], div") || el).innerText.replace(/\s+/g, " ").slice(0, 160);
+      out.push({ cur, num, ctx });
+    }
+    if (out.length > 200) break;
+  }
+  const buy = [...document.querySelectorAll("a[href]")].filter(a => a.host === location.host && /^(buy|buy now|buy font|buy fonts|purchase|licen[cs]e|licen[cs]ing|shop|add to cart|get (it|this font)|pricing|trial & buy|buy & try)$/i.test((a.innerText || "").trim())).map(a => a.href);
+  return { prices: out, buy: [...new Set(buy)].slice(0, 2) };
+}

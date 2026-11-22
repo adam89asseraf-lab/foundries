@@ -11,8 +11,9 @@
 #   catalogUrl            page that lists all fonts, if not the homepage
 #   fontLinkPattern       regex every font link must match, e.g. "/fonts/[^/]+$"
 #   exclude               list of regexes; matching font links are ignored
+#   price                 basic price for ONE weight (single style, smallest desktop licence): "60 USD", "€45", "75 NZD" or free
 #   fonts:                per-font overrides, keyed by font slug (the part after "<id>--")
-#     some-font: { category: Serif, styles: 12, variable: true, free: false, name: "Some Font", skip: true }
+#     some-font: { category: Serif, styles: 12, variable: true, free: false, name: "Some Font", price: "40 EUR", skip: true }
 
 foundries:
   - id: space-grotesk
@@ -23,6 +24,7 @@ foundries:
     tags: [ Free ]
     order: 1
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: morganite
     name: Morganite
     by: Rajesh Rajput · Behance
@@ -31,6 +33,7 @@ foundries:
     tags: [ Free, Display ]
     order: 2
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: free-fat-font
     name: Free Fat Font
     by: Pixel Surplus
@@ -39,6 +42,7 @@ foundries:
     tags: [ Free, Display ]
     order: 3
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: argesta
     name: Argesta
     by: Atipo Foundry
@@ -125,6 +129,7 @@ foundries:
     tags: [ Multi-script ]
     order: 15
     addedAt: 2026-11-22T08:00:00Z
+    price: 45 EUR
   - id: oh-no
     name: OH no Type Co.
     url: https://ohnotype.co/
@@ -163,6 +168,7 @@ foundries:
     tags: [ Free, Italy ]
     order: 20
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: power
     name: Power Type
     url: https://power-type.com/
@@ -254,6 +260,7 @@ foundries:
     tags: [ Swiss ]
     order: 33
     addedAt: 2026-11-22T08:00:00Z
+    price: 80 USD
   - id: groteskly-yours
     name: Groteskly Yours
     url: https://groteskly.xyz/
@@ -327,6 +334,7 @@ foundries:
     tags: [ Serif, Free ]
     order: 43
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: nan
     name: NaN
     url: https://www.nan.xyz/fonts/
@@ -373,6 +381,7 @@ foundries:
     kind: Foundry
     order: 51
     addedAt: 2026-11-22T08:00:00Z
+    price: 10 EUR
   - id: formerly-known
     name: Formerly Known
     url: https://formerly-known.com/
@@ -425,6 +434,7 @@ foundries:
     kind: Foundry
     order: 59
     addedAt: 2026-11-22T08:00:00Z
+    price: 60 USD
   - id: dan-reisinger
     name: דן ריזינגר
     by: Dan Reisinger
@@ -455,6 +465,7 @@ foundries:
     tags: [ Free ]
     order: 63
     addedAt: 2026-11-22T08:00:00Z
+    price: free
   - id: gradient
     name: Gradient®
     url: https://www.wearegradient.net/
@@ -506,6 +517,7 @@ foundries:
     kind: Foundry
     order: 71
     addedAt: 2026-11-22T08:00:00Z
+    price: 80 EUR
   - id: fonts-xyz
     name: fonts.xyz
     url: https://www.fonts.xyz/
@@ -651,3 +663,4 @@ foundries:
     addedAt: 2026-11-22T18:24:47Z
     source: google-fonts
     limit: 300
+    price: free

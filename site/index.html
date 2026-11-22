@@ -94,6 +94,9 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .pending{display:flex;align-items:center;justify-content:center;height:100%;font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:center;padding:12px}
 .fallback{display:flex;align-items:center;justify-content:center;height:100%;padding:16px;font:800 40px/.95 var(--display);font-variation-settings:"wdth" 78,"opsz" 72;letter-spacing:-.03em;text-align:center;text-wrap:balance;background:var(--ink);color:var(--paper)}
 .fallback[dir=rtl]{font-family:var(--body)}
+.tag.price{border-color:var(--ink);font-variant-numeric:tabular-nums}
+.card:hover .tag.price{border-color:currentColor}
+.row .rprice{font:500 12px var(--mono);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .tag.new{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .newline{font-size:13px;color:var(--accent);font-weight:600}
 .card:hover .newline{color:var(--paper)}
@@ -122,7 +125,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
 
 /* List */
 .list{margin:24px 0 64px;border-top:1px solid var(--ink)}
-.row{position:relative;display:grid;grid-template-columns:48px 72px minmax(0,2.2fr) minmax(0,1.4fr) 110px minmax(0,1.6fr) minmax(0,1.3fr) 60px;gap:16px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.row{position:relative;display:grid;grid-template-columns:48px 72px minmax(0,2.2fr) minmax(0,1.4fr) 110px minmax(0,1.6fr) minmax(0,1.3fr) 110px;gap:16px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
 .row:hover{background:var(--tile)}
 .row a.hit{position:absolute;inset:0;z-index:1}
 .row .rn{font:400 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
@@ -240,6 +243,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
         <option value="new">Newest first</option>
         <option value="shuffle">Shuffle</option>
         <option value="styles">Most styles</option>
+        <option value="price">Price, low to high</option>
       </select>
       <div class="seg" role="group" aria-label="View">
         <button id="fvGrid" aria-pressed="true">Grid</button>
@@ -316,6 +320,9 @@ input[type=range]{accent-color:var(--accent);width:120px}
   const parseTags = s => [...new Set(String(s||"").split(",").map(t=>t.trim()).filter(Boolean).map(t => t.length > 24 ? t.slice(0,24) : t))];
 
   const NEW_DAYS = 30;
+  // basic price per weight (set in foundries.yaml)
+  const CUR = { USD:"$", EUR:"€", GBP:"£", ILS:"₪", JPY:"¥", NZD:"NZ$", AUD:"A$", CAD:"C$", CHF:"CHF ", SEK:"SEK ", DKK:"DKK ", NOK:"NOK " };
+  const fmtPrice = p => !p ? null : p.amount === 0 ? "Free" : (CUR[p.currency] || p.currency + " ") + (Number.isInteger(p.amount) ? p.amount : p.amount.toFixed(2)) + " / weight";
   const isNew = it => Array.isArray(it.newReleases) && it.newReleases.length && it.newSince && (Date.now() - Date.parse(it.newSince)) < NEW_DAYS*864e5;
   const shot = (id, at, full) => id ? "shots/" + id.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (at ? "?v=" + (Date.parse(at) || 0) : "") : null;
   const shotUrl = (it, full) => shot(it.shotId, it.shotAt, full);
@@ -399,6 +406,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     tags.append(el("span","tag kind", it.kind || "Foundry"));
     if (isNew(it)) tags.append(el("span","tag new","New"));
     (it.tags||[]).forEach(t => tags.append(el("span","tag",t)));
+    if (it.price) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
     foot.append(tags);
     const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
     if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; foot.append(b); }
@@ -476,7 +484,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
     const ftags = f => (byId.get(f.foundryId)||{}).tags || [];
     const mkc = (label, n, pressed, on) => { const b = el("button","chip",label); b.type="button"; b.setAttribute("aria-pressed", pressed); if (n != null) b.append(el("span","n",String(n))); b.onclick = on; return b; };
     const CATS = ["Sans","Serif","Slab","Mono","Display","Script"];
-    const isFree = f => f.free === true || ftags(f).includes("Free");
+    const isFree = f => f.free === true || (f.price && f.price.amount === 0) || ftags(f).includes("Free");
     const PROPS = { Variable: f => !!f.variable, Free: isFree };
     ch.append(mkc("All", null, !fstate.cat, () => { fstate.cat = null; render(); }));
     CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = PAGE; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
@@ -510,7 +518,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
       az: (a,b) => a.name.localeCompare(b.name, undefined, {sensitivity:"base"}),
       new: (a,b) => String(b.newSince||b.addedAt||"").localeCompare(String(a.newSince||a.addedAt||"")),
       shuffle: (a,b) => hashN(a.id + shuffleKey) - hashN(b.id + shuffleKey),
-      styles: (a,b) => (+b.styles||0) - (+a.styles||0)
+      styles: (a,b) => (+b.styles||0) - (+a.styles||0),
+      price: (a,b) => (a.price ? a.price.usd : Infinity) - (b.price ? b.price.usd : Infinity) || a.name.localeCompare(b.name)
     };
     list.sort(sorters[fstate.sort]);
 
@@ -530,7 +539,7 @@ input[type=range]{accent-color:var(--accent);width:120px}
       const fb = el("button","linkbtn rby", fd.name || ""); fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
       const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
       const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
-      r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span"));
+      r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span","rprice", fmtPrice(f.price) || ""));
       return r;
     };
     const cardFor = f => {
@@ -546,7 +555,8 @@ input[type=range]{accent-color:var(--accent);width:120px}
       meta.append(fb, el("span", null, host(f.url)));
       body.append(nm, meta);
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
-      if (pr.length) { const pp = el("div","fprops"); pr.forEach(x => pp.append(el("span","tag",x))); body.append(pp); }
+      const pt = fmtPrice(f.price);
+      if (pr.length || pt) { const pp = el("div","fprops"); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
       if (fIsNew(f)) { const tg = el("div","tags"); tg.append(el("span","tag new","New")); body.append(tg); }
       c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : "")));
       return c;

@@ -11,6 +11,24 @@ export const SHOTS = path.join(ROOT, "public/shots");
 
 // Fields that foundries.yaml owns. Everything else in data.json belongs to the crawler.
 export const USER_FIELDS = ["name", "by", "url", "kind", "tags", "note", "order", "addedAt"];
+
+// "Basic price per weight", set by hand in foundries.yaml: `price: 60 USD`, `price: free`, or per font under `fonts:`.
+// USD rates are rough and only used for sorting; the page shows the foundry's own currency.
+const USD = { USD: 1, EUR: 1.08, GBP: 1.27, CHF: 1.12, ILS: 0.27, NZD: 0.6, AUD: 0.65, CAD: 0.73, SEK: 0.095, DKK: 0.145, NOK: 0.093, JPY: 0.0067 };
+const SYM = { "$": "USD", "€": "EUR", "£": "GBP", "₪": "ILS", "¥": "JPY" };
+export function parsePrice(v) {
+  if (v == null || v === "") return null;
+  if (v === 0 || /^\s*(free|0)\s*$/i.test(String(v))) return { amount: 0, currency: "USD", usd: 0 };
+  let amount, currency;
+  if (typeof v === "object") ({ amount, currency } = v);
+  else {
+    const m = String(v).trim().match(/^([$€£₪¥])?\s*(\d+(?:[.,]\d{1,2})?)\s*([A-Za-z]{3})?$/);
+    if (!m) throw new Error(`foundries.yaml: can't read price "${v}" (use e.g. "60 USD", "€45" or "free")`);
+    amount = parseFloat(m[2].replace(",", ".")); currency = (m[3] || SYM[m[1]] || "USD").toUpperCase();
+  }
+  if (!USD[currency]) throw new Error(`foundries.yaml: unknown currency "${currency}" in price`);
+  return { amount, currency, usd: Math.round(amount * USD[currency]) };
+}
 export const KINDS = ["Foundry", "Typeface", "Library"];
 
 export const now = () => new Date().toISOString();
@@ -95,6 +113,15 @@ export function merge(data, entries) {
     }
     out.push(cur);
     byId.delete(e.id);
+  }
+  // prices: font override > foundry price
+  const cfgById = new Map(out.map(f => [f.id, f]));
+  for (const f of out) { const p = parsePrice(entries.find(e => e.id === f.id)?.price); if (p) f.price = p; else delete f.price; }
+  for (const x of data.fonts) {
+    const fd = cfgById.get(x.foundryId); if (!fd) continue;
+    const ov = fd.cfg?.fonts?.[x.id.split("--").slice(1).join("--")]?.price;
+    const p = ov != null ? parsePrice(ov) : fd.price || null;
+    if (p) x.price = p; else delete x.price;
   }
   const removed = [...byId.keys()];
   const removedFonts = data.fonts.filter(f => removed.includes(f.foundryId));
