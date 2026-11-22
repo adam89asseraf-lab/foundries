@@ -640,3 +640,14 @@ foundries:
     tags: [ Hebrew ]
     order: 91
     addedAt: 2026-11-22T12:00:00Z
+  - id: google-fonts
+    name: Google Fonts
+    by: Google
+    url: https://fonts.google.com/
+    kind: Foundry
+    tags: [ Free ]
+    note: Top 300 by popularity, plus anything added in the last 30 days
+    order: 92
+    addedAt: 2026-11-22T18:24:47Z
+    source: google-fonts
+    limit: 300

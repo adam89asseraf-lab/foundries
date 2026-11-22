@@ -114,3 +114,7 @@ Each run commits `data/` and `public/shots/` only when something changed, then r
 ### Shops (Gumroad and similar)
 
 On Gumroad the font only exists as artwork in the product's cover image (the page's live text is Gumroad's own UI font), so Gumroad fonts are captured from the cover image itself, downloaded at full size and fitted to 16:10. Products whose page never mentions fonts (templates, icon sets, mockups) are marked `scan: "excluded"` and hidden. For another shop that works the same way, add `capture: image` to its entry; `capture: page` forces a normal page screenshot.
+
+### Google Fonts
+
+The `google-fonts` entry has `source: google-fonts` and `limit: 300`: instead of crawling a website, the crawler reads Google's public font metadata, takes the 300 most popular families plus any family added in the last 30 days, and renders each one as its own specimen page via the Google Fonts CSS API (family name large, then a sample line in its lightest, regular and heaviest weights; fonts for Japanese, Korean, Chinese, Arabic, Hebrew, Thai and so on use their own script). Category, number of styles and variable come straight from Google's metadata, and every Google font is marked Free. Raise or lower `limit` in `foundries.yaml` to change how many are included; the weekly release check marks newly added families as New.

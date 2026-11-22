@@ -9,6 +9,7 @@ import { loadData, saveData, forSave, dump, loadYamlDoc, yamlEntries, merge, cle
 import { launch, open, prepare, shoot, writeShot, writeImageShot, removeShot, pool } from "./lib/browser.mjs";
 import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners, coverImage } from "./snippets.mjs";
 import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
+import { googleFamilies, specimenHtml, googleFontRecord } from "./google-fonts.mjs";
 
 /* ---------- args ---------- */
 const argv = process.argv.slice(2);
@@ -200,6 +201,28 @@ async function discover(release = false) {
       f.catalog = "listed"; f.catalogCheckedAt = now(); f.typefaces = [f.name];
       stats.newFonts += added.length; save(); return;
     }
+    if (f.cfg?.source === "google-fonts") {
+      try {
+        const fams = await googleFamilies({ limit: f.cfg.limit || 300 });
+        const have = new Set(data.fonts.filter(x => x.foundryId === f.id).map(x => x.url));
+        let order = Math.max(0, ...data.fonts.filter(x => x.foundryId === f.id).map(x => x.order || 0));
+        const wasChecked = !!f.catalogCheckedAt, added = [];
+        for (const g of fams) {
+          if (have.has(g.u)) continue;
+          const id = `${f.id}--${slugify(g.family)}`;
+          if (f.cfg?.fonts?.[slugify(g.family)]?.skip) continue;
+          const rec = googleFontRecord(f, g, id, ++order, release && wasChecked);
+          data.fonts.push(rec); added.push(rec);
+        }
+        Object.assign(f, { catalog: "listed", catalogUrl: "https://fonts.google.com/metadata/fonts", catalogCheckedAt: now(), discoverAttemptAt: now() });
+        f.typefaces = data.fonts.filter(x => x.foundryId === f.id).map(x => x.name);
+        const fresh = added.filter(x => x.newSince);
+        if (fresh.length) { f.newReleases = fresh.map(x => x.name); f.newSince = now(); report.push({ f, added: fresh }); }
+        stats.discovered++; stats.newFonts += added.length;
+        log(`  ✓ google fonts: ${fams.length} families, ${added.length} new`);
+      } catch (e) { Object.assign(f, { discoverAttemptAt: now(), discoverFailed: String(e.message).slice(0, 120) }); log("  ✗ google fonts", e.message); }
+      save(); return;
+    }
     const ctx = await newContext(); const page = await ctx.newPage();
     try {
       const { url, links } = await discoverOne(page, f);
@@ -252,7 +275,24 @@ async function captureCover(page, font) {
   return true;
 }
 
+async function captureGoogle(page, font) {
+  await page.setContent(specimenHtml(font.gf), { waitUntil: "load", timeout: 45000 });
+  await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: 20000 }).catch(() => {});
+  const ok = await page.evaluate(() => document.body.dataset.ready === "1");
+  await sleep(300);
+  await writeShot(await shoot(page), `fonts/${font.id}`);
+  const g = font.gf;
+  Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), scan: "done", attemptAt: now(), shot: "specimen", free: true,
+    category: f_override(font) || g.category || font.category, styles: g.styles, ...(g.variable ? { variable: true } : {}) });
+  if (!g.category && !font.category) delete font.category;
+  if (ok) { delete font.quality; delete font.qualityNote; } else { font.quality = "low"; font.qualityNote = "webfont did not load"; }
+  delete font.failReason;
+  return { ok, score: ok ? 9 : 1, reasons: ok ? [] : ["webfont did not load"] };
+}
+const f_override = font => byId.get(font.foundryId)?.cfg?.fonts?.[font.id.split("--").slice(1).join("--")]?.category;
+
 async function captureOne(page, font, f) {
+  if (font.gf) return captureGoogle(page, font);
   await open(page, font.url);
   await prepare(page);
   if (wantsCover(font, f) && await captureCover(page, font)) return finishFont(page, font, f, { ok: true, score: 9, reasons: [], cover: true });
