@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Found it! — Type &amp; foundry index</title>
+<title>Found rizz — Type &amp; foundry index</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Young+Serif&family=Rethink+Sans:wght@700&family=Inter+Tight:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=Host+Grotesk:wght@700&family=Funnel+Display:wght@700&family=Crimson+Pro:wght@700&display=swap" rel="stylesheet">
@@ -297,13 +297,17 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .card .zoom{top:22px;right:22px}
 .row .rname{font-family:var(--stat)}
 .status{font-family:var(--mono)}
-@media (max-width:700px){.mright{align-items:flex-start;gap:16px} header.mast{grid-template-columns:1fr;align-items:start} .stats{gap:16px} .mast h1 .title{height:.85em}}
+@media (max-width:700px){.mright{align-items:flex-start;gap:16px} header.mast{grid-template-columns:1fr;align-items:start} .stats{gap:16px}
+  /* phones: subtitle under the title, title sized to the screen so no rotating face overflows */
+  .mast h1{flex-direction:column;align-items:flex-start;gap:10px;font-size:min(60px,13.5vw)}
+  .mast h1 .title{height:.85em}
+  .mast h1 sup{margin:0}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="mast">
-    <h1><span class="title" id="title">Found it!</span><sup>Type &amp; foundry index</sup></h1>
+    <h1><span class="title" id="title">Found rizz</span><sup>Type &amp; foundry index</sup></h1>
     <div class="mright">
       <div class="stats" id="stats" aria-live="polite"></div>
       <nav class="tabs-main" aria-label="Views">
@@ -691,7 +695,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     apply(FACES[0]);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // load every face first so each swap is instant (a face that fails to load is skipped)
-    Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found it!").then(r => r.length ? f : null, () => null))).then(ok => {
+    Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found rizz").then(r => r.length ? f : null, () => null))).then(ok => {
       const faces = ok.filter(Boolean); if (faces.length < 2) return;
       let i = 0;
       setInterval(() => { if (!document.hidden) { i = (i + 1) % faces.length; apply(faces[i]); } }, 800);
