@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Young+Serif&family=Rethink+Sans:wght@700&family=Host+Grotesk:wght@700&family=Funnel+Display:wght@700&family=Crimson+Pro:wght@700&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=sharpie@700&f[]=clash-grotesk@700&display=swap" rel="stylesheet">
 <style>
 /* Layout idea: a type-specimen index. Bordered tiles share hairlines like a printed specimen grid; one sticky toolbar filters, tests and adds. */
 :root{
@@ -33,8 +34,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 /* Masthead */
 header.mast{display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;padding-top:clamp(28px,5vw,56px);padding-bottom:20px;border-bottom:1px solid var(--ink)}
 .mast h1{font:800 clamp(56px,11vw,152px)/.85 var(--display);font-variation-settings:"wdth" 78,"opsz" 96;letter-spacing:-.035em;margin:0;text-wrap:balance}
-.mast h1 .title{display:inline-block;font-synthesis:none;transition:opacity .2s ease}
-.mast h1 .title.out{opacity:0}
+.mast h1 .title{display:inline-block;font-synthesis:none}
+/* Apfel Grotezk by Collletttivo (SIL Open Font License), served from its GitHub repo via jsDelivr */
+@font-face{font-family:"Apfel Grotezk";font-weight:700;font-style:normal;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/collletttivo/apfel-grotezk@main/fonts/ApfelGrotezk-Fett.woff2") format("woff2"),url("https://cdn.jsdelivr.net/gh/collletttivo/apfel-grotezk@main/fonts/ApfelGrotezk-Fett.woff") format("woff")}
 .mast h1 sup{font:400 13px/1 var(--mono);letter-spacing:0;vertical-align:baseline;margin-left:.6em;color:var(--muted)}
 .stats{display:flex;gap:28px;font:400 12px/1.3 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .stats b{display:block;font:600 28px/1 var(--display);color:var(--ink);letter-spacing:-.02em;text-transform:none;font-variant-numeric:tabular-nums;margin-bottom:4px}
@@ -607,29 +609,30 @@ input[type=range]{accent-color:var(--accent);width:120px}
     }
   }
 
-  /* ---------- title: cycles through six bold faces every 3 s ---------- */
+  /* ---------- title: cycles through nine bold faces every 800 ms ---------- */
+  // ordered so neighbours look clearly different: serifs and the marker break up the sans faces,
+  // and where two sans faces meet they're far apart (condensed vs geometric, display vs quirky)
   (() => {
     const FACES = [
-      { family: '"Bricolage Grotesque"', weight: 700, vars: '"wdth" 78, "opsz" 96' },
-      { family: '"Young Serif"', weight: 400, vars: "normal" },        // only has Regular; no faux bold
-      { family: '"Rethink Sans"', weight: 700, vars: "normal" },
-      { family: '"Host Grotesk"', weight: 700, vars: "normal" },
-      { family: '"Funnel Display"', weight: 700, vars: "normal" },
-      { family: '"Crimson Pro"', weight: 700, vars: "normal" },
+      { family: '"Bricolage Grotesque"', weight: 700, vars: '"wdth" 78, "opsz" 96' }, // condensed grotesque
+      { family: '"Young Serif"', weight: 400 },   // only has Regular; no faux bold
+      { family: '"Clash Grotesk"', weight: 700 }, // geometric
+      { family: '"Sharpie"', weight: 700 },       // marker
+      { family: '"Rethink Sans"', weight: 700 },  // humanist
+      { family: '"Crimson Pro"', weight: 700 },   // old-style serif
+      { family: '"Funnel Display"', weight: 700 },// display
+      { family: '"Apfel Grotezk"', weight: 700 }, // quirky grotesk
+      { family: '"Host Grotesk"', weight: 700 },  // neo-grotesk
     ];
     const t = $("#title"); if (!t) return;
-    const apply = f => { t.style.fontFamily = f.family + ", var(--display)"; t.style.fontWeight = f.weight; t.style.fontVariationSettings = f.vars; t.title = f.family.replace(/"/g, ""); };
+    const apply = f => { t.style.fontFamily = f.family + ", var(--display)"; t.style.fontWeight = f.weight; t.style.fontVariationSettings = f.vars || "normal"; t.title = f.family.replace(/"/g, ""); };
     apply(FACES[0]);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // load every face up front so each swap is instant
-    Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found it!").catch(() => {}))).then(() => {
+    // load every face first so each swap is instant (a face that fails to load is skipped)
+    Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found it!").then(r => r.length ? f : null, () => null))).then(ok => {
+      const faces = ok.filter(Boolean); if (faces.length < 2) return;
       let i = 0;
-      setInterval(() => {
-        if (document.hidden) return;
-        i = (i + 1) % FACES.length;
-        t.classList.add("out");
-        setTimeout(() => { apply(FACES[i]); t.classList.remove("out"); }, 200);
-      }, 3000);
+      setInterval(() => { if (!document.hidden) { i = (i + 1) % faces.length; apply(faces[i]); } }, 800);
     });
   })();
 
