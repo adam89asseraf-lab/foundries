@@ -1,0 +1,624 @@
+# Foundries: the source list for the type index.
+# Edit this file on GitHub. The nightly crawl picks up changes.
+#
+# Per entry:
+#   id        stable slug (used for screenshot filenames; don't change once set)
+#   name, by, url, note, tags, order, addedAt
+#   kind      Foundry (full catalogue) | Typeface (one font: the page itself) | Library (homepage shot only)
+# Optional crawl overrides:
+#   rescan: true          redo homepage + catalogue + all fonts on the next run (cleared automatically)
+#   skip: true            never crawl this entry (it still shows on the page)
+#   catalogUrl            page that lists all fonts, if not the homepage
+#   fontLinkPattern       regex every font link must match, e.g. "/fonts/[^/]+$"
+#   exclude               list of regexes; matching font links are ignored
+#   fonts:                per-font overrides, keyed by font slug (the part after "<id>--")
+#     some-font: { category: Serif, styles: 12, variable: true, free: false, name: "Some Font", skip: true }
+
+foundries:
+  - id: space-grotesk
+    name: Space Grotesk
+    by: Florian Karsten
+    url: https://fonts.floriankarsten.com/space-grotesk
+    kind: Typeface
+    tags: [ Free ]
+    order: 1
+    addedAt: 2026-11-22T08:00:00Z
+  - id: morganite
+    name: Morganite
+    by: Rajesh Rajput · Behance
+    url: https://www.behance.net/gallery/66748265/Morganite-Free-Typeface-18-Styles
+    kind: Typeface
+    tags: [ Free, Display ]
+    order: 2
+    addedAt: 2026-11-22T08:00:00Z
+  - id: free-fat-font
+    name: Free Fat Font
+    by: Pixel Surplus
+    url: https://pixelsurplus.com/products/free-fat-font-v-1-2-free-extremely-heavyweight-typeface
+    kind: Typeface
+    tags: [ Free, Display ]
+    order: 3
+    addedAt: 2026-11-22T08:00:00Z
+  - id: argesta
+    name: Argesta
+    by: Atipo Foundry
+    url: https://www.atipofoundry.com/fonts/argesta
+    kind: Typeface
+    tags: [ Serif ]
+    order: 4
+    addedAt: 2026-11-22T08:00:00Z
+  - id: tantype
+    name: TanType
+    by: Creative Market
+    url: https://creativemarket.com/tantype
+    kind: Foundry
+    tags: [ Display ]
+    order: 5
+    addedAt: 2026-11-22T08:00:00Z
+  - id: mckl
+    name: MCKL
+    by: Jeremy Mickel
+    url: https://mckltype.com/
+    kind: Foundry
+    order: 6
+    addedAt: 2026-11-22T08:00:00Z
+  - id: avantt
+    name: Avantt
+    by: Displaay
+    url: https://displaay.net/typeface/avantt/#glyphs
+    kind: Typeface
+    tags: [ Sans ]
+    order: 7
+    addedAt: 2026-11-22T08:00:00Z
+  - id: font-brief
+    name: Font Brief
+    url: https://www.fontbrief.com/fontbrief
+    kind: Library
+    tags: [ Tool ]
+    order: 8
+    addedAt: 2026-11-22T08:00:00Z
+  - id: typelab
+    name: Typelab
+    url: https://typelab.fr/
+    kind: Foundry
+    tags: [ France ]
+    order: 9
+    addedAt: 2026-11-22T08:00:00Z
+  - id: newglyph
+    name: Newglyph
+    url: https://newglyph.com/
+    kind: Foundry
+    order: 10
+    addedAt: 2026-11-22T08:00:00Z
+  - id: w-type-foundry
+    name: W Type Foundry
+    url: https://wtypefoundry.com/typefaces
+    kind: Foundry
+    order: 11
+    addedAt: 2026-11-22T08:00:00Z
+  - id: open
+    name: Open Foundry
+    url: https://open-foundry.com/
+    kind: Library
+    tags: [ Free ]
+    order: 12
+    addedAt: 2026-11-22T08:00:00Z
+  - id: future
+    name: Future Fonts
+    url: https://www.futurefonts.com/
+    kind: Library
+    tags: [ Marketplace ]
+    order: 13
+    addedAt: 2026-11-22T08:00:00Z
+  - id: fonderie
+    name: Fonderie
+    by: Pépite
+    url: https://www.typo.pepite.world/fonderie/
+    kind: Foundry
+    tags: [ France ]
+    order: 14
+    addedAt: 2026-11-22T08:00:00Z
+  - id: rosetta
+    name: Rosetta
+    url: https://rosettatype.com/fonts/
+    kind: Foundry
+    tags: [ Multi-script ]
+    order: 15
+    addedAt: 2026-11-22T08:00:00Z
+  - id: oh-no
+    name: OH no Type Co.
+    url: https://ohnotype.co/
+    kind: Foundry
+    order: 16
+    addedAt: 2026-11-22T08:00:00Z
+  - id: fontshare
+    name: Fontshare
+    by: Indian Type Foundry
+    url: https://www.fontshare.com/
+    kind: Library
+    tags: [ Free ]
+    order: 17
+    addedAt: 2026-11-22T08:00:00Z
+  - id: shriftovik
+    name: Shriftovik
+    url: https://shriftovik.com/
+    kind: Foundry
+    tags: [ Cyrillic ]
+    order: 18
+    addedAt: 2026-11-22T08:00:00Z
+  - id: type-today
+    name: type.today
+    url: https://type.today/en
+    kind: Foundry
+    tags: [ Cyrillic ]
+    order: 19
+    addedAt: 2026-11-22T08:00:00Z
+  - id: collletttivo
+    name: Collletttivo
+    url: https://www.collletttivo.it/
+    kind: Foundry
+    tags: [ Free, Italy ]
+    order: 20
+    addedAt: 2026-11-22T08:00:00Z
+  - id: power
+    name: Power Type
+    url: https://power-type.com/
+    kind: Foundry
+    order: 21
+    addedAt: 2026-11-22T08:00:00Z
+  - id: lift
+    name: Lift Type
+    url: https://www.lift-type.fr/
+    kind: Foundry
+    tags: [ France ]
+    order: 22
+    addedAt: 2026-11-22T08:00:00Z
+  - id: klim
+    name: Klim Type Foundry
+    url: https://klim.co.nz/
+    kind: Foundry
+    order: 23
+    addedAt: 2026-11-22T08:00:00Z
+    catalogUrl: https://klim.co.nz/fonts/
+  - id: uncut
+    name: UNCUT
+    url: https://uncut.wtf/?ref=uigoodies.com
+    kind: Library
+    tags: [ Free ]
+    order: 24
+    addedAt: 2026-11-22T08:00:00Z
+  - id: lineto
+    name: Lineto
+    url: https://lineto.com/#ivory-1
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 25
+    addedAt: 2026-11-22T08:00:00Z
+  - id: free-faces
+    name: Free Faces
+    url: https://www.freefaces.gallery/
+    kind: Library
+    tags: [ Free ]
+    order: 26
+    addedAt: 2026-11-22T08:00:00Z
+  - id: berlin
+    name: Berlin
+    by: Geographic Designer
+    url: https://geographicdesigner.gumroad.com/l/berlin#36dot
+    kind: Typeface
+    tags: [ Gumroad ]
+    order: 27
+    addedAt: 2026-11-22T08:00:00Z
+  - id: dirtyline-studio
+    name: Dirtyline Studio
+    url: https://dirtylinestudio.com/
+    kind: Foundry
+    tags: [ Display ]
+    order: 28
+    addedAt: 2026-11-22T08:00:00Z
+  - id: velvetyne-libre-friends
+    name: Velvetyne Libre Friends
+    by: Velvetyne
+    url: https://gitlab.com/velvetyne/velvetyne-libre-friends/-/blob/main/README.md
+    kind: Library
+    tags: [ Free ]
+    order: 29
+    addedAt: 2026-11-22T08:00:00Z
+  - id: nouvelle-noire
+    name: Nouvelle Noire
+    by: Swinton & more
+    url: https://nouvellenoire.ch/type-collection/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 30
+    addedAt: 2026-11-22T08:00:00Z
+  - id: polytype
+    name: Polytype
+    url: https://polytype.co.uk/typefaces
+    kind: Foundry
+    order: 31
+    addedAt: 2026-11-22T08:00:00Z
+  - id: the-designers
+    name: The Designers Foundry
+    url: https://www.thedesignersfoundry.com/typefaces
+    kind: Foundry
+    order: 32
+    addedAt: 2026-11-22T08:00:00Z
+  - id: grilli
+    name: Grilli Type
+    url: https://www.grillitype.com/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 33
+    addedAt: 2026-11-22T08:00:00Z
+  - id: groteskly-yours
+    name: Groteskly Yours
+    url: https://groteskly.xyz/
+    kind: Foundry
+    tags: [ Free to try ]
+    order: 34
+    addedAt: 2026-11-22T08:00:00Z
+  - id: dinamo
+    name: Dinamo
+    by: ABC Dinamo
+    url: https://abcdinamo.com/
+    kind: Foundry
+    order: 35
+    addedAt: 2026-11-22T08:00:00Z
+  - id: bueno
+    name: Bueno
+    by: Rajesh Rajput
+    url: https://rajputrajesh-448.gumroad.com/l/Bueno9
+    kind: Typeface
+    tags: [ Gumroad, Display ]
+    order: 36
+    addedAt: 2026-11-22T08:00:00Z
+  - id: brandon-nickerson-shop
+    name: Brandon Nickerson — Shop
+    by: Brandon Nickerson
+    url: https://www.bnicks.com/shop
+    kind: Foundry
+    order: 37
+    addedAt: 2026-11-22T08:00:00Z
+  - id: mango-grotesque
+    name: Mango Grotesque
+    by: Rajesh Rajput
+    url: https://rajputrajesh-448.gumroad.com/l/MangoGrotesque
+    kind: Typeface
+    tags: [ Gumroad, Display ]
+    order: 38
+    addedAt: 2026-11-22T08:00:00Z
+  - id: studio-few
+    name: Studio Few
+    url: https://www.studiofew.com/
+    kind: Foundry
+    order: 39
+    addedAt: 2026-11-22T08:00:00Z
+  - id: doner
+    name: Doner
+    by: Rajesh Rajput
+    url: https://rajputrajesh-448.gumroad.com/l/Doner9
+    kind: Typeface
+    tags: [ Gumroad, Display ]
+    order: 40
+    addedAt: 2026-11-22T08:00:00Z
+  - id: cotype
+    name: CoType Foundry
+    url: https://cotypefoundry.com/
+    kind: Foundry
+    order: 41
+    addedAt: 2026-11-22T08:00:00Z
+  - id: booton
+    name: Booton
+    by: Displaay
+    url: https://displaay.net/typeface/booton/#buy
+    kind: Typeface
+    tags: [ Sans ]
+    order: 42
+    addedAt: 2026-11-22T08:00:00Z
+  - id: advercase
+    name: Advercase
+    by: Indieground
+    url: https://indieground.net/product/advercase-font/
+    kind: Typeface
+    tags: [ Serif, Free ]
+    order: 43
+    addedAt: 2026-11-22T08:00:00Z
+  - id: ben-uri
+    name: בן אורי
+    by: Ben Uri
+    url: https://fonts.ben-uri.com/
+    kind: Foundry
+    tags: [ Hebrew ]
+    order: 44
+    addedAt: 2026-11-22T08:00:00Z
+  - id: nan
+    name: NaN
+    url: https://www.nan.xyz/fonts/
+    kind: Foundry
+    order: 45
+    addedAt: 2026-11-22T08:00:00Z
+  - id: schick-toikka
+    name: Schick Toikka
+    url: https://www.schick-toikka.com/
+    kind: Foundry
+    order: 46
+    addedAt: 2026-11-22T08:00:00Z
+  - id: brandon-nickerson-display
+    name: Brandon Nickerson — Display
+    by: Brandon Nickerson
+    url: https://www.bnicks.com/shop/display
+    kind: Foundry
+    tags: [ Display ]
+    order: 47
+    addedAt: 2026-11-22T08:00:00Z
+  - id: font-of-the-month-club
+    name: Font of the Month Club
+    by: David Jonathan Ross
+    url: https://djr.com/font-of-the-month-club
+    kind: Foundry
+    tags: [ Subscription ]
+    order: 48
+    addedAt: 2026-11-22T08:00:00Z
+  - id: frost
+    name: FROST
+    url: https://www.frostype.xyz/
+    kind: Foundry
+    order: 49
+    addedAt: 2026-11-22T08:00:00Z
+  - id: source
+    name: Source Type
+    url: https://www.sourcetype.com/typefaces/
+    kind: Foundry
+    order: 50
+    addedAt: 2026-11-22T08:00:00Z
+  - id: yep-type-foundry
+    name: Yep! Type Foundry
+    url: https://www.yeptype.com/
+    kind: Foundry
+    order: 51
+    addedAt: 2026-11-22T08:00:00Z
+  - id: formerly-known
+    name: Formerly Known
+    url: https://formerly-known.com/
+    kind: Foundry
+    order: 52
+    addedAt: 2026-11-22T08:00:00Z
+  - id: interval
+    name: Interval Type
+    url: https://intervaltype.com/
+    kind: Foundry
+    order: 53
+    addedAt: 2026-11-22T08:00:00Z
+  - id: emtype
+    name: Emtype
+    url: https://emtype.net/
+    kind: Foundry
+    tags: [ Spain ]
+    order: 54
+    addedAt: 2026-11-22T08:00:00Z
+  - id: tropical
+    name: Tropical Type
+    url: https://tropicaltype.com/
+    kind: Foundry
+    order: 55
+    addedAt: 2026-11-22T08:00:00Z
+  - id: sociotype
+    name: Sociotype
+    url: https://socio-type.com/
+    kind: Foundry
+    order: 56
+    addedAt: 2026-11-22T08:00:00Z
+  - id: weltkern
+    name: WELTKERN®
+    url: https://weltkern.com/
+    kind: Foundry
+    order: 57
+    addedAt: 2026-11-22T08:00:00Z
+  - id: typeverything
+    name: Typeverything
+    url: https://typeverything.com/
+    kind: Library
+    tags: [ Inspiration ]
+    order: 58
+    addedAt: 2026-11-22T08:00:00Z
+  - id: commercial
+    name: Commercial Type
+    url: https://commercialtype.com/
+    kind: Foundry
+    order: 59
+    addedAt: 2026-11-22T08:00:00Z
+  - id: dan-reisinger
+    name: דן ריזינגר
+    by: Dan Reisinger
+    url: https://reisinger.hafontia.com/
+    kind: Foundry
+    tags: [ Hebrew ]
+    order: 60
+    addedAt: 2026-11-22T08:00:00Z
+  - id: 205tf
+    name: 205TF
+    url: https://www.205.tf/
+    kind: Foundry
+    tags: [ France ]
+    order: 61
+    addedAt: 2026-11-22T08:00:00Z
+  - id: best-free-sans-serif
+    name: Best Free Sans Serif
+    by: Best Free Fonts
+    url: https://bestfreefonts.com/styles/sans-serif?page=2
+    kind: Library
+    tags: [ Free ]
+    order: 62
+    addedAt: 2026-11-22T08:00:00Z
+  - id: national-park
+    name: National Park
+    url: https://nationalparktypeface.com/
+    kind: Typeface
+    tags: [ Free ]
+    order: 63
+    addedAt: 2026-11-22T08:00:00Z
+  - id: gradient
+    name: Gradient®
+    url: https://www.wearegradient.net/
+    kind: Foundry
+    order: 64
+    addedAt: 2026-11-22T08:00:00Z
+  - id: limitype
+    name: Limitype
+    url: https://limitype.com/
+    kind: Foundry
+    order: 65
+    addedAt: 2026-11-22T08:00:00Z
+  - id: bad-type-club
+    name: Bad Type Club
+    url: https://badtype.club/
+    kind: Foundry
+    order: 66
+    addedAt: 2026-11-22T08:00:00Z
+  - id: extraset
+    name: Extraset
+    url: https://extraset.ch/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 67
+    addedAt: 2026-11-22T08:00:00Z
+  - id: studio-feixen
+    name: Studio Feixen Fonts
+    url: https://fonts.studiofeixen.ch/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 68
+    addedAt: 2026-11-22T08:00:00Z
+  - id: zetafonts
+    name: Zetafonts
+    url: https://www.zetafonts.com/
+    kind: Foundry
+    tags: [ Italy ]
+    order: 69
+    addedAt: 2026-11-22T08:00:00Z
+  - id: antipixel
+    name: Antipixel
+    url: https://antipixel.com.ar/
+    kind: Foundry
+    order: 70
+    addedAt: 2026-11-22T08:00:00Z
+  - id: kometa
+    name: KOMETA
+    url: https://kometatype.com/
+    kind: Foundry
+    order: 71
+    addedAt: 2026-11-22T08:00:00Z
+  - id: fonts-xyz
+    name: fonts.xyz
+    url: https://www.fonts.xyz/
+    kind: Library
+    tags: [ Marketplace ]
+    order: 72
+    addedAt: 2026-11-22T08:00:00Z
+  - id: silverstag
+    name: SilverStag
+    url: https://silverstagtype.com/
+    kind: Foundry
+    order: 73
+    addedAt: 2026-11-22T08:00:00Z
+  - id: rajesh-rajput
+    name: Rajesh Rajput
+    by: Gumroad store
+    url: https://rajputrajesh-448.gumroad.com/
+    kind: Foundry
+    tags: [ Gumroad, Display ]
+    order: 74
+    addedAt: 2026-11-22T08:00:00Z
+  - id: superior
+    name: Superior Type
+    url: https://superiortype.com/
+    kind: Foundry
+    order: 75
+    addedAt: 2026-11-22T08:00:00Z
+  - id: general-type-studio
+    name: General Type Studio
+    url: https://www.generaltypestudio.com/
+    kind: Foundry
+    order: 76
+    addedAt: 2026-11-22T08:00:00Z
+  - id: hrftype
+    name: hrftype
+    url: https://hrftype.com/
+    kind: Foundry
+    order: 77
+    addedAt: 2026-11-22T08:00:00Z
+  - id: rand
+    name: Rand
+    by: Optimo
+    url: https://optimo.ch/typefaces/rand
+    kind: Typeface
+    tags: [ Swiss ]
+    order: 78
+    addedAt: 2026-11-22T08:00:00Z
+  - id: edito
+    name: Edito Type
+    url: https://edito-type.com/
+    kind: Foundry
+    order: 79
+    addedAt: 2026-11-22T08:00:00Z
+  - id: swiss-typefaces
+    name: Swiss Typefaces
+    url: https://www.swisstypefaces.com/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 80
+    addedAt: 2026-11-22T08:00:00Z
+  - id: featured
+    name: Featured Type
+    url: https://www.featuredtype.com/
+    kind: Library
+    tags: [ Marketplace ]
+    order: 81
+    addedAt: 2026-11-22T08:00:00Z
+  - id: peregrin-studio
+    name: Peregrin Studio
+    url: https://peregrinstudio.com/typefaces
+    kind: Foundry
+    order: 82
+    addedAt: 2026-11-22T08:00:00Z
+  - id: type-mania
+    name: Type Mania
+    url: https://typemania.eu/
+    kind: Foundry
+    order: 83
+    addedAt: 2026-11-22T08:00:00Z
+  - id: a-foundry
+    name: a.Foundry
+    url: https://a-foundry.com/
+    kind: Foundry
+    tags: [ Scandinavia ]
+    order: 84
+    addedAt: 2026-11-22T08:00:00Z
+  - id: almarena
+    name: Almarena Foundry
+    url: https://almarenafoundry.com/
+    kind: Foundry
+    order: 85
+    addedAt: 2026-11-22T08:00:00Z
+  - id: best-free
+    name: Best Free Fonts
+    url: https://bestfreefonts.com/
+    kind: Library
+    tags: [ Free ]
+    order: 86
+    addedAt: 2026-11-22T08:00:00Z
+  - id: matter-of-sorts
+    name: Matter of Sorts
+    url: https://matterofsorts.com/
+    kind: Foundry
+    order: 87
+    addedAt: 2026-11-22T08:00:00Z
+  - id: type-foundry-template
+    name: Type Foundry Template
+    by: Framer
+    url: https://typefoundry.framer.website/
+    kind: Library
+    tags: [ Tool ]
+    order: 88
+    addedAt: 2026-11-22T08:00:00Z

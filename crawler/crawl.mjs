@@ -1,0 +1,281 @@
+#!/usr/bin/env node
+// Foundries crawler.
+//   node crawler/crawl.mjs [--homepages] [--discover] [--capture] [--release-check]
+//                          [--limit N] [--only id[,id]] [--max-minutes M] [--concurrency 4]
+// With no phase flags it runs homepages + discover + capture (the nightly incremental run).
+import fs from "node:fs";
+import path from "node:path";
+import { loadData, saveData, forSave, loadYamlDoc, yamlEntries, merge, clearRescanFlags, slugify, now, ROOT } from "./lib/store.mjs";
+import { launch, open, prepare, shoot, writeShot, removeShot, pool } from "./lib/browser.mjs";
+import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners } from "./snippets.mjs";
+import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
+
+/* ---------- args ---------- */
+const argv = process.argv.slice(2);
+const flag = f => argv.includes(f);
+const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
+const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check") };
+if (!Object.values(PHASES).some(Boolean)) PHASES.homepages = PHASES.discover = PHASES.capture = true;
+const LIMIT = +opt("--limit", Infinity);
+const ONLY = opt("--only", "").split(",").map(s => s.trim()).filter(Boolean);
+const DEADLINE = Date.now() + +opt("--max-minutes", 9999) * 60000;
+const CONC = +opt("--concurrency", 4);
+const RETRY_DAYS = 7;
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const timeUp = () => Date.now() > DEADLINE;
+const olderThan = (iso, days) => !iso || Date.now() - Date.parse(iso) > days * 864e5;
+const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
+
+/* ---------- load + merge ---------- */
+const data = loadData();
+const entries = yamlEntries(loadYamlDoc());
+const { rescans, removed } = merge(data, entries);
+data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
+for (const id of removed) { removeShot(id); log("removed", id); }
+for (const id of rescans) {
+  for (const f of data.fonts) if (f.foundryId === id) f.scan = "queued";
+  log("rescan", id);
+}
+const matchOnly = id => !ONLY.length || ONLY.some(o => id === o || id.startsWith(o));
+const foundries = data.foundries.filter(f => matchOnly(f.id) && !f.cfg?.skip);
+const byId = new Map(data.foundries.map(f => [f.id, f]));
+
+let dirty = 0;
+const save = (force = false) => {
+  if (force || ++dirty % 25 === 0) {
+    data.updatedAt = now();
+    if (saveData(forSave(data))) log("saved data.json");
+  }
+};
+save(true);
+clearRescanFlags(rescans); // the rescan is now recorded in data.json, so the YAML flag is done
+
+const stats = { homepages: 0, homeFailed: 0, discovered: 0, newFonts: 0, captured: 0, low: 0, fontFailed: 0 };
+const { browser, newContext } = await launch();
+
+/* ---------- homepages ---------- */
+async function homepages() {
+  const due = foundries.filter(f => f.scan === "pending" || f.rescan || (f.scan === "failed" && olderThan(f.attemptAt, RETRY_DAYS))).slice(0, LIMIT);
+  log(`homepages: ${due.length} due`);
+  await pool(due, CONC, async f => {
+    if (timeUp()) return;
+    const ctx = await newContext(); const page = await ctx.newPage();
+    try {
+      await open(page, f.url);
+      await prepare(page);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await sleep(300);
+      await writeShot(await shoot(page), f.id);
+      Object.assign(f, { scan: "done", shotId: f.id, shotAt: now(), scannedAt: now(), scannedUrl: f.url, attemptAt: now() });
+      delete f.failReason;
+      stats.homepages++; log("  ✓ home", f.id);
+    } catch (e) {
+      Object.assign(f, { scan: "failed", failReason: String(e.message).slice(0, 120), attemptAt: now(), scannedUrl: f.url });
+      stats.homeFailed++; log("  ✗ home", f.id, e.message);
+    } finally { await ctx.close(); save(); }
+  });
+}
+
+/* ---------- catalogue discovery ---------- */
+const KW = /font|type|famil|product|collection|catalog|retail|^l$|(^|\/)l(\/|$)/i;
+const EXCL = /trial|licen[cs]e|eula|blog|journal|news|gift|merch|cart|checkout|account|log-?in|sign-?in|about|contact|faq|terms|privacy|shipping|in-use|cookie|support|newsletter|press|jobs|career|imprint|impressum|legal|refund|apparel|t-shirt|tote|poster-shop|specimen-pdf/i;
+const BUNDLE = /bundle|collection-pack|complete-family-pack|\bpack\b/i;
+
+function pickFonts(r, cfg) {
+  const excl = (cfg.exclude || []).map(s => new RegExp(s, "i"));
+  const bad = l => { const p = new URL(l.u).pathname; return EXCL.test(p) || EXCL.test(l.t) || excl.some(re => re.test(l.u) || re.test(l.t)); };
+  let links;
+  if (cfg.fontLinkPattern) {
+    const re = new RegExp(cfg.fontLinkPattern, "i");
+    const seen = new Set();
+    links = r.all.filter(l => re.test(l.u) && !seen.has(l.u) && seen.add(l.u));
+  } else {
+    const g = r.groups.filter(g => KW.test(g.k) && !EXCL.test(g.k)).sort((a, b) => b.n - a.n)[0];
+    if (!g || g.n < 2) return [];
+    links = g.links;
+  }
+  links = links.filter(l => !bad(l));
+  const nonBundle = links.filter(l => !BUNDLE.test(new URL(l.u).pathname) && !BUNDLE.test(l.t));
+  return nonBundle.length ? nonBundle : links; // keep bundles only if bundles are all there is
+}
+
+function nameFor(text, slug) {
+  const words = String(text || "").replace(/[→↗›»]/g, " ").trim().split(/\s+/).filter(Boolean);
+  for (let k = Math.min(words.length, 8); k > 0; k--) if (slugify(words.slice(0, k).join(" ")) === slug) return words.slice(0, k).join(" ");
+  const t = words.join(" ");
+  if (t && t.length <= 32 && /\p{L}/u.test(t)) return t;
+  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+async function discoverOne(page, f) {
+  const start = f.cfg?.catalogUrl || f.catalogUrl || f.url;
+  const tryUrl = async url => {
+    await open(page, url);
+    await page.evaluate(hideCookieBanners).catch(() => {});
+    for (let i = 0; i < 8; i++) { await page.evaluate(() => window.scrollBy(0, innerHeight * 2)); await sleep(350); } // lazy lists
+    return page.evaluate(discoverLinks);
+  };
+  let r = await tryUrl(start), url = start;
+  let picked = pickFonts(r, f.cfg || {});
+  if (!picked.length && !f.cfg?.catalogUrl) {
+    const nav = r.nav.find(n => n.u.startsWith(r.origin) && n.u.replace(/\/$/, "") !== start.replace(/\/$/, ""));
+    if (nav) { url = nav.u; r = await tryUrl(url); picked = pickFonts(r, f.cfg || {}); }
+  }
+  return { url, links: picked };
+}
+
+/** Add newly seen links as fonts. Returns the new font records. */
+function addFonts(f, links, markNew) {
+  const have = new Set(data.fonts.filter(x => x.foundryId === f.id).map(x => x.url.replace(/\/$/, "")));
+  const ids = new Set(data.fonts.map(x => x.id));
+  let order = Math.max(0, ...data.fonts.filter(x => x.foundryId === f.id).map(x => x.order || 0));
+  const added = [];
+  for (const l of links) {
+    const u = l.u.replace(/\/$/, "");
+    if (have.has(u)) continue;
+    const slug = slugify(decodeURIComponent(u.split("/").pop())) || slugify(l.t);
+    if (!slug) continue;
+    let id = `${f.id}--${slug}`, n = 2;
+    while (ids.has(id)) id = `${f.id}--${slug}-${n++}`;
+    const ov = f.cfg?.fonts?.[slug] || {};
+    if (ov.skip) continue;
+    const font = { id, foundryId: f.id, name: ov.name || nameFor(l.t, slug), url: l.u, order: ++order, addedAt: now(), scan: "queued", listText: l.t.slice(0, 120) };
+    if (markNew) font.newSince = now();
+    data.fonts.push(font); ids.add(id); have.add(u); added.push(font);
+  }
+  return added;
+}
+
+async function discover(release = false) {
+  const due = foundries.filter(f => {
+    if (f.kind === "Library") return false;
+    if (f.kind === "Typeface") return !data.fonts.some(x => x.foundryId === f.id);
+    if (release) return !!f.catalogCheckedAt && f.catalog !== "none";
+    return !f.catalogCheckedAt && olderThan(f.discoverAttemptAt, f.discoverFailed ? RETRY_DAYS : 0);
+  }).slice(0, release ? Infinity : LIMIT);
+  log(`${release ? "release check" : "discovery"}: ${due.length} due`);
+  const report = [];
+  await pool(due, CONC, async f => {
+    if (timeUp()) return;
+    if (f.kind === "Typeface") {
+      const added = addFonts(f, [{ u: f.url, t: f.name }], false);
+      added.forEach(x => { x.name = f.name; delete x.listText; });
+      f.catalog = "listed"; f.catalogCheckedAt = now(); f.typefaces = [f.name];
+      stats.newFonts += added.length; save(); return;
+    }
+    const ctx = await newContext(); const page = await ctx.newPage();
+    try {
+      const { url, links } = await discoverOne(page, f);
+      const wasChecked = !!f.catalogCheckedAt;
+      const added = addFonts(f, links, release && wasChecked);
+      Object.assign(f, { catalog: links.length ? "listed" : "none", catalogUrl: links.length ? url : f.catalogUrl, catalogCheckedAt: now(), discoverAttemptAt: now() });
+      delete f.discoverFailed;
+      f.typefaces = data.fonts.filter(x => x.foundryId === f.id).map(x => x.name);
+      if (release && wasChecked && added.length) {
+        f.newReleases = added.map(x => x.name); f.newSince = now();
+        report.push({ f, added });
+      }
+      stats.discovered++; stats.newFonts += added.length;
+      log(`  ✓ ${release ? "check" : "catalogue"} ${f.id}: ${links.length} fonts${added.length ? `, ${added.length} new` : ""}`);
+    } catch (e) {
+      Object.assign(f, { discoverAttemptAt: now(), discoverFailed: String(e.message).slice(0, 120) });
+      log("  ✗ catalogue", f.id, e.message);
+    } finally { await ctx.close(); save(); }
+  });
+  if (release && report.length) {
+    const md = [`New releases found ${new Date().toISOString().slice(0, 10)}:`, ""];
+    for (const { f, added } of report) {
+      md.push(`### ${f.name}`);
+      added.forEach(x => md.push(`- [${x.name}](${x.url})`));
+      md.push("");
+    }
+    fs.writeFileSync(path.join(ROOT, "release-report.md"), md.join("\n"));
+    log(`release report: ${report.reduce((n, r) => n + r.added.length, 0)} new fonts`);
+  }
+}
+
+/* ---------- font capture ---------- */
+async function captureOne(page, font, f) {
+  await open(page, font.url);
+  await prepare(page);
+  await page.evaluate(typeSnippet);
+  await sleep(900);
+  await page.evaluate(finishAnimations).catch(() => {});
+  let best = null;
+  for (let attempt = 0; attempt <= 3; attempt++) {
+    const q = await page.evaluate(qualityCheck);
+    const png = await shoot(page);
+    if (!best || q.score > best.q.score) best = { png, q };
+    if (q.ok) break;
+    if (attempt < 3) { await page.evaluate(() => window.scrollBy(0, 650)); await sleep(900); await page.evaluate(finishAnimations).catch(() => {}); }
+  }
+  if (!best.q.ok && await page.evaluate(scrollToTypeTester)) {
+    await sleep(900);
+    const q = await page.evaluate(qualityCheck);
+    const png = await shoot(page);
+    if (q.score > best.q.score) best = { png, q };
+  }
+  await writeShot(best.png, `fonts/${font.id}`);
+
+  const text = await page.evaluate(pageText).catch(() => ({ title: "", h1: "", head: "", body: "" }));
+  const slug = font.id.split("--").slice(1).join("--");
+  const ov = f.cfg?.fonts?.[slug] || {};
+  if (!ov.name && text.h1 && slugify(text.h1) === slugify(font.name) && text.h1 !== font.name) font.name = text.h1.trim(); // nicer casing/diacritics
+  const c = categorise({ ...text, name: font.name, listText: font.listText });
+  let category = c.category;
+  if (!category) category = await categoriseWithHaiku({ ...text, name: font.name, listText: font.listText });
+  Object.assign(font, {
+    shotId: `fonts/${font.id}`, shotAt: now(), scan: "done", attemptAt: now(),
+    category: ov.category || category || font.category || null,
+    styles: ov.styles ?? c.styles ?? font.styles ?? null,
+    variable: ov.variable ?? (c.variable || !!font.variable),
+    free: ov.free ?? c.free ?? font.free ?? null,
+  });
+  if (best.q.ok) { delete font.quality; delete font.qualityNote; }
+  else { font.quality = "low"; font.qualityNote = best.q.reasons.join("; "); }
+  for (const k of ["styles", "free", "category"]) if (font[k] == null) delete font[k];
+  if (!font.variable) delete font.variable;
+  delete font.failReason;
+  return best.q;
+}
+
+async function capture() {
+  const ids = new Set(foundries.map(f => f.id));
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && (x.scan === "queued" || (x.scan === "failed" && olderThan(x.attemptAt, RETRY_DAYS))))
+    .sort((a, b) => (byId.get(a.foundryId).order - byId.get(b.foundryId).order) || (a.order - b.order))
+    .slice(0, LIMIT);
+  log(`capture: ${due.length} fonts due`);
+  const groups = [...due.reduce((m, x) => m.set(x.foundryId, [...(m.get(x.foundryId) || []), x]), new Map()).values()];
+  await pool(groups, CONC, async list => {
+    const f = byId.get(list[0].foundryId);
+    const ctx = await newContext(); const page = await ctx.newPage();
+    try {
+      for (const font of list) {
+        if (timeUp()) return;
+        try {
+          const q = await captureOne(page, font, f);
+          stats.captured++; if (!q.ok) stats.low++;
+          log(`  ✓ ${font.id} ${font.category || "?"}${font.styles ? " " + font.styles + "st" : ""}${font.variable ? " VF" : ""}${q.ok ? "" : " [low: " + q.reasons.join(", ") + "]"}`);
+        } catch (e) {
+          Object.assign(font, { scan: "failed", failReason: String(e.message).slice(0, 120), attemptAt: now() });
+          stats.fontFailed++; log("  ✗", font.id, e.message);
+          if (e.blocked) { list.filter(x => x.scan === "queued").forEach(x => Object.assign(x, { scan: "failed", failReason: e.message, attemptAt: now() })); return; }
+        } finally { save(); }
+      }
+    } finally { await ctx.close(); }
+  });
+}
+
+/* ---------- run ---------- */
+try {
+  if (PHASES.release) await discover(true);
+  if (PHASES.homepages) await homepages();
+  if (PHASES.discover) await discover(false);
+  if (PHASES.capture) await capture();
+} finally {
+  await browser.close();
+  save(true);
+  const q = data.fonts.filter(x => x.scan === "queued").length;
+  log("done", JSON.stringify(stats), `· fonts total ${data.fonts.length}, queued ${q}`, timeUp() ? "· stopped at time budget" : "");
+}
