@@ -264,7 +264,11 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .slider input[type=range]:not(.range input){-webkit-appearance:none;appearance:none;height:16px;background:linear-gradient(var(--accent),var(--accent)) 0 50%/var(--p,0%) 4px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 4px no-repeat;cursor:pointer}
 .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;margin-top:0;border-radius:0;transform:rotate(45deg);background:var(--accent);border:0;box-shadow:none;cursor:pointer}
 .slider input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:0;transform:rotate(45deg);background:var(--accent);border:0;box-shadow:none;cursor:pointer}
-.range input::-webkit-slider-thumb{margin-top:4.5px}
+/* centre the 11px diamonds on the track (higher specificity than the diamond rule above, which zeroes the offset) */
+.slider input[type=range]:not(.range input)::-webkit-slider-runnable-track{height:16px;background:transparent}
+.slider input[type=range]:not(.range input)::-webkit-slider-thumb{margin-top:2.5px}
+.slider .range input[type=range]::-webkit-slider-runnable-track{height:20px;background:transparent}
+.slider .range input[type=range]::-webkit-slider-thumb{margin-top:4.5px}
 .range .rtrack,.range .rfill{border-radius:0}
 /* tags: square, joined into one strip */
 .tag{border-radius:0;font:500 10.5px/1 var(--tagmono);letter-spacing:.02em;padding:5px 10px}
