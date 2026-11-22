@@ -115,6 +115,8 @@ function pickFonts(r, cfg) {
   return nonBundle.length ? nonBundle : links; // keep bundles only if bundles are all there is
 }
 
+const safeDecode = s => { try { return decodeURIComponent(s); } catch { return s; } };
+const hash = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0; return h.toString(36); };
 const CTA = /^(explore|view|buy|shop|more|discover|see|try|details|learn more|read more|open|go|font|fonts|typeface|new)$/i;
 function nameFor(text, slug) {
   const words = String(text || "").replace(/[→↗›»]/g, " ").trim().split(/\s+/).filter(Boolean);
@@ -126,7 +128,8 @@ function nameFor(text, slug) {
     if (s === slug || s.endsWith("-" + slug) || s === slug.replace(/\d+$/, "")) return words.slice(0, k).join(" ");
   }
   const t = words.join(" ");
-  const slugIsWordy = /[a-z]{3,}/.test(slug);
+  if (t && t.length <= 40 && /[\u0590-\u05FF\u0600-\u06FF\u0400-\u04FF]/.test(t) && !CTA.test(t)) return t; // Hebrew/Arabic/Cyrillic names live in the link text, not the URL
+  const slugIsWordy = /[a-z]{3,}/.test(slug) && !/^x[0-9a-z]+$/.test(slug);
   if (t && t.length <= 32 && /\p{L}/u.test(t) && !CTA.test(t) && !slugIsWordy) return t;
   return slug.replace(/[_-]+/g, " ").replace(/\d+$/, "").trim().split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
@@ -159,8 +162,9 @@ function addFonts(f, links, markNew) {
   for (const l of links) {
     const u = l.u.replace(/\/$/, "");
     if (have.has(u)) continue;
-    const slug = slugify(decodeURIComponent(u.split("/").pop())) || slugify(l.t);
-    if (!slug) continue;
+    // Hebrew/Cyrillic/etc. paths slugify to nothing: fall back to a short stable hash of the URL
+    let slug = slugify(safeDecode(u.split("/").pop())) || slugify(l.t);
+    if (!slug) slug = "x" + hash(u);
     let id = `${f.id}--${slug}`, n = 2;
     while (ids.has(id)) id = `${f.id}--${slug}-${n++}`;
     const ov = f.cfg?.fonts?.[slug] || {};

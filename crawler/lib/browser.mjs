@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 import sharp from "sharp";
-import { finishAnimations, hideCookieBanners } from "../snippets.mjs";
+import { finishAnimations, hideCookieBanners, blockCheck } from "../snippets.mjs";
 import { SHOTS, host } from "./store.mjs";
 
 export const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -62,6 +62,13 @@ export async function open(page, url) {
         const e = new Error(`blocked (HTTP ${status}${title ? `, "${title.slice(0, 40)}"` : ""})`); e.blocked = true; throw e;
       }
       if (status >= 400) throw new Error(`HTTP ${status}`);
+      // challenge pages often come back as HTTP 200 with a normal title: look at the content too
+      let why = await page.evaluate(blockCheck).catch(() => null);
+      if (why) {
+        await sleep(6000); // some challenges clear themselves
+        why = await page.evaluate(blockCheck).catch(() => null);
+        if (why) { const e = new Error(`blocked (${why.slice(0, 60)})`); e.blocked = true; throw e; }
+      }
       return res;
     } catch (e) {
       err = e;

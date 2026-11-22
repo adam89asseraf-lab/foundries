@@ -156,3 +156,27 @@ export function pageText() {
     body: (document.body?.innerText || "").slice(0, 30000),
   };
 }
+
+/**
+ * Bot-block / challenge page detector. Returns a short reason string, or null when the page looks real.
+ * Catches interstitials served with HTTP 200 and normal titles, including block overlays on top of a real page.
+ */
+export function blockCheck() {
+  const RE = /access (is )?(restricted|denied)|you have been blocked|you('ve| have) been blocked|attention required|verify (you are|that you are|you're) (a )?human|are you a robot|not a robot|(?<!re)captcha(?! badge)|request (blocked|unsuccessful)|unusual traffic|security check|checking (your|if the site connection is secure)|ddos protection|bot (detection|protection)|enable javascript and cookies to continue|pardon our interruption|why have i been blocked|sorry, you have been blocked/i;
+  const sel = '#challenge-form,#challenge-running,#cf-wrapper,.cf-error-details,#px-captcha,iframe[src*="captcha"],iframe[src*="challenges.cloudflare.com"],iframe[src*="hcaptcha"],[id*="captcha" i]:not(script)';
+  // big enough to be the page's main content (the small reCAPTCHA v3 badge on normal sites doesn't count)
+  const hit = [...document.querySelectorAll(sel)].find(e => { const r = e.getBoundingClientRect(); return r.width > 250 && r.height > 120 && !/recaptcha/i.test(e.getAttribute("src") || "") ; });
+  if (hit) return "challenge element " + (hit.id || hit.tagName.toLowerCase());
+  const body = (document.body?.innerText || "").trim();
+  const head = document.title + "\n" + body.slice(0, 3000);
+  if (body.length < 4000 && RE.test(head)) return "block text: " + (head.match(RE) || [""])[0];
+  // an overlay in the middle of the screen that says we're blocked
+  const W = innerWidth, H = innerHeight;
+  for (const [x, y] of [[W / 2, H / 2], [W / 2, H / 3]]) {
+    for (let n = document.elementFromPoint(x, y), d = 0; n && d < 8; n = n.parentElement, d++) {
+      const t = (n.innerText || "").slice(0, 2000);
+      if (t.length < 1500 && RE.test(t)) return "block overlay: " + (t.match(RE) || [""])[0];
+    }
+  }
+  return null;
+}
