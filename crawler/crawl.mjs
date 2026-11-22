@@ -100,11 +100,17 @@ function pickFonts(r, cfg) {
   return nonBundle.length ? nonBundle : links; // keep bundles only if bundles are all there is
 }
 
+const CTA = /^(explore|view|buy|shop|more|discover|see|try|details|learn more|read more|open|go|font|fonts|typeface|new)$/i;
 function nameFor(text, slug) {
   const words = String(text || "").replace(/[→↗›»]/g, " ").trim().split(/\s+/).filter(Boolean);
-  for (let k = Math.min(words.length, 8); k > 0; k--) if (slugify(words.slice(0, k).join(" ")) === slug) return words.slice(0, k).join(" ");
+  // shortest leading run of words whose slug ends with the URL slug ("ABC Areal Explore" + areal -> "ABC Areal")
+  for (let k = 1; k <= Math.min(words.length, 8); k++) {
+    const s = slugify(words.slice(0, k).join(" "));
+    if (s === slug || s.endsWith("-" + slug)) return words.slice(0, k).join(" ");
+  }
   const t = words.join(" ");
-  if (t && t.length <= 32 && /\p{L}/u.test(t)) return t;
+  const slugIsWordy = /[a-z]{3,}/.test(slug);
+  if (t && t.length <= 32 && /\p{L}/u.test(t) && !CTA.test(t) && !slugIsWordy) return t;
   return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
@@ -221,7 +227,8 @@ async function captureOne(page, font, f) {
   const text = await page.evaluate(pageText).catch(() => ({ title: "", h1: "", head: "", body: "" }));
   const slug = font.id.split("--").slice(1).join("--");
   const ov = f.cfg?.fonts?.[slug] || {};
-  if (!ov.name && text.h1 && slugify(text.h1) === slugify(font.name) && text.h1 !== font.name) font.name = text.h1.trim(); // nicer casing/diacritics
+  const h = (text.h1 || "").trim(), hs = slugify(h);
+  if (!ov.name && h && h.length <= 48 && (hs === slug || hs.endsWith("-" + slug) || hs === slugify(font.name))) font.name = h; // nicer casing/diacritics/prefix
   const c = categorise({ ...text, name: font.name, listText: font.listText });
   let category = c.category;
   if (!category) category = await categoriseWithHaiku({ ...text, name: font.name, listText: font.listText });

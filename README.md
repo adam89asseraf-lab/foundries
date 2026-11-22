@@ -1,0 +1,112 @@
+# Foundries
+
+A public index of type foundries and their typefaces, with screenshots kept up to date by a crawler that runs in GitHub Actions. There's no AI per screenshot, and it doesn't need anyone's laptop to be awake.
+
+- **Site:** `site/index.html`, one static page that reads `data/data.json` and `shots/…`. No framework, no build step.
+- **Source list:** `foundries.yaml`, which you edit.
+- **Crawler:** `crawler/` (Node + Playwright). It writes `data/data.json` and `public/shots/`.
+- **Automation:** `.github/workflows/crawl.yml` (nightly + weekly), which deploys with `pages.yml`.
+
+## Add a foundry
+
+Edit [`foundries.yaml`](foundries.yaml) on GitHub (the page's **Edit list** link goes straight there) and add an entry:
+
+```yaml
+  - id: grilli            # stable slug; screenshot files are named after it
+    name: Grilli Type
+    url: https://www.grillitype.com/
+    kind: Foundry         # Foundry | Typeface | Library
+    tags: [ Swiss ]
+    note: optional
+    order: 89
+```
+
+- **Foundry:** the crawler screenshots the homepage, finds the catalogue and screenshots every font.
+- **Typeface:** the page itself is the one font.
+- **Library:** homepage screenshot only.
+
+Name, tag and note edits show up on the site within a minute or two, because the Pages deploy merges the YAML. New entries are crawled on the next nightly run. Removing an entry removes it and its screenshots.
+
+## Force a rescan
+
+Add `rescan: true` to the entry. The next run re-shoots the homepage, rediscovers the catalogue and re-captures every font of that foundry, then deletes the flag from the YAML itself. Changing an entry's `url` triggers the same rescan.
+
+## Overrides
+
+All overrides are optional and go on the foundry entry:
+
+| Field | What it does |
+|---|---|
+| `skip: true` | Never crawl this entry. It still shows on the page. |
+| `catalogUrl` | The page that lists all fonts, when it isn't the homepage or a nav link called Fonts/Typefaces/Shop/… |
+| `fontLinkPattern` | A regex every font link must match, e.g. `"/typefaces/[^/]+$"`. Use it when auto-discovery picks the wrong group of links. |
+| `exclude` | A list of regexes. Matching links (URL or link text) are ignored. Trials, licences, EULAs, blog posts, gift cards, merch and bundles are already left out. |
+| `fonts` | Per-font overrides, keyed by the font's slug (the part after `<id>--` in its id). |
+
+```yaml
+    fonts:
+      areal: { category: Sans }
+      diatype: { category: Sans, styles: 46 }
+      some-bundle: { skip: true }
+      odd-slug: { name: "Proper Name", variable: true, free: false }
+```
+
+A manual `category` always wins over the crawler's guess. Categories are Sans, Serif, Slab, Mono, Display and Script.
+
+## How capture works
+
+- **Browser:** headless Chromium at 1440×900 with `deviceScaleFactor: 2`. Each shot is saved as `<name>.webp` (1600×1000, q82) plus `<name>.thumb.webp` (800×500) for the grid.
+- **Before every shot:** cookie and consent banners are hidden with CSS (never accepted), animations are finished, muted videos are started, the script waits for `document.fonts.ready`, then waits a further 1.5 s.
+- **Font pages:** the type snippet scrolls to the largest visible text made of real words. Then a quality check looks for:
+  - text of 48px or larger in view;
+  - no image, video or canvas covering the centre of the screen;
+  - a non-generic `font-family`.
+- **If the check fails:** the crawler scrolls 650px and retries, up to 3 times, then tries a type-tester field. It keeps the best attempt and marks it `quality: "low"`.
+- **Discovery:** same-site links are grouped by parent path, and the crawler picks the group whose path looks like `font|type|famil|product|collection|catalog|retail` with the most links.
+- **Politeness:** 4 foundries in parallel, at most one page load every ~2 s per domain, a real user agent and 2 retries. Sites that block bots are marked `scan: "failed"` with the reason and shown as a name tile. They're retried after 7 days.
+- **Categorising:**
+  - Rules read the font's name, the catalogue card, the page headings and, only if those say nothing, the body text.
+  - A Claude Haiku fallback exists but is off. To turn it on, add the `ANTHROPIC_API_KEY` secret and set the repository variable `FOUNDRIES_HAIKU=1`.
+
+## Run locally
+
+```bash
+npm install
+npx playwright install chromium
+node crawler/crawl.mjs --only klim --limit 5     # test on one foundry
+npm run serve                                    # preview at http://localhost:4173
+```
+
+Crawler flags:
+
+| Flag | |
+|---|---|
+| *(none)* | The nightly run: homepages + discovery + capture of whatever is pending |
+| `--homepages` / `--discover` / `--capture` | Run only those phases |
+| `--release-check` | Re-run discovery on every catalogue. New links get `newSince` and the foundry gets `newReleases`, and `release-report.md` is written |
+| `--limit N` | Cap each phase at N items |
+| `--only a,b` | Only these foundry ids (a prefix works too: `--only klim`) |
+| `--max-minutes M` | Stop starting new work after M minutes |
+
+The crawler saves `data/data.json` every 25 items, so an interrupted run keeps its progress. Each run only does pending work:
+- new foundries;
+- queued fonts;
+- failed items last tried more than 7 days ago.
+
+## Schedule
+
+GitHub cron runs in UTC with no daylight saving, so the Israel times drift by an hour in summer.
+
+| Run | Cron (UTC) | Israel time |
+|---|---|---|
+| Nightly, 150 fonts | `17 0 * * *` | 02:17 winter / 03:17 summer |
+| Weekly release check + capture | `13 19 * * 0` | Sunday 21:13 winter / 22:13 summer |
+
+Each run commits `data/` and `public/shots/` only when something changed, then redeploys Pages. The release check opens a GitHub issue listing new releases. Run either one by hand from **Actions → Crawl → Run workflow**.
+
+## One-time setup
+
+1. Create a public repo and push this folder to it.
+2. Go to **Settings → Pages → Source** and pick **GitHub Actions**.
+3. Go to **Settings → Actions → General → Workflow permissions** and pick **Read and write**.
+4. Run **Actions → Crawl** once by hand.

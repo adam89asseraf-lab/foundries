@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a type-specimen index. Bordered tiles share hairlines like a printed specimen grid; one sticky toolbar filters, tests and adds. */
+:root{
+  --paper:#ededea; --tile:#f7f7f5; --ink:#121214; --muted:#6b6b72; --line:#cfcfcb; --accent:#2b36e8; --accent-ink:#ffffff;
+  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body:"Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"DM Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --accent:#8790ff; --accent-ink:#0e0e11; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --accent:#8790ff; --accent-ink:#0e0e11; color-scheme:dark; }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{padding:0 clamp(16px,3vw,40px)}
+
+/* Masthead */
+header.mast{display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;padding-top:clamp(28px,5vw,56px);padding-bottom:20px;border-bottom:1px solid var(--ink)}
+.mast h1{font:800 clamp(56px,11vw,152px)/.85 var(--display);font-variation-settings:"wdth" 78,"opsz" 96;letter-spacing:-.035em;margin:0;text-wrap:balance}
+.mast h1 sup{font:500 13px/1 var(--mono);letter-spacing:0;vertical-align:top;margin-left:.4em;color:var(--muted)}
+.stats{display:flex;gap:28px;font:400 12px/1.3 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.stats b{display:block;font:600 28px/1 var(--display);color:var(--ink);letter-spacing:-.02em;text-transform:none;font-variant-numeric:tabular-nums;margin-bottom:4px}
+
+/* Toolbar */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.bar-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0}
+.bar-row + .bar-row{border-top:1px solid var(--line)}
+.search{flex:1 1 220px;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--tile);padding:0 12px;height:38px;border-radius:999px}
+.search input{border:0;background:transparent;outline:none;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font:500 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip .n{opacity:.55;margin-left:6px;font-variant-numeric:tabular-nums}
+.sep{width:1px;height:24px;background:var(--line)}
+select.ctl{height:38px;border:1px solid var(--line);background:var(--tile);border-radius:999px;padding:0 12px;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;height:38px}
+.seg button{border:0;background:transparent;padding:0 14px;cursor:pointer;font:500 12px/1 var(--mono);text-transform:uppercase}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{height:38px;border-radius:999px;border:1px solid var(--ink);background:transparent;padding:0 16px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{height:32px;padding:0 12px;font-size:13px}
+.spacer{flex:1}
+.tester{display:flex;align-items:center;gap:12px;flex:1 1 360px}
+.tester input[type=text]{flex:1;height:38px;border:1px solid var(--line);background:var(--tile);border-radius:999px;padding:0 14px}
+.tester label{font:500 12px/1 var(--mono);text-transform:uppercase;color:var(--muted);white-space:nowrap}
+input[type=range]{accent-color:var(--accent);width:120px}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));border-left:1px solid var(--line);margin:24px 0 64px}
+.card{position:relative;background:var(--tile);border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-top:1px solid var(--line);margin-top:-1px;display:flex;flex-direction:column;min-height:300px;text-decoration:none;transition:background .15s}
+.card:hover{background:var(--ink);color:var(--paper)}
+.card:hover .meta,.card:hover .by,.card:hover .note{color:var(--paper);opacity:.7}
+.card:hover .tag{border-color:currentColor}
+.card a.hit{position:absolute;inset:0;z-index:1}
+.meta{display:flex;justify-content:space-between;gap:12px;padding:14px 16px 0;font:400 11px/1.3 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.meta .num{font-variant-numeric:tabular-nums}
+.specimen{flex:1;display:flex;align-items:center;padding:20px 16px;overflow:hidden}
+.specimen .name{font:700 46px/.95 var(--display);font-variation-settings:"wdth" 82,"opsz" 72;letter-spacing:-.025em;overflow-wrap:anywhere;text-wrap:balance}
+.specimen .name[dir=rtl]{font-family:var(--body);font-weight:600}
+.specimen .test{font-size:var(--tsize,48px);line-height:1.05;overflow-wrap:anywhere}
+.foot{padding:0 16px 16px;display:grid;gap:10px;align-content:start;flex:1}
+.by{font-size:14px;color:var(--muted)}
+.by strong{color:inherit;font-weight:600}
+.note{font-size:13px;color:var(--muted);max-width:60ch}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em;border:1px solid var(--line);border-radius:999px;padding:5px 8px}
+.tag.kind{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.card:hover .tag.kind{background:var(--paper);color:var(--ink)}
+.tag.spec{border-color:var(--accent);color:var(--accent)}
+.shot{position:relative;margin:12px 16px 0;aspect-ratio:16/10;overflow:hidden;border:1px solid var(--line);border-radius:6px;background:var(--paper)}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.card:hover .shot{border-color:transparent}
+.cname{font:700 26px/1 var(--display);font-variation-settings:"wdth" 82,"opsz" 48;letter-spacing:-.02em;overflow-wrap:anywhere;text-wrap:balance}
+.cname[dir=rtl]{font-family:var(--body);font-weight:600}
+.pending{display:flex;align-items:center;justify-content:center;height:100%;font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:center;padding:12px}
+.fallback{display:flex;align-items:center;justify-content:center;height:100%;padding:16px;font:800 40px/.95 var(--display);font-variation-settings:"wdth" 78,"opsz" 72;letter-spacing:-.03em;text-align:center;text-wrap:balance;background:var(--ink);color:var(--paper)}
+.fallback[dir=rtl]{font-family:var(--body)}
+.tag.new{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.newline{font-size:13px;color:var(--accent);font-weight:600}
+.card:hover .newline{color:var(--paper)}
+.rthumb{width:72px;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid var(--line);border-radius:4px;display:block}
+.chip.newchip[aria-pressed="false"]{border-color:var(--accent);color:var(--accent)}
+.tabs-main{display:flex;gap:4px;margin-top:18px}
+.tabs-main a{font:600 15px/1 var(--body);text-decoration:none;padding:10px 16px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.tabs-main a .n{font:400 12px var(--mono);margin-left:6px;font-variant-numeric:tabular-nums}
+.tabs-main a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(var(--card,260px),100%),1fr));gap:16px;margin:24px 0 64px}
+.fcard{position:relative;display:flex;flex-direction:column;background:var(--tile);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fcard:hover{border-color:var(--ink)}
+.fcard a.hit{position:absolute;inset:0;z-index:1}
+.fcard .fshot{aspect-ratio:16/10;background:var(--paper);border-bottom:1px solid var(--line);overflow:hidden}
+.fcard .fshot .fallback{font-size:30px}
+.fcard .fshot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.fcard .fbody{padding:12px 14px 14px;display:grid;gap:6px}
+.fcard .fname{font:700 20px/1.1 var(--display);font-variation-settings:"wdth" 85;letter-spacing:-.015em;overflow-wrap:anywhere}
+.fcard .fmeta{display:flex;justify-content:space-between;gap:8px;align-items:center;font:400 11px/1.3 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.linkbtn{position:relative;z-index:2;background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.linkbtn:hover{color:var(--accent)}
+.fbar-select{max-width:240px}
+.morefonts{position:relative;z-index:2;justify-self:start;margin-top:2px}
+.edit{position:absolute;top:10px;right:10px;z-index:2;opacity:0;border:1px solid currentColor;background:var(--paper);color:var(--ink);border-radius:999px;font:500 11px/1 var(--mono);text-transform:uppercase;padding:6px 10px;cursor:pointer}
+.card:hover .edit,.edit:focus-visible{opacity:1}
+
+/* List */
+.list{margin:24px 0 64px;border-top:1px solid var(--ink)}
+.row{position:relative;display:grid;grid-template-columns:48px 72px minmax(0,2.2fr) minmax(0,1.4fr) 110px minmax(0,1.6fr) minmax(0,1.3fr) 60px;gap:16px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.row:hover{background:var(--tile)}
+.row a.hit{position:absolute;inset:0;z-index:1}
+.row .rn{font:400 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .rname{font:700 22px/1.1 var(--display);font-variation-settings:"wdth" 85;letter-spacing:-.015em;overflow-wrap:anywhere}
+.row .rby,.row .rdom{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.row .rdom{font-family:var(--mono);font-size:12px}
+.row .edit{position:static;opacity:1;justify-self:end}
+.row .edit{opacity:.0}
+.row:hover .edit,.row .edit:focus-visible{opacity:1}
+
+.empty,.status{padding:48px 0;color:var(--muted);font-size:15px}
+.status{padding:10px 0;font:400 12px var(--mono)}
+.status:empty{display:none}
+
+/* Dialog */
+.scrim{position:fixed;inset:0;background:rgba(10,10,14,.55);display:none;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:20;overflow:auto}
+.scrim.open{display:flex}
+.dialog{background:var(--paper);color:var(--ink);width:min(560px,100%);border:1px solid var(--ink);border-radius:14px;padding:24px;display:grid;gap:16px}
+.dialog h2{margin:0;font:800 34px/1 var(--display);font-variation-settings:"wdth" 80;letter-spacing:-.02em}
+.field{display:grid;gap:6px}
+.field label{font:500 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--tile);border-radius:8px;padding:10px 12px;width:100%}
+.field textarea{min-height:140px;resize:vertical;font-family:var(--mono);font-size:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:12px;color:var(--muted)}
+.err{color:#c4231b;font-size:13px}
+.err:empty{display:none}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.danger{border-color:#c4231b;color:#c4231b}
+.danger:hover{background:#c4231b;color:#fff}
+.tabs{display:flex;gap:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+.filtersBtn{display:none}
+.sliders{gap:20px!important}
+.slider{display:flex;align-items:center;gap:10px}
+.slider label{font:500 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.slider output{font:500 12px/1 var(--mono);min-width:44px;font-variant-numeric:tabular-nums}
+.slider input[type=range]{width:140px}
+.chip.cat{font-family:var(--body);text-transform:none;letter-spacing:0;font-size:13px}
+.fcard .fprops{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:700px){
+  .filtersBtn{display:inline-flex;align-items:center;gap:6px;height:38px;flex:0 0 auto}
+  .filtersBtn .n{font:500 11px var(--mono);background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:2px 6px}
+  .filtersBtn .n:empty{display:none}
+  .bar .bar-row{gap:8px;padding:8px 0;flex-wrap:wrap}
+  .bar .search{flex:1 1 0;min-width:0}
+  .bar:not(.open) .bar-row > :not(.search):not(.filtersBtn){display:none!important}
+  .bar:not(.open) .bar-row + .bar-row{display:none!important}
+  .bar.open{max-height:72vh;overflow-y:auto;box-shadow:0 12px 24px rgba(0,0,0,.18)}
+  .bar.open .chips{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px;scrollbar-width:none}
+  .bar.open .sep{display:none}
+  .bar.open .fbar-select{max-width:none;flex:1 1 100%}
+  .tester{flex-wrap:wrap}
+  header.mast{padding-top:20px}
+  .mast h1{font-size:60px}
+  .stats{gap:16px}.stats b{font-size:22px}
+}
+@media (max-width:820px){
+  .row{grid-template-columns:36px 72px minmax(0,1fr) auto;}
+  .row .rby,.row .rtags,.row .rdom,.row .rkind{display:none}
+  .row .edit{opacity:1}
+}
+@media (max-width:560px){
+  header.mast{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+  .specimen .name{font-size:40px}
+  .edit{opacity:1}
+}
+.editlink{font:400 12px/1 var(--mono);color:var(--muted);text-decoration:none;align-self:center;margin-left:8px}
+.editlink:hover{color:var(--accent);text-decoration:underline}
+.zoom{position:absolute;top:10px;right:10px;z-index:2;opacity:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;width:32px;height:32px;display:grid;place-items:center;cursor:zoom-in;transition:opacity .15s}
+.card:hover .zoom,.fcard:hover .zoom,.zoom:focus-visible{opacity:1}
+@media (hover:none){.zoom{opacity:1}}
+.card .zoom{top:22px;right:24px}
+.lightbox{position:fixed;inset:0;z-index:40;background:rgba(10,10,14,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;cursor:zoom-out}
+.lightbox img{max-width:min(1600px,100%);max-height:calc(100vh - 90px);width:auto;height:auto;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:var(--tile)}
+.lightbox .lbbar{display:flex;gap:16px;align-items:center;color:#fff;font:500 13px/1.3 var(--body)}
+.lightbox a{color:#fff}
+.tag.low{border-style:dashed}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>Foundries<sup>Type index</sup></h1>
+      <nav class="tabs-main" aria-label="Views">
+        <a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a>
+        <a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a>
+        <a class="editlink" id="editLink" href="#" target="_blank" rel="noopener" hidden title="Edit foundries.yaml on GitHub">Edit list</a>
+      </nav>
+    </div>
+    <div class="stats" id="stats" aria-live="polite"></div>
+  </header>
+</div>
+
+<div class="bar" id="fontBar" hidden>
+  <div class="wrap">
+    <div class="bar-row">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="fq" type="search" placeholder="Search fonts or foundries" aria-label="Search fonts">
+      </div>
+      <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="fontBar">Filters<span class="n"></span></button>
+      <select class="ctl fbar-select" id="fFoundry" aria-label="Filter by foundry"><option value="">All foundries</option></select>
+      <div class="chips" id="fChips"></div>
+      <select class="ctl" id="fSort" aria-label="Sort fonts">
+        <option value="foundry">By foundry</option>
+        <option value="az">A to Z</option>
+        <option value="new">Newest first</option>
+        <option value="shuffle">Shuffle</option>
+        <option value="styles">Most styles</option>
+      </select>
+      <div class="seg" role="group" aria-label="View">
+        <button id="fvGrid" aria-pressed="true">Grid</button>
+        <button id="fvList" aria-pressed="false">List</button>
+      </div>
+      <button class="btn" id="fCopy" title="Copy every visible font link as Markdown">Copy links</button>
+    </div>
+    <div class="bar-row"><div class="chips" id="fTagChips" role="group" aria-label="Filter fonts by foundry tag"></div></div>
+    <div class="bar-row sliders">
+      <div class="slider"><label for="fStyles">Styles</label><input id="fStyles" type="range" min="1" max="20" value="1"><output id="fStylesOut">Any</output></div>
+      <div class="slider"><label for="fSize">Card size</label><input id="fSize" type="range" min="180" max="560" step="20" value="260"><output id="fSizeOut">M</output></div>
+      <button type="button" class="btn small" id="fReset">Reset filters</button>
+    </div>
+  </div>
+</div>
+
+<div class="bar" id="foundryBar">
+  <div class="wrap">
+    <div class="bar-row">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search names, makers, tags, domains" aria-label="Search">
+      </div>
+      <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="foundryBar">Filters<span class="n"></span></button>
+      <div class="chips" id="kinds" role="group" aria-label="Filter by kind"></div>
+      <div class="sep" aria-hidden="true"></div>
+      <select class="ctl" id="sort" aria-label="Sort">
+        <option value="order">Board order</option>
+        <option value="az">A to Z</option>
+        <option value="new">Newest first</option>
+      </select>
+      <div class="seg" role="group" aria-label="View">
+        <button id="vGrid" aria-pressed="true">Grid</button>
+        <button id="vList" aria-pressed="false">List</button>
+      </div>
+      <button class="btn" id="copyBtn" title="Copy every visible link as Markdown">Copy links</button>
+    </div>
+    <div class="bar-row">
+      <div class="chips" id="tags" role="group" aria-label="Filter by tag"></div>
+      <div class="spacer"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="status" id="status"></div>
+  <div id="out"></div>
+</main>
+
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><div class="lbbar"><span id="lbName"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const KINDS = ["Foundry","Typeface","Library"];
+  const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
+  let items = [];           // foundries
+  let fonts = [];           // individual typefaces
+  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:120 };
+  const tab = () => location.hash === "#foundries" ? "foundries" : "fonts";
+  let shuffleKey = Math.random();
+  const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
+  try { const v = localStorage.getItem("fdx-view"); if (v) state.view = v; } catch(e){}
+
+  /* ---------- helpers ---------- */
+  const safeUrl = u => { try { const x = new URL(String(u).trim()); return /^https?:$/.test(x.protocol) ? x.href : null; } catch(e){ return null; } };
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./,""); } catch(e){ return ""; } };
+  const norm = u => { try { const x = new URL(u); return (x.hostname.replace(/^www\./,"") + x.pathname.replace(/\/$/,"")).toLowerCase(); } catch(e){ return String(u).toLowerCase(); } };
+  const nameFromUrl = u => { const h = host(u).split(".")[0] || "Untitled"; return h.charAt(0).toUpperCase() + h.slice(1); };
+  const isRTL = s => /[֐-׿؀-ۿ]/.test(s || "");
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const toast = msg => { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"), 2200); };
+  const parseTags = s => [...new Set(String(s||"").split(",").map(t=>t.trim()).filter(Boolean).map(t => t.length > 24 ? t.slice(0,24) : t))];
+
+  const NEW_DAYS = 30;
+  const isNew = it => Array.isArray(it.newReleases) && it.newReleases.length && it.newSince && (Date.now() - Date.parse(it.newSince)) < NEW_DAYS*864e5;
+  const shot = (id, at, full) => id ? "shots/" + id.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (at ? "?v=" + (Date.parse(at) || 0) : "") : null;
+  const shotUrl = (it, full) => shot(it.shotId, it.shotAt, full);
+  const setImg = (img, it, w) => { img.src = shotUrl(it); img.srcset = shotUrl(it) + " 800w, " + shotUrl(it, true) + " 1600w"; img.sizes = (w || 400) + "px"; };
+  function lightbox(it, name){
+    const lb = $("#lb"); lb.querySelector("img").src = shotUrl(it, true); lb.querySelector("img").alt = "Screenshot of " + name;
+    $("#lbName").textContent = name; $("#lbLink").href = it.url; lb.hidden = false;
+  }
+  function zoomBtn(it, name){
+    const b = el("button","zoom"); b.type = "button"; b.setAttribute("aria-label", "View larger screenshot of " + name);
+    b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); lightbox(it, name); };
+    return b;
+  }
+  /* ---------- filtering ---------- */
+  function visible(){
+    const q = state.q.toLowerCase().trim();
+    let out = items.filter(it => {
+      if (state.kind && it.kind !== state.kind) return false;
+      if (state.onlyNew && !isNew(it)) return false;
+      for (const t of state.tags) if (!(it.tags||[]).includes(t)) return false;
+      if (q) {
+        const hay = [it.name, it.by, it.note, host(it.url), it.kind, ...(it.tags||[]), ...(it.typefaces||[])].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const by = {
+      order: (a,b) => (a.order ?? 1e9) - (b.order ?? 1e9),
+      az: (a,b) => String(a.name).localeCompare(String(b.name), undefined, {sensitivity:"base"}),
+      new: (a,b) => String(b.addedAt||"").localeCompare(String(a.addedAt||"")) || (b.order??0)-(a.order??0)
+    }[state.sort];
+    return out.sort(by);
+  }
+
+  /* ---------- rendering ---------- */
+  function renderStats(){
+    const s = $("#stats"); s.replaceChildren();
+    const count = k => items.filter(i => i.kind === k).length;
+    [["Total", items.length], ["Foundries", count("Foundry")], ["Typefaces", count("Typeface")], ["Libraries", count("Library")]]
+      .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
+  }
+
+  function renderChips(){
+    const k = $("#kinds"); k.replaceChildren();
+    const mk = (label, n, pressed, on) => { const b = el("button","chip",label); b.type="button"; b.setAttribute("aria-pressed", pressed); if (n != null) b.append(el("span","n",String(n))); b.onclick = on; return b; };
+    k.append(mk("All", null, !state.kind, () => { state.kind = null; render(); }));
+    KINDS.forEach(kd => k.append(mk(KIND_LABEL[kd].split(" ")[0], items.filter(i=>i.kind===kd).length, state.kind===kd, () => { state.kind = state.kind===kd ? null : kd; render(); })));
+    const nNew = items.filter(isNew).length;
+    if (nNew) { const b = mk("New releases", nNew, state.onlyNew, () => { state.onlyNew = !state.onlyNew; render(); }); b.classList.add("newchip"); k.append(b); }
+
+    const counts = new Map();
+    items.forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
+    const tagsSorted = [...counts.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
+    const t = $("#tags"); t.replaceChildren();
+    tagsSorted.forEach(([tag,n]) => t.append(mk(tag, n, state.tags.has(tag), () => { state.tags.has(tag) ? state.tags.delete(tag) : state.tags.add(tag); render(); })));
+  }
+
+  function card(it, i){
+    const c = el("article","card");
+    const a = el("a","hit"); a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", it.name + " — open " + host(it.url));
+    c.append(a);
+    const meta = el("div","meta");
+    const tf = (it.typefaces||[]).length;
+    meta.append(el("span","num", String(i+1).padStart(3,"0") + (tf ? " · " + tf + (tf === 1 ? " face" : " faces") : "")), el("span", null, host(it.url) + " ↗"));
+    c.append(meta);
+
+    const sh = el("div","shot");
+    if (it.shotId) { const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", it.name); if (isRTL(it.name)) fbk.dir = "rtl"; img.replaceWith(fbk); }; setImg(img, it, 400); img.alt = "Screenshot of " + host(it.url); img.loading = "lazy"; img.decoding = "async"; sh.append(img); c.append(zoomBtn(it, it.name)); }
+    else if (it.scan === "failed") { const fb = el("div","fallback", it.name); if (isRTL(it.name)) fb.dir = "rtl"; sh.append(fb); }
+    else sh.append(el("div","pending","Screenshot on the way"));
+    c.append(sh);
+    const foot = el("div","foot");
+    foot.style.paddingTop = "14px";
+    const nm = el("div","cname", it.name); if (isRTL(it.name)) nm.dir = "rtl";
+    foot.append(nm);
+    if (isNew(it)) foot.append(el("div","newline", "New: " + it.newReleases.slice(0,4).join(", ")));
+    if (it.by) { const b = el("div","by"); b.textContent = it.by; foot.append(b); }
+    if (it.note) foot.append(el("div","note", it.note));
+    const tags = el("div","tags");
+    tags.append(el("span","tag kind", it.kind || "Foundry"));
+    if (isNew(it)) tags.append(el("span","tag new","New"));
+    (it.tags||[]).forEach(t => tags.append(el("span","tag",t)));
+    foot.append(tags);
+    const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
+    if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; foot.append(b); }
+    c.append(foot);
+    return c;
+  }
+
+  function row(it, i){
+    const r = el("div","row");
+    const a = el("a","hit"); a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", it.name + " — open " + host(it.url));
+    r.append(a, el("span","rn", String(i+1).padStart(3,"0")));
+    const src = shotUrl(it);
+    if (src) { const img = el("img","rthumb"); img.src = src; img.alt = ""; img.loading = "lazy"; r.append(img); } else r.append(el("span"));
+    const n = el("span","rname", it.name); if (isRTL(it.name)) n.dir = "rtl";
+    r.append(n, el("span","rby", isNew(it) ? "New: " + it.newReleases.slice(0,3).join(", ") : (it.by || "")));
+    const k = el("span","rkind"); k.append(el("span","tag kind", it.kind || "Foundry")); r.append(k);
+    const tg = el("span","rtags tags"); (it.tags||[]).forEach(t => tg.append(el("span","tag",t))); r.append(tg);
+    r.append(el("span","rdom", host(it.url) + " ↗"));
+    r.append(el("span"));
+    return r;
+  }
+
+  function render(){
+    const t = tab();
+    $("#tabFonts").setAttribute("aria-current", t === "fonts" ? "page" : "false");
+    $("#tabFoundries").setAttribute("aria-current", t === "foundries" ? "page" : "false");
+    $("#nFonts").textContent = fonts.filter(f => f.shotId).length || "";
+    $("#nFoundries").textContent = items.length || "";
+    $("#fontBar").hidden = t !== "fonts"; $("#foundryBar").hidden = t !== "foundries";
+    updateFilterCounts();
+    if (t === "fonts") return renderFonts();
+    renderStats(); renderChips();
+    if ($("#status").textContent.includes("queued")) $("#status").textContent = $("#status").dataset.base || "";
+    $("#vGrid").setAttribute("aria-pressed", state.view==="grid");
+    $("#vList").setAttribute("aria-pressed", state.view==="list");
+    const list = visible();
+    const out = $("#out"); out.replaceChildren();
+    if (!items.length) return;
+    if (!list.length) { out.append(el("p","empty","Nothing matches. Clear a filter or the search to see more.")); return; }
+    const box = el("div", state.view === "grid" ? "grid" : "list");
+    list.forEach((it,i) => box.append(state.view==="grid" ? card(it,i) : row(it,i)));
+    out.append(box);
+  }
+
+  /* ---------- fonts view ---------- */
+  let fontsVisible = [];
+  const fIsNew = f => f.newSince && (Date.now() - Date.parse(f.newSince)) < NEW_DAYS*864e5;
+  function hashN(s){ let h = 0; for (const c of s) h = (h*31 + c.charCodeAt(0)) | 0; return h; }
+  function renderFonts(){
+    const byId = new Map(items.map(i => [i.id, i]));
+    const s = $("#stats"); s.replaceChildren();
+    const done = fonts.filter(f => f.shotId), queued = fonts.filter(f => !f.shotId && f.scan !== "failed");
+    const foundriesWithFonts = new Set(done.map(f => f.foundryId)).size;
+    [["Fonts", done.length], ["Foundries", foundriesWithFonts], ["New", done.filter(fIsNew).length], ["Queued", queued.length]]
+      .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
+
+    // foundry select
+    const sel = $("#fFoundry"); const cur = fstate.foundry;
+    const counts = new Map(); done.forEach(f => counts.set(f.foundryId, (counts.get(f.foundryId)||0)+1));
+    const opts = [...counts.keys()].map(id => byId.get(id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+    sel.replaceChildren(Object.assign(el("option",null,"All foundries"),{value:""}), ...opts.map(fd => Object.assign(el("option", null, `${fd.name} (${counts.get(fd.id)})`), {value: fd.id})));
+    sel.value = counts.has(cur) ? cur : ""; if (!counts.has(cur)) fstate.foundry = "";
+
+    const ch = $("#fChips"); ch.replaceChildren();
+    const fk = f => (byId.get(f.foundryId)||{}).kind || "Foundry";
+    const ftags = f => (byId.get(f.foundryId)||{}).tags || [];
+    const mkc = (label, n, pressed, on) => { const b = el("button","chip",label); b.type="button"; b.setAttribute("aria-pressed", pressed); if (n != null) b.append(el("span","n",String(n))); b.onclick = on; return b; };
+    const CATS = ["Sans","Serif","Slab","Mono","Display","Script"];
+    const isFree = f => f.free === true || ftags(f).includes("Free");
+    const PROPS = { Variable: f => !!f.variable, Free: isFree };
+    ch.append(mkc("All", null, !fstate.cat, () => { fstate.cat = null; render(); }));
+    CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = 120; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
+    ch.append(Object.assign(el("span","sep"), {ariaHidden:"true"}));
+    Object.entries(PROPS).forEach(([k, fn]) => { const n = done.filter(fn).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = 120; render(); })); });
+    const maxStyles = Math.max(1, ...done.map(f => +f.styles || 0));
+    const sl = $("#fStyles"); sl.max = Math.max(2, Math.min(60, maxStyles)); sl.value = fstate.minStyles; sl.disabled = maxStyles < 2;
+    $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
+    out_card();
+    const tc = new Map(); done.forEach(f => ftags(f).forEach(t => tc.set(t, (tc.get(t)||0)+1)));
+    const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = 120; render(); })));
+    tg.parentElement.hidden = !tc.size;
+    $("#fvGrid").setAttribute("aria-pressed", state.view === "grid"); $("#fvList").setAttribute("aria-pressed", state.view === "list");
+    const nNew = done.filter(fIsNew).length;
+    if (nNew) { const b = el("button","chip newchip","New releases"); b.type="button"; b.append(el("span","n",String(nNew))); b.setAttribute("aria-pressed", fstate.onlyNew); b.onclick = () => { fstate.onlyNew = !fstate.onlyNew; render(); }; ch.append(b); }
+
+    const q = fstate.q.toLowerCase().trim();
+    let list = done.filter(f => {
+      if (fstate.foundry && f.foundryId !== fstate.foundry) return false;
+      if (fstate.onlyNew && !fIsNew(f)) return false;
+      if (fstate.cat && f.category !== fstate.cat) return false;
+      for (const k of fstate.props) if (!PROPS[k](f)) return false;
+      if (fstate.minStyles > 1 && !((+f.styles||0) >= fstate.minStyles)) return false;
+      for (const t of fstate.tags) if (!ftags(f).includes(t)) return false;
+      if (q) { const fd = byId.get(f.foundryId); const hay = (f.name + " " + (fd ? fd.name + " " + (fd.tags||[]).join(" ") : "")).toLowerCase(); if (!hay.includes(q)) return false; }
+      return true;
+    });
+    const ford = id => (byId.get(id)||{}).order ?? 1e9;
+    const sorters = {
+      foundry: (a,b) => ford(a.foundryId) - ford(b.foundryId) || (a.order??0) - (b.order??0),
+      az: (a,b) => a.name.localeCompare(b.name, undefined, {sensitivity:"base"}),
+      new: (a,b) => String(b.newSince||b.addedAt||"").localeCompare(String(a.newSince||a.addedAt||"")),
+      shuffle: (a,b) => hashN(a.id + shuffleKey) - hashN(b.id + shuffleKey),
+      styles: (a,b) => (+b.styles||0) - (+a.styles||0)
+    };
+    list.sort(sorters[fstate.sort]);
+
+    const out = $("#out"); out.replaceChildren();
+    if (!$("#status").dataset.base) $("#status").dataset.base = $("#status").textContent.startsWith("Updated") ? $("#status").textContent : "";
+    const base = $("#status").dataset.base;
+    $("#status").textContent = [base, queued.length ? `${queued.length} more fonts are queued and will appear as the crawl captures them.` : ""].filter(Boolean).join(" · ");
+    if (!done.length) { out.append(el("p","empty", items.length ? "No font screenshots yet. They appear here as the crawl captures each foundry's catalogue." : "")); return; }
+    if (!list.length) { out.append(el("p","empty","No fonts match. Clear the search or pick another foundry.")); return; }
+    fontsVisible = list;
+    if (state.view === "list") {
+      const box = el("div","list");
+      list.slice(0, fstate.limit).forEach((f, i) => {
+        const fd = byId.get(f.foundryId) || {};
+        const r = el("div","row");
+        const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || ""}`);
+        const img = el("img","rthumb"); img.src = shotUrl(f); img.alt = ""; img.loading = "lazy";
+        const nm = el("span","rname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
+        const fb = el("button","linkbtn rby", fd.name || ""); fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; render(); };
+        const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
+        const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
+        r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span"));
+        box.append(r);
+      });
+      out.append(box);
+      if (list.length > fstate.limit) { const more = el("button","btn","Show more (" + (list.length - fstate.limit) + " left)"); more.style.margin = "0 0 64px"; more.onclick = () => { fstate.limit += 120; render(); }; out.append(more); }
+      return;
+    }
+    const grid = el("div","fgrid");
+    list.slice(0, fstate.limit).forEach(f => {
+      const fd = byId.get(f.foundryId) || {};
+      const c = el("article","fcard");
+      const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || "unknown foundry"}`);
+      const sh = el("div","fshot"); const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", f.name); img.replaceWith(fbk); }; setImg(img, f, fstate.card); img.alt = "Screenshot of " + f.name; img.loading = "lazy"; img.decoding = "async"; sh.append(img);
+      const body = el("div","fbody");
+      const nm = el("div","fname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
+      const meta = el("div","fmeta");
+      const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
+      fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; window.scrollTo({top:0}); render(); };
+      meta.append(fb, el("span", null, host(f.url)));
+      body.append(nm, meta);
+      const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
+      if (pr.length) { const pp = el("div","fprops"); pr.forEach(x => pp.append(el("span","tag",x))); body.append(pp); }
+      if (fIsNew(f)) { const tg = el("div","tags"); tg.append(el("span","tag new","New")); body.append(tg); }
+      c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : ""))); grid.append(c);
+    });
+    out.append(grid);
+    if (list.length > fstate.limit) { const more = el("button","btn","Show more (" + (list.length - fstate.limit) + " left)"); more.style.margin = "0 0 64px"; more.onclick = () => { fstate.limit += 120; render(); }; out.append(more); }
+  }
+
+  /* ---------- controls ---------- */
+  document.querySelectorAll(".filtersBtn").forEach(b => b.onclick = () => {
+    const bar = document.getElementById(b.getAttribute("aria-controls"));
+    const open = !bar.classList.contains("open"); bar.classList.toggle("open", open); b.setAttribute("aria-expanded", open);
+  });
+  function updateFilterCounts(){
+    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
+    const nD = (state.kind?1:0) + state.tags.size + (state.onlyNew?1:0);
+    const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
+    if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
+  }
+  window.addEventListener("hashchange", () => { fstate.limit = 120; render(); window.scrollTo({top:0}); });
+  function out_card(){ document.documentElement.style.setProperty("--card", fstate.card + "px"); const v = fstate.card; $("#fSizeOut").textContent = v <= 200 ? "XS" : v <= 240 ? "S" : v <= 300 ? "M" : v <= 400 ? "L" : "XL"; }
+  $("#fStyles").addEventListener("input", e => { fstate.minStyles = +e.target.value; fstate.limit = 120; render(); });
+  $("#fSize").addEventListener("input", e => { fstate.card = +e.target.value; out_card(); try { localStorage.setItem("fdx-card", fstate.card); } catch(_){} });
+  try { const c = +localStorage.getItem("fdx-card"); if (c) { fstate.card = c; $("#fSize").value = c; } } catch(_){}
+  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, limit:120 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
+  $("#fvGrid").onclick = () => setView("grid");
+  $("#fvList").onclick = () => setView("list");
+  $("#fCopy").onclick = async () => {
+    const byId = new Map(items.map(i => [i.id, i]));
+    const md = fontsVisible.map(f => `- [${f.name}](${f.url}) — ${(byId.get(f.foundryId)||{}).name || ""}`).join("\n");
+    try { await navigator.clipboard.writeText(md); toast(`Copied ${fontsVisible.length} font links as Markdown`); } catch(e){ toast("Your browser blocked copying. Try again from the page itself."); }
+  };
+  $("#fq").addEventListener("input", e => { fstate.q = e.target.value; fstate.limit = 120; render(); });
+  $("#fFoundry").addEventListener("change", e => { fstate.foundry = e.target.value; fstate.limit = 120; render(); });
+  $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
+  $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
+  $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
+  const setView = v => { state.view = v; try{ localStorage.setItem("fdx-view", v); }catch(e){} render(); };
+  $("#vGrid").onclick = () => setView("grid");
+  $("#vList").onclick = () => setView("list");
+  $("#lb").onclick = e => { if (e.target.tagName !== "A") $("#lb").hidden = true; };
+  document.addEventListener("keydown", e => { if (e.key === "Escape") $("#lb").hidden = true; });
+  $("#copyBtn").onclick = async () => {
+    const md = visible().map(i => `- [${i.name}](${i.url})`).join("\n");
+    try { await navigator.clipboard.writeText(md); toast(`Copied ${visible().length} links as Markdown`); }
+    catch(e){ toast("Your browser blocked copying. Try again from the page itself."); }
+  };
+
+  /* ---------- data ---------- */
+  render();
+  $("#status").textContent = "Loading the index…";
+  const clean = arr => (arr||[]).filter(i => safeUrl(i.url)).map(i => ({ ...i, url: safeUrl(i.url), name: String(i.name || nameFromUrl(i.url)), tags: Array.isArray(i.tags) ? i.tags.map(String) : [], typefaces: Array.isArray(i.typefaces) ? i.typefaces.map(String) : [], newReleases: Array.isArray(i.newReleases) ? i.newReleases.map(String) : [] }));
+  (async () => {
+    try {
+      const r = await fetch("data/data.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      const snap = await r.json();
+      fonts = (snap.fonts||[]).filter(f => safeUrl(f.url) && f.name).map(f => ({ ...f, url: safeUrl(f.url), name: String(f.name) }));
+      items = clean(snap.foundries);
+      const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
+      $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";
+      if (snap.repo && /^[\w.-]+\/[\w.-]+$/.test(snap.repo)) { const a = $("#editLink"); a.href = "https://github.com/" + snap.repo + "/edit/main/foundries.yaml"; a.hidden = false; }
+      render();
+    } catch(e) {
+      $("#status").textContent = "The index couldn't load. Reload the page to try again.";
+    }
+  })();
+})();
+</script>
+</body>
+</html>
+

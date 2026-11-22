@@ -1,0 +1,102 @@
+name: Crawl
+
+on:
+  schedule:
+    - cron: "17 0 * * *"   # nightly, ~02:17 Israel winter time (03:17 in summer; GitHub cron is UTC)
+    - cron: "13 19 * * 0"  # Sunday, ~21:13 Israel winter time: weekly release check
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "nightly (incremental) or release-check"
+        type: choice
+        options: [nightly, release-check]
+        default: nightly
+      limit:
+        description: "Max fonts to capture"
+        default: "150"
+      only:
+        description: "Only these foundry ids (comma-separated, optional)"
+        default: ""
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Chromium system deps
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Crawl
+        env:
+          MODE: ${{ github.event.schedule == '13 19 * * 0' && 'release-check' || inputs.mode || 'nightly' }}
+          LIMIT: ${{ inputs.limit || '150' }}
+          ONLY: ${{ inputs.only }}
+          FOUNDRIES_HAIKU: ${{ vars.FOUNDRIES_HAIKU }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS="--limit $LIMIT --max-minutes 45"
+          [ -n "$ONLY" ] && ARGS="$ARGS --only $ONLY"
+          if [ "$MODE" = "release-check" ]; then
+            node crawler/crawl.mjs --release-check --capture $ARGS
+          else
+            node crawler/crawl.mjs $ARGS
+          fi
+
+      - name: Commit changes
+        if: always()
+        run: |
+          git config user.name "foundries-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data foundries.yaml public/shots
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          DONE=$(node -p "require('./data/data.json').fonts.filter(f=>f.scan==='done').length")
+          QUEUED=$(node -p "require('./data/data.json').fonts.filter(f=>f.scan==='queued').length")
+          git commit -m "crawl: $DONE fonts captured, $QUEUED queued"
+          git pull --rebase --autostash
+          git push
+
+      - name: Open an issue for new releases
+        if: always() && hashFiles('release-report.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "New font releases, week of $(date -u +%Y-%m-%d)" --body-file release-report.md
+
+  deploy:
+    needs: crawl
+    if: always() && needs.crawl.result != 'cancelled'
+    uses: ./.github/workflows/pages.yml

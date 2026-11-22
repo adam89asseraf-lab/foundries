@@ -33,7 +33,8 @@ export function categorise(t) {
   add(score(t.listText, 6));
   add(score(t.h1 + "\n" + t.title, 4));
   add(score(t.head, 2));
-  add(score((t.body || "").slice(0, 8000), 0.5));
+  // body text only breaks a total silence: related-font lists in the body mention every category
+  if (Object.values(total).every(v => v === 0)) add(score((t.body || "").slice(0, 8000), 0.5));
   const ranked = Object.entries(total).sort((a, b) => b[1] - a[1]);
   const [best, second] = ranked;
   let category = null;
