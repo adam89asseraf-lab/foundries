@@ -418,6 +418,8 @@ foundries:
     kind: Foundry
     order: 57
     addedAt: 2026-11-22T08:00:00Z
+    catalogUrl: https://weltkern.com/typefaces
+    fontLinkPattern: /typefaces/[^/]+$
   - id: typeverything
     name: Typeverything
     url: https://typeverything.com/

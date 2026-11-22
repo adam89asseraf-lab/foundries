@@ -186,6 +186,11 @@ async function discover(release = false) {
     try {
       const { url, links } = await discoverOne(page, f);
       const wasChecked = !!f.catalogCheckedAt;
+      if (f.rescan && links.length) { // a rescan drops fonts that are no longer in the catalogue
+        const keep = new Set(links.map(l => l.u.replace(/\/$/, "")));
+        for (const x of data.fonts.filter(x => x.foundryId === f.id && !keep.has(x.url.replace(/\/$/, "")))) removeShot(x.shotId || `fonts/${x.id}`);
+        data.fonts = data.fonts.filter(x => x.foundryId !== f.id || keep.has(x.url.replace(/\/$/, "")));
+      }
       const added = addFonts(f, links, release && wasChecked);
       Object.assign(f, { catalog: links.length ? "listed" : "none", catalogUrl: links.length ? url : f.catalogUrl, catalogCheckedAt: now(), discoverAttemptAt: now() });
       delete f.discoverFailed;
