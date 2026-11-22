@@ -158,6 +158,16 @@ async function discoverOne(page, f) {
     if (nav) { url = nav.u; r = await tryUrl(url); picked = pickFonts(r, f.cfg || {}); }
   }
   if (!picked.length && !f.cfg?.catalogUrl && r.shopify) { url = r.origin + "/collections/all"; r = await tryUrl(url); picked = pickFonts(r, f.cfg || {}); }
+  // paginated catalogues (`paginate: true`): follow ?page=2, 3, … until a page adds nothing new
+  if (f.cfg?.paginate && picked.length) {
+    const seen = new Set(picked.map(l => l.u));
+    for (let n = 2; n <= 80 && !timeUp(); n++) {
+      const pageUrl = url + (url.includes("?") ? "&" : "?") + "page=" + n;
+      const more = pickFonts(await tryUrl(pageUrl), f.cfg || {}).filter(l => !seen.has(l.u));
+      if (!more.length) break;
+      more.forEach(l => { seen.add(l.u); picked.push(l); });
+    }
+  }
   return { url, links: picked };
 }
 

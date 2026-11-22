@@ -115,10 +115,22 @@ foundries:
   - id: future
     name: Future Fonts
     url: https://www.futurefonts.com/
-    kind: Library
+    kind: Foundry
     tags: [ Marketplace ]
     order: 13
     addedAt: 2026-11-22T08:00:00Z
+    catalogUrl: https://www.futurefonts.com/fonts
+    fontLinkPattern: ^https://www\.futurefonts\.com/[^/]+/[^/]+$
+    exclude:
+      - /posts
+      - /activity
+      - /sign-
+      - /about
+      - /fonts/
+      - /foundries/
+    note: In-progress typefaces from many independent designers
+    paginate: true
+    capture: image
   - id: fonderie
     name: Fonderie
     by: Pépite
