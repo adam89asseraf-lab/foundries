@@ -97,9 +97,10 @@ export function merge(data, entries) {
     byId.delete(e.id);
   }
   const removed = [...byId.keys()];
+  const removedFonts = data.fonts.filter(f => removed.includes(f.foundryId));
   data.foundries = out;
   data.fonts = data.fonts.filter(f => !removed.includes(f.foundryId));
-  return { data, rescans, removed };
+  return { data, rescans, removed, removedFonts };
 }
 const pick = (o, ks) => Object.fromEntries(ks.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
 

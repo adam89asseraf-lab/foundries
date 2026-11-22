@@ -31,7 +31,8 @@ const log = (...a) => console.log(new Date().toISOString().slice(11, 19), ...a);
 const data = loadData();
 const baseline = dump(forSave({ ...data, updatedAt: null }));
 const entries = yamlEntries(loadYamlDoc());
-const { rescans, removed } = merge(data, entries);
+const { rescans, removed, removedFonts } = merge(data, entries);
+for (const x of removedFonts) removeShot(x.shotId || `fonts/${x.id}`); // a foundry taken off the list takes its font shots with it
 data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
 for (const id of removed) { removeShot(id); log("removed", id); }
 for (const id of rescans) {

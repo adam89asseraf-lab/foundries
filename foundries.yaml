@@ -327,14 +327,6 @@ foundries:
     tags: [ Serif, Free ]
     order: 43
     addedAt: 2026-11-22T08:00:00Z
-  - id: ben-uri
-    name: בן אורי
-    by: Ben Uri
-    url: https://fonts.ben-uri.com/
-    kind: Foundry
-    tags: [ Hebrew ]
-    order: 44
-    addedAt: 2026-11-22T08:00:00Z
   - id: nan
     name: NaN
     url: https://www.nan.xyz/fonts/
