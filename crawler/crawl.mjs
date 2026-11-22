@@ -6,8 +6,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadData, saveData, forSave, dump, loadYamlDoc, yamlEntries, merge, clearRescanFlags, slugify, now, ROOT } from "./lib/store.mjs";
-import { launch, open, prepare, shoot, writeShot, removeShot, pool } from "./lib/browser.mjs";
-import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners } from "./snippets.mjs";
+import { launch, open, prepare, shoot, writeShot, writeImageShot, removeShot, pool } from "./lib/browser.mjs";
+import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners, coverImage } from "./snippets.mjs";
 import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
 
 /* ---------- args ---------- */
@@ -161,13 +161,14 @@ async function discoverOne(page, f) {
 /** Add newly seen links as fonts. Returns the new font records. */
 function addFonts(f, links, markNew) {
   // URLs already listed under any foundry (e.g. a "Display" sub-shop entry overlapping the main shop) aren't added twice
-  const have = new Set(data.fonts.map(x => x.url.replace(/\/$/, "")));
+  const key = u => u.replace(/\/$/, "").toLowerCase();
+  const have = new Set(data.fonts.map(x => key(x.url)));
   const ids = new Set(data.fonts.map(x => x.id));
   let order = Math.max(0, ...data.fonts.filter(x => x.foundryId === f.id).map(x => x.order || 0));
   const added = [];
   for (const l of links) {
     const u = l.u.replace(/\/$/, "");
-    if (have.has(u)) continue;
+    if (have.has(key(u))) continue;
     // Hebrew/Cyrillic/etc. paths slugify to nothing: fall back to a short stable hash of the URL
     let slug = slugify(safeDecode(u.split("/").pop())) || slugify(l.t);
     if (!slug) slug = "x" + hash(u);
@@ -177,7 +178,7 @@ function addFonts(f, links, markNew) {
     if (ov.skip) continue;
     const font = { id, foundryId: f.id, name: ov.name || nameFor(l.t, slug), url: l.u, order: ++order, addedAt: now(), scan: "queued", listText: l.t.slice(0, 120) };
     if (markNew) font.newSince = now();
-    data.fonts.push(font); ids.add(id); have.add(u); added.push(font);
+    data.fonts.push(font); ids.add(id); have.add(key(u)); added.push(font);
   }
   return added;
 }
@@ -236,9 +237,25 @@ async function discover(release = false) {
 }
 
 /* ---------- font capture ---------- */
+// Shops where the font only exists as artwork in the product image (live text is the shop's own UI font).
+// Per foundry in foundries.yaml: `capture: image` to use the cover image, `capture: page` to force a page shot.
+const NOT_FONT = /\b(icons?|icon set|mockups?|templates?|presets?|brush(es)?|textures?|lightroom|procreate|stickers?|illustrations?|ui kit|wallpapers?|logos?|patterns?|luts?|app kit|ui kit|website|landing page)\b/i;
+const IMAGE_HOSTS = /(^|\.)gumroad\.com$/i;
+const wantsCover = (font, f) => f.cfg?.capture === "image" || (f.cfg?.capture !== "page" && IMAGE_HOSTS.test(new URL(font.url).hostname));
+
+async function captureCover(page, font) {
+  const c = await page.evaluate(coverImage).catch(() => null);
+  if (!c?.src) return false;
+  const res = await page.request.get(c.src, { timeout: 30000 }).catch(() => null);
+  if (!res?.ok() || !/^image\//.test(res.headers()["content-type"] || "")) return false;
+  await writeImageShot(await res.body(), `fonts/${font.id}`);
+  return true;
+}
+
 async function captureOne(page, font, f) {
   await open(page, font.url);
   await prepare(page);
+  if (wantsCover(font, f) && await captureCover(page, font)) return finishFont(page, font, f, { ok: true, score: 9, reasons: [], cover: true });
   await page.evaluate(typeSnippet);
   await sleep(900);
   await page.evaluate(finishAnimations).catch(() => {});
@@ -257,17 +274,34 @@ async function captureOne(page, font, f) {
     if (q.score > best.q.score) best = { png, q };
   }
   await writeShot(best.png, `fonts/${font.id}`);
+  return finishFont(page, font, f, best.q);
+}
 
+async function finishFont(page, font, f, q) {
+  const best = { q };
   const text = await page.evaluate(pageText).catch(() => ({ title: "", h1: "", head: "", body: "" }));
   const slug = font.id.split("--").slice(1).join("--");
   const ov = f.cfg?.fonts?.[slug] || {};
   const h = (text.h1 || "").trim(), hs = slugify(h);
   if (!ov.name && h && h.length <= 48 && (hs === slug || hs.endsWith("-" + slug) || hs === slugify(font.name))) font.name = h; // nicer casing/diacritics/prefix
+  if (q.cover) {
+    const title = h || text.title.split(/[|–—-]/)[0].trim();
+    // shop pages sell more than fonts: a font page talks about fonts (Bueno: "OTF, TTF, WOFF…"), a template page doesn't
+    const fonty = /\b(fonts?|typefaces?|glyphs?|otf|ttf|woff2?|opentype|ligatures?)\b/i.test(title + "\n" + text.head + "\n" + text.body);
+    if (!fonty || (NOT_FONT.test(title) && !/\b(font|typeface|type family)\b/i.test(title))) {
+      removeShot(`fonts/${font.id}`);
+      for (const k of ["shotId", "shotAt", "shot", "quality", "qualityNote"]) delete font[k];
+      Object.assign(font, { scan: "excluded", failReason: "not a font: " + title.slice(0, 60), attemptAt: now() });
+      return { ok: true, score: 0, reasons: [], excluded: true };
+    }
+    const clean = title.replace(/\s+(typeface|font family|font|type family)\b.*$/i, "").trim();
+    if (!ov.name && clean && clean.length <= 40) font.name = clean;
+  }
   const c = categorise({ ...text, name: font.name, listText: font.listText });
   let category = c.category;
   if (!category) category = await categoriseWithHaiku({ ...text, name: font.name, listText: font.listText });
   Object.assign(font, {
-    shotId: `fonts/${font.id}`, shotAt: now(), scan: "done", attemptAt: now(),
+    shotId: `fonts/${font.id}`, shotAt: now(), scan: "done", attemptAt: now(), ...(q.cover ? { shot: "image" } : {}),
     category: ov.category || category || font.category || null,
     styles: ov.styles ?? c.styles ?? font.styles ?? null,
     variable: ov.variable ?? (c.variable || !!font.variable),
@@ -277,6 +311,7 @@ async function captureOne(page, font, f) {
   else { font.quality = "low"; font.qualityNote = best.q.reasons.join("; "); }
   for (const k of ["styles", "free", "category"]) if (font[k] == null) delete font[k];
   if (!font.variable) delete font.variable;
+  if (!q.cover) delete font.shot;
   delete font.failReason;
   return best.q;
 }
@@ -296,6 +331,7 @@ async function capture() {
         if (timeUp()) return;
         try {
           const q = await captureOne(page, font, f);
+          if (q.excluded) { log(`  – ${font.id} skipped (${font.failReason})`); continue; }
           stats.captured++; if (!q.ok) stats.low++;
           log(`  ✓ ${font.id} ${font.category || "?"}${font.styles ? " " + font.styles + "st" : ""}${font.variable ? " VF" : ""}${q.ok ? "" : " [low: " + q.reasons.join(", ") + "]"}`);
         } catch (e) {

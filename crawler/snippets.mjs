@@ -180,3 +180,20 @@ export function blockCheck() {
   }
   return null;
 }
+
+/**
+ * The page's main product/cover image: the largest visible <img> near the top whose file is at least 600px wide.
+ * Carousels stack slides at the same spot, so the one actually painted at its centre wins.
+ */
+export function coverImage() {
+  window.scrollTo(0, 0);
+  const W = innerWidth, H = innerHeight;
+  const imgs = [...document.querySelectorAll("img")].map(e => ({ e, r: e.getBoundingClientRect() }))
+    .filter(({ e, r }) => r.width * r.height > 0.2 * W * H && r.top < H * 1.2 && (e.naturalWidth || 0) >= 600)
+    .sort((a, b) => b.r.width * b.r.height - a.r.width * a.r.height);
+  for (const { e, r } of imgs) {
+    const hit = document.elementFromPoint(Math.min(W - 1, r.left + r.width / 2), Math.min(H - 1, Math.max(0, r.top + r.height / 2)));
+    if (hit === e || e.contains(hit) || (hit && hit.contains(e))) return { src: e.currentSrc || e.src, w: e.naturalWidth, h: e.naturalHeight };
+  }
+  return imgs[0] ? { src: imgs[0].e.currentSrc || imgs[0].e.src, w: imgs[0].e.naturalWidth, h: imgs[0].e.naturalHeight } : null;
+}

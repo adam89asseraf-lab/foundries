@@ -102,6 +102,20 @@ export async function writeShot(png, name) {
   await sharp(png).resize(800, 500, { fit: "cover", position: "top" }).webp({ quality: 78 }).toFile(out + ".thumb.webp");
   return name;
 }
+/** A downloaded cover image → 16:10 shot. Close to 16:10 is cropped to fill; anything else is letterboxed on its own edge colour. */
+export async function writeImageShot(buf, name) {
+  const out = path.join(SHOTS, name);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  const img = sharp(buf, { animated: false }).rotate();
+  const { width, height } = await img.metadata();
+  const ratio = width / height;
+  const { data } = await sharp(buf).extract({ left: 0, top: 0, width: 1, height: 1 }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const bg = { r: data[0], g: data[1], b: data[2] };
+  const fit = Math.abs(ratio - 1.6) < 0.2 ? { fit: "cover", position: "centre" } : { fit: "contain", background: bg };
+  await img.clone().resize(1600, 1000, fit).flatten({ background: bg }).webp({ quality: 82 }).toFile(out + ".webp");
+  await sharp(buf).rotate().resize(800, 500, fit).flatten({ background: bg }).webp({ quality: 78 }).toFile(out + ".thumb.webp");
+  return name;
+}
 export function removeShot(name) {
   for (const ext of [".webp", ".thumb.webp"]) fs.rmSync(path.join(SHOTS, name + ext), { force: true });
 }

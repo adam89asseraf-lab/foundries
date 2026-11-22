@@ -110,3 +110,7 @@ Each run commits `data/` and `public/shots/` only when something changed, then r
 2. Go to **Settings → Pages → Source** and pick **GitHub Actions**.
 3. Go to **Settings → Actions → General → Workflow permissions** and pick **Read and write**.
 4. Run **Actions → Crawl** once by hand.
+
+### Shops (Gumroad and similar)
+
+On Gumroad the font only exists as artwork in the product's cover image (the page's live text is Gumroad's own UI font), so Gumroad fonts are captured from the cover image itself, downloaded at full size and fitted to 16:10. Products whose page never mentions fonts (templates, icon sets, mockups) are marked `scan: "excluded"` and hidden. For another shop that works the same way, add `capture: image` to its entry; `capture: page` forces a normal page screenshot.
