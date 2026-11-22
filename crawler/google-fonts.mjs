@@ -12,7 +12,7 @@ const SAMPLES = {
   "thai": "เป็นมนุษย์สุดประเสริฐเลิศคุณค่า", "bengali": "আমার সোনার বাংলা", "tamil": "யாமறிந்த மொழிகளிலே",
 };
 
-export async function googleFamilies({ limit = 300, newDays = 30 } = {}) {
+export async function googleFamilies({ limit = 300, newDays = 30, include = [] } = {}) {
   const res = await fetch(META, { headers: { "user-agent": "Mozilla/5.0 (foundries index)" } });
   if (!res.ok) throw new Error("Google Fonts metadata HTTP " + res.status);
   const txt = await res.text();
@@ -20,7 +20,12 @@ export async function googleFamilies({ limit = 300, newDays = 30 } = {}) {
   const popular = [...all].sort((a, b) => a.popularity - b.popularity).slice(0, limit);
   const cutoff = Date.now() - newDays * 864e5;
   const fresh = all.filter(f => Date.parse(f.dateAdded) > cutoff && !popular.includes(f));
-  return [...popular, ...fresh].map(f => {
+  // hand-picked families (foundries.yaml `include:`), whatever their popularity
+  const want = new Set(include.map(x => String(x).toLowerCase()));
+  const picked = all.filter(f => want.has(f.family.toLowerCase()) && !popular.includes(f) && !fresh.includes(f));
+  const unknown = [...want].filter(w => !all.some(f => f.family.toLowerCase() === w));
+  if (unknown.length) console.warn("  google fonts: not found in Google's list:", unknown.join(", "));
+  return [...popular, ...fresh, ...picked].map(f => {
     const weights = Object.keys(f.fonts).filter(k => !k.endsWith("i")).map(Number).sort((a, b) => a - b);
     // show a font's own script when it has one (Noto Sans JP in Japanese); Cyrillic/Greek-capable Latin fonts stay Latin
     const native = f.subsets.find(s => SAMPLES[s] && !["latin", "cyrillic", "greek"].includes(s));
@@ -37,6 +42,7 @@ export async function googleFamilies({ limit = 300, newDays = 30 } = {}) {
       script,
       dateAdded: f.dateAdded,
       fresh: Date.parse(f.dateAdded) > cutoff,
+      picked: picked.includes(f),
     };
   });
 }

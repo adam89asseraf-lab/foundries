@@ -204,7 +204,7 @@ async function discover(release = false) {
     if (f.cfg?.source === "google-fonts") {
       try {
         // top N by popularity; new releases (last 30 days) only if `includeNew: true` in foundries.yaml
-        const fams = await googleFamilies({ limit: f.cfg.limit || 300, newDays: f.cfg.includeNew ? 30 : 0 });
+        const fams = await googleFamilies({ limit: f.cfg.limit || 300, newDays: f.cfg.includeNew ? 30 : 0, include: f.cfg.include || [] });
         // drop families that fell out of the list (or after lowering `limit`), with their screenshots
         const keep = new Set(fams.map(g => g.u));
         for (const x of data.fonts.filter(x => x.foundryId === f.id && !keep.has(x.url))) removeShot(x.shotId || `fonts/${x.id}`);
@@ -215,7 +215,7 @@ async function discover(release = false) {
         for (const g of fams) {
           if (have.has(g.u)) continue;
           // weekly check: only genuinely new families; popularity reshuffles shouldn't keep growing the list
-          if (release && wasChecked && !g.fresh) continue;
+          if (release && wasChecked && !g.fresh && !g.picked) continue;
           const id = `${f.id}--${slugify(g.family)}`;
           if (f.cfg?.fonts?.[slugify(g.family)]?.skip) continue;
           const rec = googleFontRecord(f, g, id, ++order, release && wasChecked);

@@ -688,9 +688,63 @@ foundries:
     url: https://fonts.google.com/
     kind: Foundry
     tags: [ Free ]
-    note: Top 50 by popularity
+    note: Top 50 by popularity, plus hand-picked families
     order: 92
     addedAt: 2026-11-22T18:24:47Z
     source: google-fonts
     limit: 50
     price: free
+    include:
+      - Instrument Sans
+      - Instrument Serif
+      - Space Mono
+      - DM Serif Display
+      - DM Mono
+      - Fraunces
+      - Syne
+      - Unbounded
+      - Familjen Grotesk
+      - Hanken Grotesk
+      - Schibsted Grotesk
+      - Onest
+      - Geist
+      - Geist Mono
+      - Inter Tight
+      - IBM Plex Serif
+      - IBM Plex Mono
+      - Newsreader
+      - Young Serif
+      - Gloock
+      - Bodoni Moda
+      - Libre Caslon Text
+      - EB Garamond
+      - Anybody
+      - Darker Grotesque
+      - Epilogue
+      - Sora
+      - Red Hat Display
+      - Rethink Sans
+      - Bagel Fat One
+      - Rubik Mono One
+      - Climate Crisis
+      - Gasoek One
+      - Six Caps
+      - Funnel Display
+      - Host Grotesk
+      - Radio Canada Big
+      - Reddit Mono
+      - Martian Mono
+      - Mona Sans
+      - Hubot Sans
+      - Libre Franklin
+      - Spectral
+      - Literata
+      - Petrona
+      - Crimson Pro
+      - Frank Ruhl Libre
+      - Suez One
+      - Karantina
+      - Secular One
+      - Bellefair
+      - Heebo
+      - Assistant
