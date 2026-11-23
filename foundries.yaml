@@ -84,13 +84,6 @@ foundries:
     tags: [ Tool ]
     order: 8
     addedAt: 2026-11-22T08:00:00Z
-  - id: typelab
-    name: Typelab
-    url: https://typelab.fr/
-    kind: Foundry
-    tags: [ France ]
-    order: 9
-    addedAt: 2026-11-22T08:00:00Z
   - id: newglyph
     name: Newglyph
     url: https://newglyph.com/
