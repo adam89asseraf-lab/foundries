@@ -411,15 +411,19 @@ async function capture() {
 async function personality() {
   if (!personalityEnabled()) { log("personality: skipped (no ANTHROPIC_API_KEY)"); return; }
   const ids = new Set(foundries.map(f => f.id));
-  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && (!x.mood || !x.moodAt || x.moodAt < x.shotAt)).slice(0, LIMIT);
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && (!x.mood || !x.moodAt || x.moodAt < x.shotAt || !x.category)).slice(0, LIMIT);
   log(`personality: ${due.length} fonts to rate`);
   let done = 0, failed = 0;
   await pool(due, 6, async x => {
     if (timeUp()) return;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const m = await ratePersonality(x);
-        if (m) { x.mood = m; x.moodAt = now(); done++; }
+        const r = await ratePersonality(x);
+        if (r) {
+          x.mood = r.mood; x.moodAt = now(); done++;
+          // fill a missing category (a manual one in foundries.yaml always wins at merge/capture)
+          if (!x.category && r.category) x.category = r.category;
+        }
         break;
       } catch (e) {
         if (attempt === 2 || !/429|529|overloaded|rate/i.test(e.message)) { failed++; log("  ✗ mood", x.id, e.message.slice(0, 80)); break; }

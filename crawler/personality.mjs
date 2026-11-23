@@ -21,7 +21,7 @@ async function init() {
   ]);
   client = new Anthropic();
   const score = z.number().int().min(0).max(100);
-  schema = z.object(Object.fromEntries(AXES.map(([a, b]) => [`${a}_${b}`, score])));
+  schema = z.object({ ...Object.fromEntries(AXES.map(([a, b]) => [`${a}_${b}`, score])), category: z.enum(["Sans", "Serif", "Slab", "Mono", "Display", "Script"]) });
   zodFormat = zodOutputFormat;
 }
 
@@ -30,9 +30,10 @@ const PROMPT = `This is a screenshot of a typeface's specimen (sometimes the fou
 - serious_playful: 0 = serious, formal, sober … 100 = playful, quirky, fun
 - classic_futuristic: 0 = classic, traditional, historical … 100 = futuristic, techno, experimental
 - clean_rough: 0 = clean, precise, smooth … 100 = rough, textured, distressed, hand-made
-Use the whole range; 50 means truly in between.`;
+Use the whole range; 50 means truly in between.
+Also give its category: Sans, Serif, Slab, Mono, Display (decorative, stencil, pixel, blackletter, heavily stylised) or Script (handwritten, brush, calligraphic).`;
 
-/** @returns {Promise<number[]|null>} scores in AXES order */
+/** @returns {Promise<{mood:number[], category:string}|null>} scores in AXES order, plus a category */
 export async function ratePersonality(font) {
   await init();
   const file = path.join(SHOTS, (font.shotId || `fonts/${font.id}`) + ".thumb.webp");
@@ -50,5 +51,5 @@ export async function ratePersonality(font) {
     }],
   });
   if (res.stop_reason === "refusal" || !res.parsed_output) return null;
-  return AXES.map(([a, b]) => res.parsed_output[`${a}_${b}`]);
+  return { mood: AXES.map(([a, b]) => res.parsed_output[`${a}_${b}`]), category: res.parsed_output.category };
 }
