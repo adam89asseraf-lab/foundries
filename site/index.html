@@ -283,6 +283,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .fcard .fbody{padding:12px 14px 14px;gap:14px}
 .fcard .fhead{display:grid;gap:2px}
 .fcard .fmeta{justify-content:flex-start}
+.fcard .fmeta .maker{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--muted)}
 .fcard .fmeta .linkbtn{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
 .fcard .fprops{gap:0}
 .fcard .zoom{top:10px;right:10px}
@@ -392,7 +393,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 <script>
 (() => {
   const $ = s => document.querySelector(s);
-  const KINDS = ["Foundry","Typeface","Library"];
+  const KINDS = ["Foundry","Library"]; // single typefaces live in the Fonts list, not here
   const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
@@ -413,6 +414,12 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   const parseTags = s => [...new Set(String(s||"").split(",").map(t=>t.trim()).filter(Boolean).map(t => t.length > 24 ? t.slice(0,24) : t))];
 
   const NEW_DAYS = 30;
+  // Single-typeface entries (kind: Typeface) show only as fonts. Their font is listed even without a
+  // screenshot (blocked sites), as a name tile, so moving them off the Foundries list never hides them.
+  const isTypeface = it => !!it && it.kind === "Typeface";
+  const tfIds = () => new Set(items.filter(isTypeface).map(i => i.id));
+  const listedFont = (f, tf) => !!f.shotId || (tf.has(f.foundryId) && f.scan === "failed");
+  const foundryLabel = fd => isTypeface(fd) ? (fd.by || "") : (fd.name || "");
   // basic price per weight (set in foundries.yaml)
   const CUR = { USD:"$", EUR:"€", GBP:"£", ILS:"₪", JPY:"¥", NZD:"NZ$", AUD:"A$", CAD:"C$", CHF:"CHF ", SEK:"SEK ", DKK:"DKK ", NOK:"NOK " };
   const fmtPrice = p => !p ? null : p.amount === 0 ? "Free" : (CUR[p.currency] || p.currency + " ") + (Number.isInteger(p.amount) ? p.amount : p.amount.toFixed(2)) + "/weight";
@@ -434,6 +441,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   function visible(){
     const q = state.q.toLowerCase().trim();
     let out = items.filter(it => {
+      if (isTypeface(it)) return false;
       if (state.kind && it.kind !== state.kind) return false;
       if (state.onlyNew && !isNew(it)) return false;
       for (const t of state.tags) if (!(it.tags||[]).includes(t)) return false;
@@ -455,7 +463,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   function renderStats(){
     const s = $("#stats"); s.replaceChildren();
     const count = k => items.filter(i => i.kind === k).length;
-    [["Total", items.length], ["Foundries", count("Foundry")], ["Typefaces", count("Typeface")], ["Libraries", count("Library")]]
+    [["Total", count("Foundry") + count("Library")], ["Foundries", count("Foundry")], ["Libraries", count("Library")]]
       .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
   }
 
@@ -468,7 +476,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     if (nNew) { const b = mk("New releases", nNew, state.onlyNew, () => { state.onlyNew = !state.onlyNew; render(); }); b.classList.add("newchip"); k.append(b); }
 
     const counts = new Map();
-    items.forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
+    items.filter(i => !isTypeface(i)).forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
     const tagsSorted = [...counts.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
     const t = $("#tags"); t.replaceChildren();
     tagsSorted.forEach(([tag,n]) => t.append(mk(tag, n, state.tags.has(tag), () => { state.tags.has(tag) ? state.tags.delete(tag) : state.tags.add(tag); render(); })));
@@ -520,8 +528,8 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     const t = tab();
     $("#tabFonts").setAttribute("aria-current", t === "fonts" ? "page" : "false");
     $("#tabFoundries").setAttribute("aria-current", t === "foundries" ? "page" : "false");
-    $("#nFonts").textContent = fonts.filter(f => f.shotId).length || "";
-    $("#nFoundries").textContent = items.length || "";
+    { const tf = tfIds(); $("#nFonts").textContent = fonts.filter(f => listedFont(f, tf)).length || ""; }
+    $("#nFoundries").textContent = items.filter(i => !isTypeface(i)).length || "";
     $("#fontBar").hidden = t !== "fonts"; $("#foundryBar").hidden = t !== "foundries";
     updateFilterCounts();
     if (t === "fonts") return renderFonts();
@@ -554,15 +562,16 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     if (io) { io.disconnect(); io = null; } pumpNow = null;
     const byId = new Map(items.map(i => [i.id, i]));
     const s = $("#stats"); s.replaceChildren();
-    const done = fonts.filter(f => f.shotId), queued = fonts.filter(f => !f.shotId && f.scan !== "failed");
-    const foundriesWithFonts = new Set(done.map(f => f.foundryId)).size;
+    const tf = tfIds();
+    const done = fonts.filter(f => listedFont(f, tf)), queued = fonts.filter(f => !f.shotId && f.scan !== "failed");
+    const foundriesWithFonts = new Set(done.filter(f => !tf.has(f.foundryId)).map(f => f.foundryId)).size;
     [["Fonts", done.length], ["Foundries", foundriesWithFonts], ["New", done.filter(fIsNew).length], ["Queued", queued.length]]
       .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
 
     // foundry select
     const sel = $("#fFoundry"); const cur = fstate.foundry;
     const counts = new Map(); done.forEach(f => counts.set(f.foundryId, (counts.get(f.foundryId)||0)+1));
-    const opts = [...counts.keys()].map(id => byId.get(id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+    const opts = [...counts.keys()].map(id => byId.get(id)).filter(fd => fd && !isTypeface(fd)).sort((a,b)=>a.name.localeCompare(b.name));
     sel.replaceChildren(Object.assign(el("option",null,"All foundries"),{value:""}), ...opts.map(fd => Object.assign(el("option", null, `${fd.name} (${counts.get(fd.id)})`), {value: fd.id})));
     sel.value = counts.has(cur) ? cur : ""; if (!counts.has(cur)) fstate.foundry = "";
 
@@ -627,9 +636,9 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
       const fd = byId.get(f.foundryId) || {};
       const r = el("div","row");
       const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || ""}`);
-      const img = el("img","rthumb"); img.src = shotUrl(f); img.alt = ""; img.loading = "lazy";
+      const img = f.shotId ? Object.assign(el("img","rthumb"), { src: shotUrl(f), alt: "", loading: "lazy" }) : el("span");
       const nm = el("span","rname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
-      const fb = el("button","linkbtn rby", fd.name || ""); fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
+      const fb = isTypeface(fd) ? el("span","rby", foundryLabel(fd)) : el("button","linkbtn rby", fd.name || ""); if (!isTypeface(fd)) { fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); }; }
       const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
       const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
       r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span","rprice", fmtPrice(f.price) || ""));
@@ -639,18 +648,23 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
       const fd = byId.get(f.foundryId) || {};
       const c = el("article","fcard");
       const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || "unknown foundry"}`);
-      const sh = el("div","fshot"); const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", f.name); img.replaceWith(fbk); }; setImg(img, f, fstate.card); img.alt = "Screenshot of " + f.name; img.loading = "lazy"; img.decoding = "async"; sh.append(img);
+      const sh = el("div","fshot");
+      if (f.shotId) { const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", f.name); img.replaceWith(fbk); }; setImg(img, f, fstate.card); img.alt = "Screenshot of " + f.name; img.loading = "lazy"; img.decoding = "async"; sh.append(img); }
+      else { const fbk = el("div","fallback", f.name); if (isRTL(f.name)) fbk.dir = "rtl"; sh.append(fbk); }
       const body = el("div","fbody");
       const nm = el("div","fname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
       const meta = el("div","fmeta");
-      const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
-      fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
-      meta.append(fb);
+      if (isTypeface(fd)) { if (fd.by) meta.append(el("span","maker", fd.by)); }
+      else {
+        const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
+        fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
+        meta.append(fb);
+      }
       const head = el("div","fhead"); head.append(meta, nm); body.append(head);
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       const pt = fmtPrice(f.price);
       if (pr.length || pt || fIsNew(f)) { const pp = el("div","fprops tags joined"); if (fIsNew(f)) pp.append(el("span","tag new","New")); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
-      c.append(a, sh, body, zoomBtn(f, f.name + (fd.name ? " · " + fd.name : "")));
+      c.append(a, sh, body); if (f.shotId) c.append(zoomBtn(f, f.name + (foundryLabel(fd) ? " · " + foundryLabel(fd) : "")));
       return c;
     };
     // Endless scroll: append the next page when the sentinel nears the viewport (no re-render, no jump).
