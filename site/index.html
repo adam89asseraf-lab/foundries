@@ -405,7 +405,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
   // ---- Votes (Supabase). Paste the project URL and its public anon key to switch voting on; empty = no vote buttons.
-  const VOTES = { url: "", key: "" };
+  const VOTES = { url: "https://lulglxebjchreghaexjd.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1bGdseGViamNocmVnaGFleGpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MjMzNTgsImV4cCI6MjExMDk5OTM1OH0.G7g865fMppnvLe9khxq96f67obFMWCdNqHc8jmFX4w4" };
   const votesOn = !!(VOTES.url && VOTES.key);
   const voteCount = new Map();   // font id -> number of votes
   let myVotes = new Set();       // font ids this browser voted for
