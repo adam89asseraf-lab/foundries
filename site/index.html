@@ -514,8 +514,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     const s = $("#stats"); s.replaceChildren();
     const count = k => items.filter(i => i.kind === k).length;
     const k = state.kind, list = items.filter(i => i.kind === k);
-    const withFonts = list.filter(i => fonts.some(f => f.foundryId === i.id && f.shotId)).length;
-    (k === "Library" ? [["Libraries", list.length], ["New", list.filter(isNew).length]] : [["Foundries", list.length], ["With fonts", withFonts], ["New", list.filter(isNew).length]])
+    (k === "Library" ? [["Libraries", list.length], ["New", list.filter(isNew).length]] : [["Foundries", list.length], ["New", list.filter(isNew).length]])
       .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
   }
 
