@@ -314,6 +314,15 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   .mast h1{flex-direction:column;align-items:flex-start;gap:10px;font-size:min(60px,13.5vw)}
   .mast h1 .title{height:.85em}
   .mast h1 sup{margin:0}}
+/* votes */
+.fcard .fheadrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.vote{position:relative;z-index:2;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 9px;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 12px/1 var(--mono);cursor:pointer;border-radius:0}
+.vote svg{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
+.vote:hover{border-color:var(--ink)}
+.vote[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.vote[aria-pressed="true"] svg{fill:currentColor}
+.vote .vn:empty{display:none}
+.vote:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -345,6 +354,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
         <option value="shuffle">Shuffle</option>
         <option value="styles">Most styles</option>
         <option value="price">Price, low to high</option>
+        <option value="votes" id="optVotes" hidden>Most voted</option>
       </select>
     </div>
     <div class="bar-row"><div class="chips" id="fChips"></div></div>
@@ -394,6 +404,49 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   const KIND_LABEL = {Foundry:"Foundries", Typeface:"Typefaces", Library:"Libraries & tools"};
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
+  // ---- Votes (Supabase). Paste the project URL and its public anon key to switch voting on; empty = no vote buttons.
+  const VOTES = { url: "", key: "" };
+  const votesOn = !!(VOTES.url && VOTES.key);
+  const voteCount = new Map();   // font id -> number of votes
+  let myVotes = new Set();       // font ids this browser voted for
+  let voterId = "";
+  try { voterId = localStorage.getItem("fdx-voter") || ""; if (!voterId) { voterId = crypto.randomUUID(); localStorage.setItem("fdx-voter", voterId); } myVotes = new Set(JSON.parse(localStorage.getItem("fdx-voted") || "[]")); } catch(e) { voterId = voterId || crypto.randomUUID(); }
+  const saveMine = () => { try { localStorage.setItem("fdx-voted", JSON.stringify([...myVotes])); } catch(e){} };
+  const sb = (path, opt = {}) => fetch(VOTES.url.replace(/\/$/, "") + "/rest/v1/" + path, { ...opt, headers: { apikey: VOTES.key, Authorization: "Bearer " + VOTES.key, "Content-Type": "application/json", ...(opt.headers||{}) } });
+  async function loadVotes(){
+    if (!votesOn) return;
+    try {
+      for (let from = 0; ; from += 1000) {
+        const r = await sb("vote_counts?select=font_id,n", { headers: { Range: `${from}-${from+999}` } });
+        if (!r.ok) break;
+        const rows = await r.json(); rows.forEach(x => voteCount.set(x.font_id, x.n));
+        if (rows.length < 1000) break;
+      }
+      if (tab() === "fonts") render();
+    } catch(e) {}
+  }
+  async function toggleVote(f, btn){
+    const on = !myVotes.has(f.id);
+    const paint = () => { btn.setAttribute("aria-pressed", myVotes.has(f.id)); btn.querySelector(".vn").textContent = voteCount.get(f.id) || ""; };
+    on ? myVotes.add(f.id) : myVotes.delete(f.id);
+    voteCount.set(f.id, Math.max(0, (voteCount.get(f.id) || 0) + (on ? 1 : -1))); paint(); saveMine();
+    try {
+      const r = await sb("rpc/" + (on ? "vote" : "unvote"), { method: "POST", body: JSON.stringify({ p_font: f.id, p_voter: voterId }) });
+      if (!r.ok) throw 0;
+    } catch(e) {
+      on ? myVotes.delete(f.id) : myVotes.add(f.id);
+      voteCount.set(f.id, Math.max(0, (voteCount.get(f.id) || 0) + (on ? -1 : 1))); paint(); saveMine();
+      toast("Your vote didn't go through. Try again in a moment.");
+    }
+  }
+  function voteBtn(f){
+    const b = el("button","vote"); b.type = "button";
+    b.setAttribute("aria-pressed", myVotes.has(f.id)); b.setAttribute("aria-label", "Vote for " + f.name); b.title = "Vote";
+    b.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 2l5 6H9v4H5V8H2z"/></svg><span class="vn"></span>';
+    b.querySelector(".vn").textContent = voteCount.get(f.id) || "";
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleVote(f, b); };
+    return b;
+  }
   const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : location.hash === "#libraries" ? "libraries" : "fonts";
   let shuffleKey = Math.random();
@@ -614,6 +667,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       new: (a,b) => String(b.newSince||b.addedAt||"").localeCompare(String(a.newSince||a.addedAt||"")),
       shuffle: (a,b) => hashN(a.id + shuffleKey) - hashN(b.id + shuffleKey),
       styles: (a,b) => (+b.styles||0) - (+a.styles||0),
+      votes: (a,b) => (voteCount.get(b.id)||0) - (voteCount.get(a.id)||0) || ford(a.foundryId) - ford(b.foundryId),
       price: (a,b) => (a.price ? a.price.usd : Infinity) - (b.price ? b.price.usd : Infinity) || a.name.localeCompare(b.name)
     };
     list.sort(sorters[fstate.sort]);
@@ -653,7 +707,8 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
         fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
         meta.append(fb);
       }
-      const head = el("div","fhead"); head.append(meta, nm); body.append(head);
+      const head = el("div","fhead"); head.append(meta, nm);
+      if (votesOn) { const hr = el("div","fheadrow"); hr.append(head, voteBtn(f)); body.append(hr); } else body.append(head);
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       const pt = fmtPrice(f.price);
       if (pr.length || pt || fIsNew(f)) { const pp = el("div","fprops tags joined"); if (fIsNew(f)) pp.append(el("span","tag new","New")); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
@@ -792,7 +847,8 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       items = clean(snap.foundries);
       const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
       $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";
-      render();
+      if (votesOn) $("#optVotes").hidden = false;
+      render(); loadVotes();
     } catch(e) {
       $("#status").textContent = "The index couldn't load. Reload the page to try again.";
     }

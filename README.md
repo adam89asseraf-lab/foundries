@@ -143,3 +143,13 @@ Formats: `60 USD`, `€45`, `75 NZD`, `free`. The card shows the foundry's own c
 ## Personality
 
 The Fonts view has four **personality** sliders: Calm ↔ Loud, Serious ↔ Playful, Classic ↔ Futuristic, Clean ↔ Rough. Each font gets a 0–100 score on each, from Claude Haiku looking at the font's screenshot once (`crawler/personality.mjs`); fonts are re-rated only when their screenshot changes. This runs in the nightly workflow when the repository has an `ANTHROPIC_API_KEY` secret (Settings → Secrets and variables → Actions); without it the step skips itself and the sliders stay hidden. Rating the whole index costs roughly a dollar; after that only new fonts are rated. Locally: `ANTHROPIC_API_KEY=… node crawler/crawl.mjs --personality`.
+
+## Votes
+
+Each font card has an upvote button (one vote per browser per font, click again to undo) and the Fonts view gets a **Most voted** sort. Votes are stored in a free [Supabase](https://supabase.com) project, because GitHub Pages can't store anything:
+
+1. Create a free Supabase project.
+2. In **SQL Editor**, paste [`supabase/votes.sql`](supabase/votes.sql) and run it. This creates the `votes` table, the public `vote_counts` totals, and `vote()`/`unvote()` functions. Visitors can only call those and read totals.
+3. In **Project Settings → API**, copy the **Project URL** and the **anon public** key, and paste them into `const VOTES = { url: "", key: "" }` near the top of the script in `site/index.html`. The anon key is designed to be public.
+
+While `VOTES` is empty, the vote buttons and the sort stay hidden.
