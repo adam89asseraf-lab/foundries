@@ -752,12 +752,22 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       { family: '"Host Grotesk"', weight: 700 },  // neo-grotesk
     ];
     const t = $("#title"); if (!t) return;
-    const apply = f => { t.style.fontFamily = f.family + ", var(--display)"; t.style.fontWeight = f.weight; t.style.fontVariationSettings = f.vars || "normal"; t.title = f.family.replace(/"/g, ""); };
+    // keep the x-height constant across faces: scale each face so its measured "x" matches the first face's
+    const xh = f => { const c = document.createElement("canvas").getContext("2d"); c.font = `${f.weight} 200px ${f.family}`; const m = c.measureText("xzvu"); return m.actualBoundingBoxAscent || 0; };
+    let refX = 0;
+    const apply = f => {
+      const s = refX && f.x ? Math.min(1.6, Math.max(0.6, refX / f.x)) : 1;
+      t.style.fontFamily = f.family + ", var(--display)"; t.style.fontWeight = f.weight; t.style.fontVariationSettings = f.vars || "normal";
+      t.style.fontSize = s + "em";                                   // same x-height…
+      t.style.height = (0.85 / s) + "em"; t.style.lineHeight = (0.85 / s); // …and the same box, so the header never moves
+      t.title = f.family.replace(/"/g, "");
+    };
     apply(FACES[0]);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // load every face first so each swap is instant (a face that fails to load is skipped)
     Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found rizz").then(r => r.length ? f : null, () => null))).then(ok => {
       const faces = ok.filter(Boolean); if (faces.length < 2) return;
+      faces.forEach(f => f.x = xh(f)); refX = faces[0].x; apply(faces[0]);
       let i = 0;
       setInterval(() => { if (!document.hidden) { i = (i + 1) % faces.length; apply(faces[i]); } }, 800);
     });
