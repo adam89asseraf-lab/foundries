@@ -9,7 +9,7 @@ A public index of type foundries and their typefaces, with screenshots kept up t
 
 ## Add a foundry
 
-Edit [`foundries.yaml`](foundries.yaml) on GitHub (the page's **Edit list** link goes straight there) and add an entry:
+Edit [`foundries.yaml`](foundries.yaml) on GitHub and add an entry:
 
 ```yaml
   - id: grilli            # stable slug; screenshot files are named after it
@@ -23,7 +23,7 @@ Edit [`foundries.yaml`](foundries.yaml) on GitHub (the page's **Edit list** link
 
 - **Foundry:** the crawler screenshots the homepage, finds the catalogue and screenshots every font.
 - **Typeface:** the page itself is the one font. It appears only in the Fonts list (labelled with its maker from `by`), not as a card in the Foundries list.
-- **Library:** homepage screenshot only.
+- **Library:** homepage screenshot only. Libraries have their own tab on the site.
 
 Name, tag and note edits show up on the site within a minute or two, because the Pages deploy merges the YAML. New entries are crawled on the next nightly run. Removing an entry removes it and its screenshots.
 

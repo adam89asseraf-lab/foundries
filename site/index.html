@@ -298,6 +298,17 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .card .zoom{top:22px;right:22px}
 .row .rname{font-family:var(--stat)}
 .status{font-family:var(--mono)}
+/* v3: eyebrow above the title; three joined tabs; select chevron; plain maker label */
+header.mast{padding-top:32px}
+.mleft{display:flex;flex-direction:column;gap:0}
+.eyebrow{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--muted)}
+.stats{padding-right:16px}
+select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23121214' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 8px center}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) select.ctl{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ececee' stroke-width='1.5'/%3E%3C/svg%3E")}}
+:root[data-theme="dark"] select.ctl{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ececee' stroke-width='1.5'/%3E%3C/svg%3E")}
+#fontBar .bar-row:first-child .search{flex:0 1 800px}
+.fcard .fmeta .linkbtn{text-decoration:none}
+.fcard .fmeta .linkbtn:hover{text-decoration:underline}
 @media (max-width:700px){.mright{align-items:flex-start;gap:16px} header.mast{grid-template-columns:1fr;align-items:start} .stats{gap:16px}
   /* phones: subtitle under the title, title sized to the screen so no rotating face overflows */
   .mast h1{flex-direction:column;align-items:flex-start;gap:10px;font-size:min(60px,13.5vw)}
@@ -308,12 +319,11 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 <body>
 <div class="wrap">
   <header class="mast">
-    <h1><span class="title" id="title">Found rizz</span><sup>Type &amp; foundry index</sup></h1>
+    <div class="mleft"><div class="eyebrow">Type &amp; foundry index</div><h1><span class="title" id="title">Found rizz</span></h1></div>
     <div class="mright">
       <div class="stats" id="stats" aria-live="polite"></div>
       <nav class="tabs-main" aria-label="Views">
-        <span class="seg2"><a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a><a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a></span>
-        <a class="editlink" id="editLink" href="#" target="_blank" rel="noopener" hidden title="Edit foundries.yaml on GitHub">Edit list</a>
+        <span class="seg2"><a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a><a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a><a href="#libraries" id="tabLibraries">Libraries<span class="n" id="nLibraries"></span></a></span>
       </nav>
     </div>
   </header>
@@ -328,7 +338,6 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
       </div>
       <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="fontBar">Filters<span class="n"></span></button>
       <select class="ctl fbar-select" id="fFoundry" aria-label="Filter by foundry"><option value="">All foundries</option></select>
-      <div class="chips" id="fChips"></div>
       <select class="ctl" id="fSort" aria-label="Sort fonts">
         <option value="foundry">By foundry</option>
         <option value="az">A to Z</option>
@@ -337,13 +346,8 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
         <option value="styles">Most styles</option>
         <option value="price">Price, low to high</option>
       </select>
-      <div class="seg" role="group" aria-label="View">
-        <button id="fvGrid" aria-pressed="true">Grid</button>
-        <button id="fvList" aria-pressed="false">List</button>
-      </div>
-      <button class="btn" id="fCopy" title="Copy every visible font link as Markdown">Copy links</button>
     </div>
-    <div class="bar-row"><div class="chips" id="fTagChips" role="group" aria-label="Filter fonts by foundry tag"></div></div>
+    <div class="bar-row"><div class="chips" id="fChips"></div></div>
     <div class="bar-row sliders">
       <div class="slider"><label for="fStyles">Styles</label><input id="fStyles" type="range" min="1" max="20" value="1"><output id="fStylesOut">Any</output></div>
       <div class="slider"><label for="fPriceMin">Price / weight</label><div class="range" id="fPrice"><div class="rtrack"></div><div class="rfill" id="fPriceFill"></div><input id="fPriceMin" type="range" min="0" max="200" step="5" value="0" aria-label="Minimum price per weight"><input id="fPriceMax" type="range" min="0" max="200" step="5" value="200" aria-label="Maximum price per weight"></div><output id="fPriceOut">Any</output></div>
@@ -362,18 +366,11 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
         <input id="q" type="search" placeholder="Search names, makers, tags, domains" aria-label="Search">
       </div>
       <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="foundryBar">Filters<span class="n"></span></button>
-      <div class="chips" id="kinds" role="group" aria-label="Filter by kind"></div>
-      <div class="sep" aria-hidden="true"></div>
       <select class="ctl" id="sort" aria-label="Sort">
         <option value="order">Board order</option>
         <option value="az">A to Z</option>
         <option value="new">Newest first</option>
       </select>
-      <div class="seg" role="group" aria-label="View">
-        <button id="vGrid" aria-pressed="true">Grid</button>
-        <button id="vList" aria-pressed="false">List</button>
-      </div>
-      <button class="btn" id="copyBtn" title="Copy every visible link as Markdown">Copy links</button>
     </div>
     <div class="bar-row">
       <div class="chips" id="tags" role="group" aria-label="Filter by tag"></div>
@@ -398,10 +395,10 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   let items = [];           // foundries
   let fonts = [];           // individual typefaces
   const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
-  const tab = () => location.hash === "#foundries" ? "foundries" : "fonts";
+  const tab = () => location.hash === "#foundries" ? "foundries" : location.hash === "#libraries" ? "libraries" : "fonts";
   let shuffleKey = Math.random();
   const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
-  try { const v = localStorage.getItem("fdx-view"); if (v) state.view = v; } catch(e){}
+  // grid only (the list view was removed in the design)
 
   /* ---------- helpers ---------- */
   const safeUrl = u => { try { const x = new URL(String(u).trim()); return /^https?:$/.test(x.protocol) ? x.href : null; } catch(e){ return null; } };
@@ -463,20 +460,17 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   function renderStats(){
     const s = $("#stats"); s.replaceChildren();
     const count = k => items.filter(i => i.kind === k).length;
-    [["Total", count("Foundry") + count("Library")], ["Foundries", count("Foundry")], ["Libraries", count("Library")]]
+    const k = state.kind, list = items.filter(i => i.kind === k);
+    const withFonts = list.filter(i => fonts.some(f => f.foundryId === i.id && f.shotId)).length;
+    (k === "Library" ? [["Libraries", list.length], ["New", list.filter(isNew).length]] : [["Foundries", list.length], ["With fonts", withFonts], ["New", list.filter(isNew).length]])
       .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
   }
 
   function renderChips(){
-    const k = $("#kinds"); k.replaceChildren();
     const mk = (label, n, pressed, on) => { const b = el("button","chip",label); b.type="button"; b.setAttribute("aria-pressed", pressed); if (n != null) b.append(el("span","n",String(n))); b.onclick = on; return b; };
-    k.append(mk("All", null, !state.kind, () => { state.kind = null; render(); }));
-    KINDS.forEach(kd => k.append(mk(KIND_LABEL[kd].split(" ")[0], items.filter(i=>i.kind===kd).length, state.kind===kd, () => { state.kind = state.kind===kd ? null : kd; render(); })));
-    const nNew = items.filter(isNew).length;
-    if (nNew) { const b = mk("New releases", nNew, state.onlyNew, () => { state.onlyNew = !state.onlyNew; render(); }); b.classList.add("newchip"); k.append(b); }
 
     const counts = new Map();
-    items.filter(i => !isTypeface(i)).forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
+    items.filter(i => i.kind === state.kind).forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
     const tagsSorted = [...counts.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
     const t = $("#tags"); t.replaceChildren();
     tagsSorted.forEach(([tag,n]) => t.append(mk(tag, n, state.tags.has(tag), () => { state.tags.has(tag) ? state.tags.delete(tag) : state.tags.add(tag); render(); })));
@@ -528,23 +522,25 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     const t = tab();
     $("#tabFonts").setAttribute("aria-current", t === "fonts" ? "page" : "false");
     $("#tabFoundries").setAttribute("aria-current", t === "foundries" ? "page" : "false");
+    $("#tabLibraries").setAttribute("aria-current", t === "libraries" ? "page" : "false");
+    state.kind = t === "libraries" ? "Library" : "Foundry"; // each tab is one kind
     { const tf = tfIds(); $("#nFonts").textContent = fonts.filter(f => listedFont(f, tf)).length || ""; }
-    $("#nFoundries").textContent = items.filter(i => !isTypeface(i)).length || "";
-    $("#fontBar").hidden = t !== "fonts"; $("#foundryBar").hidden = t !== "foundries";
+    $("#nFoundries").textContent = items.filter(i => i.kind === "Foundry").length || "";
+    $("#nLibraries").textContent = items.filter(i => i.kind === "Library").length || "";
+    $("#fontBar").hidden = t !== "fonts"; $("#foundryBar").hidden = t === "fonts";
+    $("#q").placeholder = t === "libraries" ? "Search libraries, tags, domains" : "Search names, makers, tags, domains";
     updateFilterCounts();
     if (t === "fonts") return renderFonts();
     if (io) { io.disconnect(); io = null; } pumpNow = null;
     if (io) { io.disconnect(); io = null; }
     renderStats(); renderChips();
     if ($("#status").textContent.includes("queued")) $("#status").textContent = $("#status").dataset.base || "";
-    $("#vGrid").setAttribute("aria-pressed", state.view==="grid");
-    $("#vList").setAttribute("aria-pressed", state.view==="list");
     const list = visible();
     const out = $("#out"); out.replaceChildren();
     if (!items.length) return;
     if (!list.length) { out.append(el("p","empty","Nothing matches. Clear a filter or the search to see more.")); return; }
-    const box = el("div", state.view === "grid" ? "grid" : "list");
-    list.forEach((it,i) => box.append(state.view==="grid" ? card(it,i) : row(it,i)));
+    const box = el("div", "grid");
+    list.forEach((it,i) => box.append(card(it,i)));
     out.append(box);
   }
 
@@ -594,10 +590,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
     priceRange(Math.ceil(maxUsd / 10) * 10, !priced.length);
     $("#fMoods").hidden = !done.some(f => f.mood); moodRanges();
     out_card();
-    const tc = new Map(); done.forEach(f => ftags(f).forEach(t => tc.set(t, (tc.get(t)||0)+1)));
-    const tg = $("#fTagChips"); tg.replaceChildren(...[...tc.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n]) => mkc(t, n, fstate.tags.has(t), () => { fstate.tags.has(t) ? fstate.tags.delete(t) : fstate.tags.add(t); fstate.limit = PAGE; render(); })));
-    tg.parentElement.hidden = !tc.size;
-    $("#fvGrid").setAttribute("aria-pressed", state.view === "grid"); $("#fvList").setAttribute("aria-pressed", state.view === "list");
+
     const nNew = done.filter(fIsNew).length;
     if (nNew) { const b = el("button","chip newchip","New releases"); b.type="button"; b.append(el("span","n",String(nNew))); b.setAttribute("aria-pressed", fstate.onlyNew); b.onclick = () => { fstate.onlyNew = !fstate.onlyNew; render(); }; ch.append(b); }
 
@@ -668,12 +661,12 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
       return c;
     };
     // Endless scroll: append the next page when the sentinel nears the viewport (no re-render, no jump).
-    const box = el("div", state.view === "list" ? "list" : "fgrid");
+    const box = el("div", "fgrid");
     let shown = 0;
     const more = n => {
       const end = Math.min(list.length, shown + n);
       const frag = document.createDocumentFragment();
-      for (let i = shown; i < end; i++) frag.append(state.view === "list" ? rowFor(list[i], i) : cardFor(list[i]));
+      for (let i = shown; i < end; i++) frag.append(cardFor(list[i]));
       box.append(frag); shown = end; fstate.limit = Math.max(PAGE, shown);
       if (shown >= list.length) { if (io) io.disconnect(); io = null; pumpNow = null; sentinel.remove(); }
     };
@@ -723,7 +716,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   });
   function updateFilterCounts(){
     const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + ((fstate.minPrice!=null||fstate.maxPrice!=null)?1:0) + (moodActive()?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
-    const nD = (state.kind?1:0) + state.tags.size + (state.onlyNew?1:0);
+    const nD = state.tags.size + (state.onlyNew?1:0);
     const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
     if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
   }
@@ -778,28 +771,13 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
   $("#fSize").addEventListener("input", e => { fstate.card = +e.target.value; out_card(); try { localStorage.setItem("fdx-card", fstate.card); } catch(_){} });
   try { const c = +localStorage.getItem("fdx-card"); if (c) { fstate.card = c; $("#fSize").value = c; } } catch(_){}
   $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
-  $("#fvGrid").onclick = () => setView("grid");
-  $("#fvList").onclick = () => setView("list");
-  $("#fCopy").onclick = async () => {
-    const byId = new Map(items.map(i => [i.id, i]));
-    const md = fontsVisible.map(f => `- [${f.name}](${f.url}) — ${(byId.get(f.foundryId)||{}).name || ""}`).join("\n");
-    try { await navigator.clipboard.writeText(md); toast(`Copied ${fontsVisible.length} font links as Markdown`); } catch(e){ toast("Your browser blocked copying. Try again from the page itself."); }
-  };
   $("#fq").addEventListener("input", e => { fstate.q = e.target.value; fstate.limit = PAGE; render(); });
   $("#fFoundry").addEventListener("change", e => { fstate.foundry = e.target.value; fstate.limit = PAGE; render(); });
   $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
-  const setView = v => { state.view = v; try{ localStorage.setItem("fdx-view", v); }catch(e){} render(); };
-  $("#vGrid").onclick = () => setView("grid");
-  $("#vList").onclick = () => setView("list");
   $("#lb").onclick = e => { if (e.target.tagName !== "A") $("#lb").hidden = true; };
   document.addEventListener("keydown", e => { if (e.key === "Escape") $("#lb").hidden = true; });
-  $("#copyBtn").onclick = async () => {
-    const md = visible().map(i => `- [${i.name}](${i.url})`).join("\n");
-    try { await navigator.clipboard.writeText(md); toast(`Copied ${visible().length} links as Markdown`); }
-    catch(e){ toast("Your browser blocked copying. Try again from the page itself."); }
-  };
 
   /* ---------- data ---------- */
   render();
@@ -814,7 +792,6 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
       items = clean(snap.foundries);
       const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
       $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";
-      if (snap.repo && /^[\w.-]+\/[\w.-]+$/.test(snap.repo)) { const a = $("#editLink"); a.href = "https://github.com/" + snap.repo + "/edit/main/foundries.yaml"; a.hidden = false; }
       render();
     } catch(e) {
       $("#status").textContent = "The index couldn't load. Reload the page to try again.";
