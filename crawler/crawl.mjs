@@ -40,6 +40,8 @@ data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
 for (const id of removed) { removeShot(id); log("removed", id); }
 for (const id of rescans) {
   for (const f of data.fonts) if (f.foundryId === id) f.scan = "queued";
+  const fd = data.foundries.find(x => x.id === id); // rediscover now, even if the last discovery failed
+  if (fd) for (const k of ["catalogCheckedAt", "discoverAttemptAt", "discoverFailed"]) delete fd[k];
   log("rescan", id);
 }
 const matchOnly = id => !ONLY.length || ONLY.some(o => id === o || id.startsWith(o));
@@ -145,6 +147,9 @@ function nameFor(text, slug) {
 
 async function discoverOne(page, f) {
   const start = f.cfg?.catalogUrl || f.catalogUrl || f.url;
+  // `fontUrls`: a hand-written list for catalogues the crawler can't read (JS-only cards, one-page sites with #anchors)
+  if (Array.isArray(f.cfg?.fontUrls) && f.cfg.fontUrls.length)
+    return { url: start, links: f.cfg.fontUrls.map(x => typeof x === "string" ? { u: x, t: "" } : { u: x.url, t: x.name || "", name: x.name }).filter(l => l.u) };
   const tryUrl = async url => {
     await open(page, url);
     await page.evaluate(hideCookieBanners).catch(() => {});
@@ -189,7 +194,9 @@ function addFonts(f, links, markNew) {
     while (ids.has(id)) id = `${f.id}--${slug}-${n++}`;
     const ov = f.cfg?.fonts?.[slug] || {};
     if (ov.skip) continue;
-    const font = { id, foundryId: f.id, name: ov.name || nameFor(l.t, slug), url: l.u, order: ++order, addedAt: now(), scan: "queued", listText: l.t.slice(0, 120) };
+    let name = ov.name || l.name || nameFor(l.t, slug);
+    if (f.cfg?.nameStrip) name = name.replace(new RegExp(f.cfg.nameStrip, "i"), "").trim() || name; // e.g. " Font Of The Month"
+    const font = { id, foundryId: f.id, name, url: l.u, order: ++order, addedAt: now(), scan: "queued", listText: l.t.slice(0, 120) };
     if (markNew) font.newSince = now();
     data.fonts.push(font); ids.add(id); have.add(key(u)); added.push(font);
   }
@@ -316,6 +323,14 @@ async function captureOne(page, font, f) {
   if (font.gf) return captureGoogle(page, font);
   await open(page, font.url);
   await prepare(page);
+  const anchor = font.url.includes("#") ? safeDecode(font.url.split("#").pop()) : "";
+  if (f.cfg?.capture === "top" || anchor && await page.evaluate(id => { const e = document.getElementById(id) || document.querySelector(`[name="${CSS.escape(id)}"]`); if (!e) return false; e.scrollIntoView({ block: "start" }); return true; }, anchor)) {
+    // a font section on a one-page site (or `capture: top`): shoot it as it is, don't wander off to other fonts
+    await sleep(900); await page.evaluate(finishAnimations).catch(() => {});
+    const q = await page.evaluate(qualityCheck);
+    await writeShot(await shoot(page), `fonts/${font.id}`);
+    return finishFont(page, font, f, q);
+  }
   if (wantsCover(font, f) && await captureCover(page, font)) return finishFont(page, font, f, { ok: true, score: 9, reasons: [], cover: true });
   await page.evaluate(typeSnippet);
   await sleep(900);
@@ -356,7 +371,8 @@ async function finishFont(page, font, f, q) {
       return { ok: true, score: 0, reasons: [], excluded: true };
     }
     const clean = title.replace(/\s+(typeface|font family|font|type family)\b.*$/i, "").trim();
-    if (!ov.name && clean && clean.length <= 40) font.name = clean;
+    // a site-section title ("Notes", "Shop") isn't the font's name
+    if (!ov.name && clean && clean.length <= 40 && !/^(notes?|blog|journal|news|shop|store|home|products?|fonts?|typefaces?)$/i.test(clean)) font.name = clean;
   }
   const c = categorise({ ...text, name: font.name, listText: font.listText });
   let category = c.category;

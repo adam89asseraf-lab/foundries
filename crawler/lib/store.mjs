@@ -106,7 +106,7 @@ export function merge(data, entries) {
     for (const k of USER_FIELDS) if (e[k] !== undefined) cur[k] = e[k];
     if (!cur.addedAt) cur.addedAt = now();
     // crawl settings from YAML (not shown on the page, but the crawler reads them from here)
-    cur.cfg = pick(e, ["catalogUrl", "fontLinkPattern", "exclude", "skip", "fonts", "capture", "source", "limit", "includeNew", "include", "paginate"]);
+    cur.cfg = pick(e, ["catalogUrl", "fontLinkPattern", "fontUrls", "nameStrip", "exclude", "skip", "fonts", "capture", "source", "limit", "includeNew", "include", "paginate"]);
     if (e.rescan || urlChanged) {
       rescans.push(e.id);
       cur.scan = "pending"; cur.catalogCheckedAt = null; cur.rescan = true;

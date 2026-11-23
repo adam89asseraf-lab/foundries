@@ -160,6 +160,9 @@ foundries:
   - id: shriftovik
     name: Shriftovik
     url: https://shriftovik.com/
+    capture: top
+    catalogUrl: https://shriftovik.com/
+    fontLinkPattern: "shriftovik\\.com/sk_[a-z_]+$"
     kind: Foundry
     tags: [ Cyrillic ]
     order: 18
@@ -371,18 +374,13 @@ foundries:
     order: 46
     addedAt: 2026-11-22T08:00:00Z
     price: 70 EUR
-  - id: brandon-nickerson-display
-    name: Brandon Nickerson — Display
-    by: Brandon Nickerson
-    url: https://www.bnicks.com/shop/display
-    kind: Foundry
-    tags: [ Display ]
-    order: 47
-    addedAt: 2026-11-22T08:00:00Z
   - id: font-of-the-month-club
     name: Font of the Month Club
     by: David Jonathan Ross
     url: https://djr.com/font-of-the-month-club
+    capture: image
+    nameStrip: "^\\w+s font of the month (club )?|\\s*font of the month$"
+    fontLinkPattern: "djr\\.com/notes/[^/]*font-of-the-month"
     kind: Foundry
     tags: [ Subscription ]
     order: 48
@@ -467,6 +465,14 @@ foundries:
     name: דן ריזינגר
     by: Dan Reisinger
     url: https://reisinger.hafontia.com/
+    fontUrls:
+      - { url: "https://reisinger.hafontia.com/#font-maccabia", name: "Reisinger Yarden" }
+      - { url: "https://reisinger.hafontia.com/#font-daniel", name: "Reisinger Idan" }
+      - { url: "https://reisinger.hafontia.com/#font-technion", name: "Reisinger Michal" }
+      - { url: "https://reisinger.hafontia.com/#font-keshev", name: "Reisinger Amir" }
+      - { url: "https://reisinger.hafontia.com/#font-malon", name: "Reisinger Neta" }
+      - { url: "https://reisinger.hafontia.com/#font-%d7%99%d7%95%d7%a0%d7%aa%d7%9f", name: "Reisinger Yonatan" }
+    price: free
     kind: Foundry
     tags: [ Hebrew ]
     order: 60
@@ -474,6 +480,69 @@ foundries:
   - id: 205tf
     name: 205TF
     url: https://www.205.tf/
+    fontUrls:
+      - { url: "https://www.205.tf/collection/album", name: "Album" }
+      - { url: "https://www.205.tf/collection/alcala", name: "Alcalá" }
+      - { url: "https://www.205.tf/collection/amiral", name: "Amiral" }
+      - { url: "https://www.205.tf/collection/anacharsis", name: "Anacharsis" }
+      - { url: "https://www.205.tf/collection/andersen", name: "Andersen" }
+      - { url: "https://www.205.tf/collection/augure", name: "Augure" }
+      - { url: "https://www.205.tf/collection/bartok", name: "Bartok" }
+      - { url: "https://www.205.tf/collection/basetica", name: "Basetica" }
+      - { url: "https://www.205.tf/collection/battling", name: "Battling" }
+      - { url: "https://www.205.tf/collection/beretta", name: "Beretta" }
+      - { url: "https://www.205.tf/collection/bertin", name: "Bertin" }
+      - { url: "https://www.205.tf/collection/brett", name: "Brett" }
+      - { url: "https://www.205.tf/collection/cx80", name: "CX80" }
+      - { url: "https://www.205.tf/collection/caporal", name: "Caporal" }
+      - { url: "https://www.205.tf/collection/cardone", name: "Cardone" }
+      - { url: "https://www.205.tf/collection/castillon", name: "Castillon" }
+      - { url: "https://www.205.tf/collection/chrysaora", name: "Chrysaora" }
+      - { url: "https://www.205.tf/collection/clifton", name: "Clifton" }
+      - { url: "https://www.205.tf/collection/colonel", name: "Colonel" }
+      - { url: "https://www.205.tf/collection/cosimo", name: "Cosimo" }
+      - { url: "https://www.205.tf/collection/dedale", name: "Dédale" }
+      - { url: "https://www.205.tf/collection/exposure", name: "Exposure" }
+      - { url: "https://www.205.tf/collection/gando", name: "Gando" }
+      - { url: "https://www.205.tf/collection/garaje", name: "Garaje" }
+      - { url: "https://www.205.tf/collection/heliuum", name: "Heliuum" }
+      - { url: "https://www.205.tf/collection/helvetius", name: "Helvetius" }
+      - { url: "https://www.205.tf/collection/henry", name: "Henry" }
+      - { url: "https://www.205.tf/collection/hour", name: "Hour" }
+      - { url: "https://www.205.tf/collection/immortel", name: "Immortel" }
+      - { url: "https://www.205.tf/collection/indiana", name: "Indiana" }
+      - { url: "https://www.205.tf/collection/injurial", name: "Injurial" }
+      - { url: "https://www.205.tf/collection/kelvin", name: "Kelvin" }
+      - { url: "https://www.205.tf/collection/krata", name: "Krata" }
+      - { url: "https://www.205.tf/collection/le-beaune", name: "Le Beaune" }
+      - { url: "https://www.205.tf/collection/le-chaufferie", name: "Le Chaufferie" }
+      - { url: "https://www.205.tf/collection/le-francois", name: "Le François" }
+      - { url: "https://www.205.tf/collection/leopardo", name: "Leopardo" }
+      - { url: "https://www.205.tf/collection/lost", name: "Lost" }
+      - { url: "https://www.205.tf/collection/louize", name: "Louize" }
+      - { url: "https://www.205.tf/collection/maax", name: "Maax" }
+      - { url: "https://www.205.tf/collection/milling", name: "Milling" }
+      - { url: "https://www.205.tf/collection/minuscule", name: "Minuscule" }
+      - { url: "https://www.205.tf/collection/minerale", name: "Minérale" }
+      - { url: "https://www.205.tf/collection/molitor", name: "Molitor" }
+      - { url: "https://www.205.tf/collection/muoto", name: "Muoto" }
+      - { url: "https://www.205.tf/collection/naancy", name: "Naancy" }
+      - { url: "https://www.205.tf/collection/petit-serif", name: "Petit Serif" }
+      - { url: "https://www.205.tf/collection/pinokio", name: "Pinokio" }
+      - { url: "https://www.205.tf/collection/plaak", name: "Plaak" }
+      - { url: "https://www.205.tf/collection/plaax", name: "Plaax" }
+      - { url: "https://www.205.tf/collection/renotype", name: "Renotype" }
+      - { url: "https://www.205.tf/collection/robin", name: "Robin" }
+      - { url: "https://www.205.tf/collection/romain-20", name: "Romain 20" }
+      - { url: "https://www.205.tf/collection/salmanazar", name: "Salmanazar" }
+      - { url: "https://www.205.tf/collection/seabirds", name: "Seabirds" }
+      - { url: "https://www.205.tf/collection/seamus", name: "Seamus" }
+      - { url: "https://www.205.tf/collection/stockmar", name: "Stockmar" }
+      - { url: "https://www.205.tf/collection/stuart", name: "Stuart" }
+      - { url: "https://www.205.tf/collection/thelo", name: "Thelo" }
+      - { url: "https://www.205.tf/collection/tifo", name: "Tifo" }
+      - { url: "https://www.205.tf/collection/yorick", name: "Yorick" }
+      - { url: "https://www.205.tf/collection/zenith", name: "Zénith" }
     kind: Foundry
     tags: [ France ]
     order: 61
@@ -621,6 +690,8 @@ foundries:
   - id: peregrin-studio
     name: Peregrin Studio
     url: https://peregrinstudio.com/typefaces
+    catalogUrl: https://peregrinstudio.com/typefaces
+    fontLinkPattern: "/work/(?!projects$)[^/]+$"
     kind: Foundry
     order: 82
     addedAt: 2026-11-22T08:00:00Z
@@ -655,6 +726,15 @@ foundries:
   - id: matter-of-sorts
     name: Matter of Sorts
     url: https://matterofsorts.com/
+    fontUrls:
+      - { url: "https://matterofsorts.com/#cassette", name: "Cassette" }
+      - { url: "https://matterofsorts.com/#syllabus", name: "Syllabus" }
+      - { url: "https://matterofsorts.com/#staunch", name: "Staunch Titling" }
+      - { url: "https://matterofsorts.com/#fieldgrotcond", name: "Field Grot Condensed" }
+      - { url: "https://matterofsorts.com/#article", name: "Article" }
+      - { url: "https://matterofsorts.com/#quadrant", name: "Quadrant" }
+      - { url: "https://matterofsorts.com/#turnery", name: "Turnery" }
+      - { url: "https://matterofsorts.com/#recollection", name: "Recollection" }
     kind: Foundry
     order: 87
     addedAt: 2026-11-22T08:00:00Z

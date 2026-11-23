@@ -40,6 +40,7 @@ All overrides are optional and go on the foundry entry:
 | `skip: true` | Never crawl this entry. It still shows on the page. |
 | `catalogUrl` | The page that lists all fonts, when it isn't the homepage or a nav link called Fonts/Typefaces/Shop/… |
 | `fontLinkPattern` | A regex every font link must match, e.g. `"/typefaces/[^/]+$"`. Use it when auto-discovery picks the wrong group of links. |
+| `fontUrls` | A hand-written list of font pages, for catalogues the crawler can't read (cards that aren't links, one-page sites). Each item is a URL or `{ url, name }`. A URL with `#anchor` is shot at that section of the page. |
 | `exclude` | A list of regexes. Matching links (URL or link text) are ignored. Trials, licences, EULAs, blog posts, gift cards, merch and bundles are already left out. |
 | `fonts` | Per-font overrides, keyed by the font's slug (the part after `<id>--` in its id). |
 
