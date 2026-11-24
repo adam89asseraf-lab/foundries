@@ -12,13 +12,14 @@ import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
 import { googleFamilies, specimenHtml, googleFontRecord } from "./google-fonts.mjs";
 import { fontshareFamilies } from "./fontshare.mjs";
 import { ratePersonality, personalityEnabled } from "./personality.mjs";
+import { SAMPLE, detectFace, renderUniform, fallbackGlyphs } from "./uniform.mjs";
 
 /* ---------- args ---------- */
 const argv = process.argv.slice(2);
 const flag = f => argv.includes(f);
 const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
-const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check"), personality: flag("--personality") };
-if (!Object.values(PHASES).some(Boolean)) PHASES.homepages = PHASES.discover = PHASES.capture = true;
+const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check"), personality: flag("--personality"), uniform: flag("--uniform") };
+if (!Object.values(PHASES).some(Boolean)) PHASES.homepages = PHASES.discover = PHASES.capture = PHASES.uniform = true;
 const LIMIT = +opt("--limit", Infinity);
 const ONLY = opt("--only", "").split(",").map(s => s.trim()).filter(Boolean);
 const DEADLINE = Date.now() + +opt("--max-minutes", 9999) * 60000;
@@ -423,6 +424,59 @@ async function capture() {
   });
 }
 
+/* ---------- uniform specimens: every font on the same background, in the same ink, showing the same words ---------- */
+const UNIFORM_COLORS = { bg: "#ededea", ink: "#121214" };
+const UNIFORM_RETRY_DAYS = 30;
+async function uniformOne(ctx, page, cdp, font, f) {
+  if (font.gf) {
+    await page.setContent(specimenHtml(font.gf), { waitUntil: "load", timeout: 45000 });
+    await page.waitForFunction(() => document.body.dataset.ready, null, { timeout: 20000 }).catch(() => {});
+  } else {
+    if (wantsCover(font, f)) return "image-only font";
+    await open(page, font.url); await prepare(page);
+    for (let i = 0; i < 4; i++) { await page.evaluate(() => { document.scrollingElement.scrollTop += innerHeight; }); await sleep(300); } // lazy webfonts
+    await page.evaluate(() => { document.scrollingElement.scrollTop = 0; });
+  }
+  const cands = await page.evaluate(detectFace, font.name);
+  if (!cands.length) return "no webfont for this font on its page";
+  // the first candidate that draws a whole sample by itself (Hebrew fonts show Hebrew; Cyrillic only when Latin is missing)
+  for (const c of cands) for (const k of ["hebrew", "latin", "cyrillic"]) {
+    await page.evaluate(renderUniform, { face: c, sample: SAMPLE[k], colors: UNIFORM_COLORS });
+    if ((await fallbackGlyphs(cdp)) !== 0) continue;
+    await sleep(250);
+    await writeShot(await page.screenshot({ type: "png" }), `fonts/${font.id}`);
+    Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), uniformAt: now(), shot: "uniform", uniformFace: c.fam, uniformScript: k });
+    for (const key of ["quality", "qualityNote", "uniformFail"]) delete font[key];
+    return null;
+  }
+  return "letters missing in " + cands.map(c => c.fam).join(", ");
+}
+async function uniform() {
+  const ids = new Set(foundries.map(f => f.id));
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId &&
+    (x.uniformFail ? olderThan(x.uniformAt, UNIFORM_RETRY_DAYS) && x.uniformAt < x.shotAt || olderThan(x.uniformAt, UNIFORM_RETRY_DAYS) : !x.uniformAt || x.uniformAt < x.shotAt))
+    .sort((a, b) => (byId.get(a.foundryId).order - byId.get(b.foundryId).order) || (a.order - b.order)).slice(0, LIMIT);
+  log(`uniform: ${due.length} fonts due`);
+  const groups = [...due.reduce((m, x) => m.set(x.foundryId, [...(m.get(x.foundryId) || []), x]), new Map()).values()];
+  let ok = 0, no = 0;
+  await pool(groups, CONC, async list => {
+    const f = byId.get(list[0].foundryId);
+    for (const font of list) {
+      if (timeUp()) return;
+      const ctx = await newContext(); const page = await ctx.newPage(); // fresh page per font: no leftovers from the last site
+      try {
+        const cdp = await ctx.newCDPSession(page); await cdp.send("DOM.enable"); await cdp.send("CSS.enable");
+        const why = await uniformOne(ctx, page, cdp, font, f);
+        if (why) { Object.assign(font, { uniformAt: now(), uniformFail: why.slice(0, 120) }); no++; log(`  · ${font.id} kept its screenshot (${why.slice(0, 60)})`); }
+        else { ok++; log(`  ✓ uniform ${font.id} (${font.uniformFace}, ${font.uniformScript})`); }
+      } catch (e) {
+        Object.assign(font, { uniformAt: now(), uniformFail: String(e.message).slice(0, 120) }); no++; log("  ✗ uniform", font.id, e.message.slice(0, 80));
+      } finally { await ctx.close(); save(); }
+    }
+  });
+  stats.uniform = ok; stats.uniformKept = no;
+}
+
 /* ---------- personality (Claude Haiku rates each screenshot once) ---------- */
 async function personality() {
   if (!personalityEnabled()) { log("personality: skipped (no ANTHROPIC_API_KEY)"); return; }
@@ -457,6 +511,7 @@ try {
   if (PHASES.homepages) await homepages();
   if (PHASES.discover) await discover(false);
   if (PHASES.capture) await capture();
+  if (PHASES.uniform) await uniform();
   if (PHASES.personality) await personality();
 } finally {
   await browser.close();
