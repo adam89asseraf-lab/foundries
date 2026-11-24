@@ -760,14 +760,28 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       t.style.fontFamily = f.family + ", var(--display)"; t.style.fontWeight = f.weight; t.style.fontVariationSettings = f.vars || "normal";
       t.style.fontSize = s + "em";                                   // same x-height…
       t.style.height = (0.85 / s) + "em"; t.style.lineHeight = (0.85 / s); // …and the same box, so the header never moves
+      t.style.transform = f.dy ? `translateY(${f.dy}em)` : "";           // …and the same baseline
       t.title = f.family.replace(/"/g, "");
     };
+    // baseline position inside the title box: a zero-size inline-block sits exactly on the baseline (measured with no transform applied)
+    const mark = document.createElement("span"); mark.setAttribute("aria-hidden", "true");
+    mark.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline"; t.append(mark);
+    const baseline = () => (mark.getBoundingClientRect().bottom - t.getBoundingClientRect().top) / parseFloat(getComputedStyle(t).fontSize); // in the face's own em
     apply(FACES[0]);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // load every face first so each swap is instant (a face that fails to load is skipped)
     Promise.all(FACES.map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, "Found rizz").then(r => r.length ? f : null, () => null))).then(ok => {
       const faces = ok.filter(Boolean); if (faces.length < 2) return;
-      faces.forEach(f => f.x = xh(f)); refX = faces[0].x; apply(faces[0]);
+      faces.forEach(f => f.x = xh(f)); refX = faces[0].x;
+      // measure every face's baseline in one synchronous pass (no paint in between), then line them all up with the first
+      let ref = null;
+      for (const f of faces) {
+        f.dy = 0; apply(f);
+        const b = baseline() * parseFloat(getComputedStyle(t).fontSize); // px
+        if (ref == null) ref = b;
+        f.dy = (ref - b) / parseFloat(getComputedStyle(t).fontSize);   // em of this face, so it scales with the viewport
+      }
+      apply(faces[0]);
       let i = 0;
       setInterval(() => { if (!document.hidden) { i = (i + 1) % faces.length; apply(faces[i]); } }, 800);
     });
