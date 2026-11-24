@@ -68,6 +68,14 @@ export async function missingGlyphs({ fam, weight, style, text }) {
 /** In page: cover the page with the uniform specimen in this face. */
 export async function renderUniform({ face, sample, colors }) {
   document.getElementById("__uni")?.remove();
+  // first time: empty the page (its fonts stay loaded) and undo smooth-scroll/transform tricks that would move our layer
+  if (!document.documentElement.dataset.uni) {
+    document.documentElement.dataset.uni = "1";
+    try { document.body.replaceChildren(); } catch {}
+    const reset = `margin:0;padding:0;transform:none;filter:none;contain:none;perspective:none;overflow:hidden;width:100vw;height:100vh;position:static;background:${colors.bg}`;
+    for (const el of [document.documentElement, document.body]) for (const decl of reset.split(";")) { const [k, v] = decl.split(":"); el.style.setProperty(k, v, "important"); }
+    document.scrollingElement.scrollTop = 0; document.scrollingElement.scrollLeft = 0;
+  }
   const box = document.createElement("div"); box.id = "__uni";
   box.style.cssText = `position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;background:${colors.bg};color:${colors.ink};display:flex;flex-direction:column;justify-content:center;gap:4vh;padding:0 7vw;box-sizing:border-box;overflow:hidden`;
   box.dir = sample.dir || "ltr";

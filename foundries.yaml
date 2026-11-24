@@ -573,6 +573,8 @@ foundries:
   - id: limitype
     name: Limitype
     url: https://limitype.com/
+    fonts:
+      all: { skip: true }   # the "All" catalogue link, not a font
     kind: Foundry
     order: 65
     addedAt: 2026-11-22T08:00:00Z
