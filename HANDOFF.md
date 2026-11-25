@@ -4,9 +4,7 @@ Written 2026-11-24 when the owner moved Claude accounts. Read this together with
 
 - **Repo:** https://github.com/adam89asseraf-lab/foundries (public)
 - **Live site:** https://adam89asseraf-lab.github.io/foundries/ (GitHub Pages)
-- **Branches:**
-  - `main`: everything that is live.
-  - `uniform-specimens`: unfinished work, see "In progress" below.
+- **Branch:** `main` (the `uniform-specimens` branch is merged).
 - **Design:** Figma file `7J30UXQ9UxdziRxxmPCWOT` (GUTS team). It has the Components section and the Fonts desktop, Fonts mobile and Foundries desktop screens.
 - **Votes database:** Supabase project `lulglxebjchreghaexjd` (https://lulglxebjchreghaexjd.supabase.co, Tokyo, free plan).
 
@@ -56,31 +54,31 @@ Written 2026-11-24 when the owner moved Claude accounts. Read this together with
 - **Single typefaces** (`kind: Typeface`) appear only in the Fonts list. Libraries have their own tab.
 - **Gumroad and Future Fonts** are captured from the product cover image, because the font only exists as artwork there.
 
-## In progress: uniform specimens (branch `uniform-specimens`)
+## Uniform specimens (done, live since 2026-11-25)
 
-**Goal:** every font card shows the same background (#ededea), the same ink (#121214) and the same words: "Hamburgefonts" plus "The quick brown fox jumps over the lazy dog 0123". Hebrew fonts show Hebrew.
+**What it does:** most font cards now show the same background (#ededea), the same ink (#121214) and the same words: "Hamburgefonts" plus "The quick brown fox jumps over the lazy dog 0123". Fonts that cover Hebrew show Hebrew.
 
-**How it works** (`crawler/uniform.mjs`), on the font's own page, without downloading any font file:
-1. `detectFace` finds the product's webfont. It prefers a family named like the font and skips the site's own interface fonts.
-2. `renderUniform` draws the sample full-screen in that face, at regular weight and upright style, with faking disabled.
-3. `fallbackGlyphs` asks Chrome over the DevTools protocol (`CSS.getPlatformFontsForNode`) whether any glyph came from a fallback font. Only a fully covered sample is saved; otherwise the old screenshot stays.
+**How it works** (`crawler/uniform.mjs`, the `--uniform` phase in `crawl.mjs`, which is part of the default nightly run):
+1. On the font's own page, `detectFace` finds the product's webfont. It prefers a family named like the font, skips the site's interface fonts, and also checks type-tester inputs and loaded `FontFace`s.
+2. The page is emptied, while its fonts stay loaded, so smooth-scroll and transform tricks can't move the layer.
+3. The sample is drawn full-screen at regular weight and upright style, with faking disabled.
+4. Chrome reports which fonts actually drew the glyphs (`CSS.getPlatformFontsForNode`). If any glyph came from a fallback font, the font keeps its old screenshot.
 
-**Status:**
-- **The pilot works:** `scripts/uniform-pilot.mjs` writes to a temp folder. 24 of 24 tuned samples came out right, and about 25 of 32 random fonts. The failures are image-only fonts or links that aren't fonts.
-- **The crawler phase is written but not yet run or tested:** `--uniform` in `crawl.mjs`, which also runs by default in the nightly crawl. **Test it before merging to `main`**, because merging makes the next nightly crawl re-shoot about 2,000 fonts. To test:
-  ```bash
-  node crawler/crawl.mjs --uniform --only klim --limit 5
-  ```
-  Then look at `public/shots/fonts/klim--*.thumb.webp`, or run `node scripts/contact-sheet.mjs <dir>` on a folder of thumbnails.
-- **Before rolling out:**
-  - Skip the two non-font entries, `limitype--all` and `booton--buy`. In `foundries.yaml`, use `fonts: { all: { skip: true } }` under limitype and `fonts: { buy: { skip: true } }` under booton.
-  - Check `lift--spinelo`, which shows a thin white strip at the bottom of its specimen.
-  - Run the full pass locally in the background:
-    ```bash
-    node crawler/crawl.mjs --uniform --max-minutes 240
-    ```
-  - Then commit the shots and data.
-  - Maybe add a separate `--uniform --max-minutes N` step to `crawl.yml` instead of relying on the default phase list.
+No font files are downloaded.
+
+**Results:**
+- About 1,330 fonts were re-shot (about 1,190 Latin, about 140 Hebrew).
+- About 800 fonts keep their earlier screenshot:
+  - about 500 are image-only (Future Fonts, Gumroad and similar);
+  - about 150 pages have no matching webfont (205TF, Shriftovik, Bad Type Club, Font of the Month);
+  - about 105 webfonts are missing letters of the sample, usually because they're subsets.
+- The fields `shot: "uniform"`, `uniformAt`, `uniformFace`, `uniformScript` and `uniformFail` record what happened to each font.
+
+**Retries and new fonts:** failures are retried after 30 days, or right away after a recapture. New fonts get a uniform specimen in the same nightly run that captures them.
+
+**Tools:**
+- `scripts/uniform-pilot.mjs <outDir> ids…` renders samples to a folder without touching the data.
+- `scripts/contact-sheet.mjs <dir>` makes a sheet for review.
 
 ## Other open items
 
