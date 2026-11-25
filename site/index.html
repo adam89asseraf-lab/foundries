@@ -69,7 +69,7 @@ select.ctl{height:38px;border:1px solid var(--line);background:var(--tile);borde
 input[type=range]{accent-color:var(--accent);width:120px}
 
 /* Grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));border-left:1px solid var(--line);margin:24px 0 64px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:1px solid var(--line);margin:24px 0 64px}
 .card{position:relative;background:var(--tile);border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-top:1px solid var(--line);margin-top:-1px;display:flex;flex-direction:column;min-height:300px;text-decoration:none;transition:background .15s}
 .card:hover{background:var(--ink);color:var(--paper)}
 .card:hover .meta,.card:hover .by,.card:hover .note{color:var(--paper);opacity:.7}
@@ -323,6 +323,8 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
 .vote:active svg{transform:scale(.9)}
 .vote .vn:empty{display:none}
 .vote:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (max-width:960px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
