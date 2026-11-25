@@ -325,6 +325,49 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   .mast h1{flex-direction:column;align-items:flex-start;gap:10px;font-size:min(60px,13.5vw)}
   .mast h1 .title{height:.85em}
   .mast h1 sup{margin:0}}
+/* compare */
+.fcard .facts{display:flex;align-items:center;gap:2px}
+.cmpbtn{position:relative;z-index:2;width:28px;height:28px;margin-top:-4px;padding:0;border:0;background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.cmpbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5}
+.cmpbtn .on{display:none}
+.cmpbtn[aria-pressed="true"] .on{display:block}.cmpbtn[aria-pressed="true"] .off{display:none}
+.cmpbtn:hover svg{transform:scale(1.1)}
+.fcard.cmpsel .fshot{outline:2px solid var(--ink);outline-offset:-1px}
+.cmptray{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:35;display:flex;align-items:center;gap:12px;padding:10px 10px 10px 12px;background:var(--tile);border:1px solid var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.18);max-width:calc(100vw - 32px)}
+.cmptray[hidden]{display:none}
+.cmpthumbs{display:flex;gap:6px;overflow-x:auto;min-width:0}
+.cmpthumb{position:relative;flex:none;width:80px;height:32px;border:1px solid var(--line);background:#fff;padding:0;cursor:pointer}
+.cmpthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.cmpthumb .x{position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:var(--ink);color:var(--paper);font:500 10px/16px var(--body);text-align:center;opacity:0;transition:opacity .15s}
+.cmpthumb:hover .x,.cmpthumb:focus-visible .x{opacity:1}
+@media (hover:none){.cmpthumb .x{opacity:1}}
+.cmpcount{font:500 11px/1 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:disabled{opacity:.35;cursor:not-allowed}
+body.tray .toast{bottom:84px}
+body.tray{padding-bottom:80px}
+.cmpview{position:fixed;inset:0;z-index:45;background:var(--paper);overflow:auto;padding:24px 40px 48px}
+.cmpview[hidden]{display:none}
+.cmphead{display:flex;align-items:center;gap:12px;margin-bottom:24px;position:sticky;top:-24px;background:var(--paper);padding:12px 0;z-index:1}
+.cmphead h2{margin:0;margin-right:auto;font:700 32px/1 var(--stat);letter-spacing:-.02em}
+.cmpclose{width:40px;height:40px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:400 16px/1 var(--body);cursor:pointer}
+.cmpclose:hover{background:var(--ink);color:var(--paper)}
+.cmpgrid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:24px 20px}
+.cmpcol{display:grid;gap:12px;align-content:start}
+.cmpcol .cshot{aspect-ratio:5/2;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cmpcol .cshot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.cmpcol .cshot .fallback{font-size:28px}
+.cmpcol .cname2{font:700 22px/1.1 var(--stat);letter-spacing:-.01em}
+.cmpcol .cby{font:400 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.01em;color:var(--muted)}
+.cmpcol dl{margin:0;display:grid;grid-template-columns:auto 1fr;border-top:1px solid var(--line)}
+.cmpcol dt,.cmpcol dd{margin:0;padding:8px 0;border-bottom:1px solid var(--line);font:400 13px/1.3 var(--body)}
+.cmpcol dt{font:500 10.5px/1.6 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding-right:16px}
+.cmpcol dd{text-align:right;font-variant-numeric:tabular-nums}
+.cmpcol .cacts{display:flex;justify-content:space-between;align-items:center;gap:10px;font:400 14px/1.4 var(--body)}
+.cmpcol .cacts a{color:var(--ink)}
+.cmpempty{color:var(--muted);font:400 15px/1.5 var(--body)}
+@media (max-width:900px){.cmpgrid{--cols:2 !important}}
+@media (max-width:600px){.cmpview{padding:16px}.cmpgrid{--cols:1 !important}.cmphead h2{font-size:24px}.cmptray{left:16px;right:16px;transform:none;bottom:12px;gap:8px}.cmpcount{display:none}.cmpthumb{width:56px;height:28px}.cmptray .btn{padding:0 12px}}
 /* votes */
 .fcard .fheadrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
 .vote{position:relative;z-index:2;display:inline-flex;align-items:center;gap:4px;height:28px;margin:-4px -4px 0 0;padding:0 4px;border:0;background:transparent;color:var(--ink);font:500 12px/1 "DM Mono",var(--mono);cursor:pointer;border-radius:0}
@@ -410,6 +453,20 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
 
 <div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><button type="button" class="lbnav prev" id="lbPrev" aria-label="Previous">←</button><button type="button" class="lbnav next" id="lbNext" aria-label="Next">→</button><div class="lbbar"><span id="lbName"></span><span id="lbPos"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
 <div class="toast" id="toast" role="status"></div>
+<div class="cmptray" id="cmpTray" hidden role="region" aria-label="Fonts to compare">
+  <div class="cmpthumbs" id="cmpThumbs"></div>
+  <span class="cmpcount" id="cmpCount"></span>
+  <button type="button" class="btn" id="cmpClear">Clear</button>
+  <button type="button" class="btn primary" id="cmpOpen">Compare</button>
+</div>
+<div class="cmpview" id="cmp" hidden role="dialog" aria-modal="true" aria-labelledby="cmpTitle">
+  <div class="cmphead">
+    <h2 id="cmpTitle">Compare</h2>
+    <button type="button" class="btn" id="cmpClear2">Clear all</button>
+    <button type="button" class="cmpclose" id="cmpClose" aria-label="Close compare">✕</button>
+  </div>
+  <div class="cmpgrid" id="cmpGrid"></div>
+</div>
 
 <script>
 (() => {
@@ -464,6 +521,70 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     b.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleVote(key, b); };
     return b;
   }
+  // ---- Compare: up to 6 fonts side by side (kept in this browser)
+  const CMP_MAX = 6;
+  let cmp = [];
+  try { cmp = JSON.parse(localStorage.getItem("fdx-compare") || "[]").filter(x => typeof x === "string").slice(0, CMP_MAX); } catch(e) {}
+  const saveCmp = () => { try { localStorage.setItem("fdx-compare", JSON.stringify(cmp)); } catch(e){} };
+  const CMP_ICON = '<svg viewBox="0 0 20 20" aria-hidden="true"><g class="off"><rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2"/><path d="M10 6.5v7M6.5 10h7"/></g><g class="on"><rect x="2.75" y="2.75" width="14.5" height="14.5" rx="2" fill="currentColor"/><path d="M6.5 10.2l2.4 2.4 4.6-5" stroke="var(--paper)" stroke-width="1.8"/></g></svg>';
+  function cmpBtn(f){
+    const b = el("button","cmpbtn"); b.type = "button"; b.dataset.id = f.id; b.title = "Compare";
+    b.innerHTML = CMP_ICON; paintCmpBtn(b, f.name);
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleCmp(f.id); };
+    return b;
+  }
+  function paintCmpBtn(b, name){
+    const on = cmp.includes(b.dataset.id); name = name || (fonts.find(x => x.id === b.dataset.id) || {}).name || "font";
+    b.setAttribute("aria-pressed", on); b.setAttribute("aria-label", on ? `Remove ${name} from compare` : `Add ${name} to compare`);
+    const card = b.closest(".fcard"); if (card) card.classList.toggle("cmpsel", on);
+  }
+  function toggleCmp(id){
+    const i = cmp.indexOf(id);
+    if (i >= 0) cmp.splice(i, 1);
+    else { if (cmp.length >= CMP_MAX) { toast(`You can compare up to ${CMP_MAX} fonts. Remove one first.`); return; } cmp.push(id); }
+    saveCmp(); syncCmp();
+  }
+  function syncCmp(){
+    cmp = cmp.filter(id => fonts.some(f => f.id === id));
+    document.querySelectorAll(".cmpbtn").forEach(b => paintCmpBtn(b));
+    const tray = $("#cmpTray"), box = $("#cmpThumbs"); box.replaceChildren();
+    tray.hidden = !cmp.length; document.body.classList.toggle("tray", !!cmp.length);
+    for (const id of cmp) {
+      const f = fonts.find(x => x.id === id); if (!f) continue;
+      const t = el("button","cmpthumb"); t.type = "button"; t.title = "Remove " + f.name; t.setAttribute("aria-label", "Remove " + f.name + " from compare");
+      if (f.shotId) { const img = el("img"); img.src = shotUrl(f); img.alt = ""; t.append(img); } else t.append(el("span","", f.name));
+      t.append(el("span","x","✕")); t.onclick = () => toggleCmp(id); box.append(t);
+    }
+    $("#cmpCount").textContent = `${cmp.length} / ${CMP_MAX}`;
+    const go = $("#cmpOpen"); go.disabled = cmp.length < 2; go.textContent = cmp.length < 2 ? "Pick one more" : `Compare ${cmp.length}`;
+    if (!$("#cmp").hidden) { if (cmp.length) renderCompare(); else closeCompare(); }
+  }
+  function renderCompare(){
+    const grid = $("#cmpGrid"); grid.replaceChildren();
+    grid.style.setProperty("--cols", cmp.length <= 3 ? cmp.length : cmp.length === 4 ? 2 : 3);
+    $("#cmpTitle").textContent = `Comparing ${cmp.length} font${cmp.length === 1 ? "" : "s"}`;
+    for (const id of cmp) {
+      const f = fonts.find(x => x.id === id); if (!f) continue;
+      const fd = items.find(i => i.id === f.foundryId) || {};
+      const col = el("article","cmpcol");
+      const sh = el("div","cshot");
+      if (f.shotId) { const img = el("img"); img.src = shotUrl(f, true); img.alt = "Specimen of " + f.name; img.onerror = () => img.replaceWith(el("div","fallback", f.name)); sh.append(img); } else sh.append(el("div","fallback", f.name));
+      const by = el("div","cby", foundryLabel(fd) || "");
+      const nm = el("div","cname2", f.name); if (isRTL(f.name)) nm.dir = "rtl";
+      const dl = el("dl");
+      const rows = [["Category", f.category || "—"], ["Styles", f.styles ? String(f.styles) : "—"], ["Variable", f.variable ? "Yes" : "No"], ["Price / weight", fmtPrice(f.price) || "—"]];
+      if (votesOn) rows.push(["Votes", String(voteCount.get(f.id) || 0)]);
+      for (const [k, v] of rows) dl.append(el("dt","",k), el("dd","",v));
+      const acts = el("div","cacts");
+      const a = el("a","", "Open site ↗"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      const rm = el("button","linkbtn","Remove"); rm.type = "button"; rm.onclick = () => toggleCmp(id);
+      acts.append(a, rm);
+      col.append(sh, by, nm, dl, acts); grid.append(col);
+    }
+  }
+  let cmpReturn = null;
+  function openCompare(){ if (cmp.length < 2) return; cmpReturn = document.activeElement; renderCompare(); $("#cmp").hidden = false; document.documentElement.style.overflow = "hidden"; $("#cmpClose").focus(); }
+  function closeCompare(){ $("#cmp").hidden = true; document.documentElement.style.overflow = ""; if (cmpReturn && cmpReturn.focus) cmpReturn.focus(); }
   const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : location.hash === "#libraries" ? "libraries" : "fonts";
   let shuffleKey = Math.random();
@@ -723,7 +844,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     };
     const cardFor = f => {
       const fd = byId.get(f.foundryId) || {};
-      const c = el("article","fcard");
+      const c = el("article","fcard"); if (cmp.includes(f.id)) c.classList.add("cmpsel");
       const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || "unknown foundry"}`);
       const sh = el("div","fshot");
       if (f.shotId) { const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", f.name); img.replaceWith(fbk); }; setImg(img, f, fstate.card); img.alt = "Screenshot of " + f.name; img.loading = "lazy"; img.decoding = "async"; sh.append(img); }
@@ -738,7 +859,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
         meta.append(fb);
       }
       const head = el("div","fhead"); head.append(meta, nm);
-      if (votesOn) { const hr = el("div","fheadrow"); hr.append(head, voteBtn(f)); body.append(hr); } else body.append(head);
+      { const hr = el("div","fheadrow"); const acts = el("div","facts"); acts.append(cmpBtn(f)); if (votesOn) acts.append(voteBtn(f)); hr.append(head, acts); body.append(hr); }
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       const pt = fmtPrice(f.price);
       if (pr.length || pt || fIsNew(f)) { const pp = el("div","fprops tags joined"); if (fIsNew(f)) pp.append(el("span","tag new","New")); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
@@ -886,6 +1007,10 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
   $("#lb").onclick = e => { if (e.target.closest(".lbnav")) { e.stopPropagation(); lbStep(e.target.closest(".lbnav").id === "lbPrev" ? -1 : 1); return; } if (e.target.tagName !== "A") $("#lb").hidden = true; };
+  $("#cmpOpen").onclick = openCompare;
+  $("#cmpClose").onclick = closeCompare;
+  $("#cmpClear").onclick = $("#cmpClear2").onclick = () => { cmp = []; saveCmp(); syncCmp(); };
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#cmp").hidden) { closeCompare(); return; } });
   document.addEventListener("keydown", e => { if ($("#lb").hidden) return; if (e.key === "Escape") $("#lb").hidden = true; else if (e.key === "ArrowLeft") { e.preventDefault(); lbStep(-1); } else if (e.key === "ArrowRight") { e.preventDefault(); lbStep(1); } });
   { let x0 = null; $("#lb").addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
     $("#lb").addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) { e.preventDefault(); lbStep(dx < 0 ? 1 : -1); } }); }
@@ -904,7 +1029,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
       $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";
       if (votesOn) { $("#optVotes").hidden = false; $("#optFVotes").hidden = false; }
-      render(); loadVotes();
+      render(); loadVotes(); syncCmp();
     } catch(e) {
       $("#status").textContent = "The index couldn't load. Reload the page to try again.";
     }
