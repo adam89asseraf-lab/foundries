@@ -288,14 +288,16 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .fcard .fprops{gap:0}
 .fcard .zoom{top:10px;right:10px}
 /* foundry card: name on top, screenshot, note, tags + "N fonts →" */
-.card{padding:16px 16px 0}
+.card{padding:24px 32px 12px;min-height:0}
 .card .cname{font:700 26px/1 var(--stat);letter-spacing:-.02em;font-variation-settings:normal}
-.card .shot{margin:12px 0 0;border-radius:6px}
+.card .shot{margin:16px 0 0;border-radius:6px}
 .card .foot{padding:14px 0 16px;gap:16px}
 .card .note{font:400 13px/1.4 var(--ui)}
 .card .footline{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .card .morefonts{margin:0;white-space:nowrap;font:400 14px/1.4 var(--body)}
-.card .zoom{top:22px;right:22px}
+.card .zoom{top:21.5px;right:23.5px}
+.card .tag.price{border-color:var(--line)}
+.card:hover .tag.price{border-color:currentColor}
 .row .rname{font-family:var(--stat)}
 .status{font-family:var(--mono)}
 /* v3: eyebrow above the title; three joined tabs; select chevron; plain maker label */
@@ -543,7 +545,6 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     c.append(sh);
     const foot = el("div","foot");
     if (isNew(it)) foot.append(el("div","newline", "New: " + it.newReleases.slice(0,4).join(", ")));
-    if (it.note) foot.append(el("div","note", it.note));
     const line = el("div","footline");
     const tags = el("div","tags joined");
     if (isNew(it)) tags.append(el("span","tag new","New"));
