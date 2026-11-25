@@ -13,6 +13,7 @@ import { googleFamilies, specimenHtml, googleFontRecord } from "./google-fonts.m
 import { fontshareFamilies } from "./fontshare.mjs";
 import { ratePersonality, personalityEnabled } from "./personality.mjs";
 import { SAMPLE, detectFace, renderUniform, fallbackGlyphs } from "./uniform.mjs";
+import { writeSpecimen } from "./lib/specimen-frame.mjs";
 
 /* ---------- args ---------- */
 const argv = process.argv.slice(2);
@@ -425,7 +426,7 @@ async function capture() {
 }
 
 /* ---------- uniform specimens: every font on the same background, in the same ink, showing the same words ---------- */
-const UNIFORM_COLORS = { bg: "#ededea", ink: "#121214" };
+const UNIFORM_COLORS = { bg: "#ffffff", ink: "#121214" };
 const UNIFORM_RETRY_DAYS = 30;
 async function uniformOne(ctx, page, cdp, font, f) {
   if (font.gf) {
@@ -449,8 +450,8 @@ async function uniformOne(ctx, page, cdp, font, f) {
     await sleep(250);
     // keep the previous screenshot when the face isn't named like the font, so a wrong guess can be undone
     if (!c.named) for (const ext of [".webp", ".thumb.webp"]) { const src = path.join(ROOT, "public/shots/fonts", font.id + ext); if (fs.existsSync(src) && font.shot !== "uniform") fs.copyFileSync(src, src.replace(ext, ".pre" + ext)); }
-    await writeShot(await page.screenshot({ type: "png" }), `fonts/${font.id}`);
-    Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), uniformAt: now(), shot: "uniform", uniformFace: c.fam, uniformScript: k, uniformHead: SAMPLE[k].head, uniformNamed: !!c.named });
+    await writeSpecimen(await page.screenshot({ type: "png" }), path.join(ROOT, "public/shots/fonts", font.id), { dir: SAMPLE[k].dir });
+    Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), uniformAt: now(), shot: "uniform", uniformFace: c.fam, uniformScript: k, uniformHead: SAMPLE[k].head, uniformNamed: !!c.named, uniformFrame: 2 });
     for (const key of ["quality", "qualityNote", "uniformFail"]) delete font[key];
     return null;
   }

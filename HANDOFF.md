@@ -56,12 +56,12 @@ Written 2026-11-24 when the owner moved Claude accounts. Read this together with
 
 ## Uniform specimens (done, live since 2026-11-25)
 
-**What it does:** most font cards now show the same background (#ededea), the same ink (#121214) and the same words: "Quirky swamp tigers" plus "The quick brown fox jumps over the lazy dog 0123". Fonts that cover Hebrew show Hebrew.
+**What it does:** most font cards now show the same white background, the same ink (#121214) and the same words: "Quirky swamp tigers" plus "The quick brown fox jumps over the lazy dog 0123". Fonts that cover Hebrew show Hebrew.
 
 **How it works** (`crawler/uniform.mjs`, the `--uniform` phase in `crawl.mjs`, which is part of the default nightly run):
 1. On the font's own page, `detectFace` finds the product's webfont. It prefers a family named like the font, skips the site's interface fonts, and also checks type-tester inputs and loaded `FontFace`s.
 2. The page is emptied, while its fonts stay loaded, so smooth-scroll and transform tricks can't move the layer.
-3. The sample is drawn full-screen at regular weight and upright style, with faking disabled.
+3. The sample is drawn full-screen at regular weight and upright style, with faking disabled. `crawler/lib/specimen-frame.mjs` then crops it to a short 5:2 frame (1600×640, thumb 800×320) centred on the words, scaling down text that's too tall.
 4. Chrome reports which fonts actually drew the glyphs (`CSS.getPlatformFontsForNode`). If any glyph came from a fallback font, the font keeps its old screenshot.
 
 No font files are downloaded.
