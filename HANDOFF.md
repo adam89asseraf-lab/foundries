@@ -1,6 +1,6 @@
 # Handoff — Found rizz (type & foundry index)
 
-Written 2026-11-24 when the owner moved Claude accounts. Read this together with `README.md`, which documents how to run and configure everything.
+Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 (see “Session summary — 2026-11-25” below). Read this together with `README.md`, which documents how to run and configure everything.
 
 - **Repo:** https://github.com/adam89asseraf-lab/foundries (public)
 - **Live site:** https://adam89asseraf-lab.github.io/foundries/ (GitHub Pages)
@@ -81,6 +81,57 @@ No font files are downloaded.
 **Tools:**
 - `scripts/uniform-pilot.mjs <outDir> ids…` renders samples to a folder without touching the data.
 - `scripts/contact-sheet.mjs <dir>` makes a sheet for review.
+
+## Session summary — 2026-11-25
+
+Everything below is on `main` and live unless marked otherwise.
+
+**Shipped**
+- **Foundries and Libraries tabs:** 3-column grid, with 2 columns under 960px and 1 under 600px.
+- **Foundry card:** matches the Figma update (node `3:21`):
+  - 24/32/12px padding and 16px above the screenshot;
+  - the price tag has the same light border as the other tags;
+  - the note line is hidden (the owner chose to keep it hidden).
+- **Font thumbnails:** a 5:2 frame on white.
+  - `crawler/lib/specimen-frame.mjs` crops each uniform specimen to its words (1600×640, thumb 800×320) and shrinks text that's too tall.
+  - All 1,090 existing specimens were recoloured from #ededea to white and reframed by `scripts/uniform-reframe.mjs` (one-off; marks fonts `uniformFrame: 2`). The crawler now renders on white and frames new specimens the same way.
+  - Non-uniform screenshots are cropped from the top.
+- **Foundry rating:** foundry and library cards have the heart vote.
+  - Votes are stored in the existing Supabase `votes` table under `foundry:<id>`, so no new SQL was needed.
+  - The Fonts tab's default “By foundry” order ranks foundries by votes, then board order. Uniform specimens still come first.
+  - The Foundries tab has a “Most voted” sort.
+- **Full-screen viewer:** ← → buttons, arrow keys, swipe and an “n / total” counter. It steps through the current tab's list in its current order and wraps at the ends.
+- **New foundries:**
+  - Pizza Typefaces, Ezer Type House, Nomad Type, Suitcase, Optimo, Blast, The Pyte Foundry, Spoke, SM Foundry and East of Rome.
+  - Optimo replaces the old single-typeface entry Rand (votes on the old Rand card don't carry over).
+
+**Paused or unfinished**
+- **Paused foundries (`skip: true`):** Good Type Foundry, Fontef, RAG Design and Non Foundry. Their catalogues picked up licence, product or menu pages instead of fonts.
+  - Their cards show, but `scripts/build-site.mjs` drops the fonts of paused foundries.
+  - To fix one: set a `catalogUrl`/`fontLinkPattern` (or `fontUrls`), remove `skip`, set `rescan: true` and re-crawl.
+- **Optimo:** only 7 fonts were found; the real catalogue is bigger.
+- **Kyiv Type Foundry:** the homepage was captured, but no fonts were found yet, so it needs a catalogue setting.
+- **DDOTT:** ddott.net fails in headless Chrome (`ERR_HTTP2_PROTOCOL_ERROR`), so it has no screenshot and no fonts.
+- **Spoke:** its fonts are named “Buy Vieno”, “Buy Ompu”…, so it needs `nameStrip: "^Buy "`.
+- **East of Rome:** font names are all caps (MARBLE, SCOOCH…); check whether to title-case them.
+- **Not pushed yet:** the second crawl's results (Pyte, Kyiv, Spoke, SM, DDOTT, East of Rome) are in the local `data/data.json` and `public/shots/`, unreviewed.
+
+**Rating game (design stage)**
+- The owner picked three of the five ideas:
+  - **Casting Call:** a wacky role and 4 fonts from one category; pick best and worst, and score by matching the crowd (best–worst scaling).
+  - **Type Personality Quiz:** about 10 “which feels more like you” picks, ending in a shareable result card.
+  - **Font Bracket:** a weekly 16-font themed knockout.
+  - Not picked: Vibe Check and Price Is Right.
+- Figma has a new page, **“Games — wireframes”** (id `49:572`):
+  - Casting Call is done: 4 screens (lobby, round, reveal, wrap) plus notes. Its DM Mono specimens still clip and need a smaller size.
+  - The Quiz and Bracket wireframes are still to do. Planned screens:
+    - Quiz: intro, question, result, share card.
+    - Bracket: bracket overview, matchup vote, champion and hall of fame.
+- **Planned build:**
+  - a fourth tab, “Play”;
+  - a new Supabase table for game votes;
+  - the nightly crawl turns votes into per-font scores in `data.json`, which drive badges and a “Best for…” filter;
+  - matchmaking favours fonts with few votes.
 
 ## Other open items
 
