@@ -659,15 +659,6 @@ foundries:
     order: 77
     addedAt: 2026-11-22T08:00:00Z
     price: 25 USD
-  - id: rand
-    name: Rand
-    by: Optimo
-    url: https://optimo.ch/typefaces/rand
-    kind: Typeface
-    tags: [ Swiss ]
-    order: 78
-    addedAt: 2026-11-22T08:00:00Z
-    price: 150 CHF
   - id: edito
     name: Edito Type
     url: https://edito-type.com/
@@ -772,6 +763,112 @@ foundries:
     order: 91
     addedAt: 2026-11-22T12:00:00Z
     price: 400 ILS
+  - id: pizza-typefaces
+    name: Pizza Typefaces
+    url: https://typefaces.pizza/
+    kind: Foundry
+    order: 93
+    addedAt: 2026-11-25T12:00:00Z
+  - id: good-type-foundry
+    name: Good Type Foundry
+    url: https://goodtypefoundry.com/
+    kind: Foundry
+    order: 94
+    addedAt: 2026-11-25T12:00:00Z
+    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+  - id: fontef
+    name: Fontef
+    url: https://fontef.com/
+    kind: Foundry
+    tags: [ Hebrew ]
+    order: 95
+    addedAt: 2026-11-25T12:00:00Z
+    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+  - id: ezer-type-house
+    name: Ezer Type House
+    url: https://www.ezertypehouse.com/
+    kind: Foundry
+    tags: [ Hebrew ]
+    order: 96
+    addedAt: 2026-11-25T12:00:00Z
+  - id: rag-design
+    name: RAG Design
+    url: https://ragdesign.co/
+    kind: Foundry
+    order: 97
+    addedAt: 2026-11-25T12:00:00Z
+    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+  - id: nomad-type
+    name: Nomad Type
+    url: https://www.nomad-type.com/
+    kind: Foundry
+    order: 98
+    addedAt: 2026-11-25T12:00:00Z
+  - id: suitcase-type
+    name: Suitcase Type Foundry
+    url: https://www.suitcasetype.com/
+    kind: Foundry
+    order: 99
+    addedAt: 2026-11-25T12:00:00Z
+  - id: optimo
+    name: Optimo
+    url: https://optimo.ch/
+    kind: Foundry
+    tags: [ Swiss ]
+    order: 100
+    addedAt: 2026-11-25T12:00:00Z
+  - id: blast-foundry
+    name: Blast Foundry
+    url: https://blast-foundry.com/
+    kind: Foundry
+    order: 101
+    addedAt: 2026-11-25T12:00:00Z
+    catalogUrl: https://blast-foundry.com/typefaces
+  - id: non-foundry
+    name: Non Foundry
+    url: https://nonfoundry.com/
+    kind: Foundry
+    order: 102
+    addedAt: 2026-11-25T12:00:00Z
+    catalogUrl: https://nonfoundry.com/types
+    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+  - id: pyte-foundry
+    name: The Pyte Foundry
+    url: https://thepytefoundry.net/
+    kind: Foundry
+    order: 103
+    addedAt: 2026-11-25T12:00:00Z
+  - id: kyiv-type-foundry
+    name: Kyiv Type Foundry
+    url: https://kyivtypefoundry.com/
+    kind: Foundry
+    tags: [ Cyrillic ]
+    order: 104
+    addedAt: 2026-11-25T12:00:00Z
+  - id: spoke
+    name: Spoke
+    url: https://spoketype.com/
+    kind: Foundry
+    order: 105
+    addedAt: 2026-11-25T12:00:00Z
+  - id: sm-foundry
+    name: SM Foundry
+    url: https://s-m.nu/
+    kind: Foundry
+    order: 106
+    addedAt: 2026-11-25T12:00:00Z
+  - id: ddott
+    name: DDOTT
+    url: https://ddott.net/
+    kind: Foundry
+    order: 107
+    addedAt: 2026-11-25T12:00:00Z
+  - id: east-of-rome
+    name: East of Rome
+    url: https://www.eastofrome.com/
+    kind: Foundry
+    order: 108
+    addedAt: 2026-11-25T12:00:00Z
   - id: google-fonts
     name: Google Fonts
     by: Google

@@ -227,6 +227,15 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .lightbox img{max-width:min(1600px,100%);max-height:calc(100vh - 90px);width:auto;height:auto;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:var(--tile)}
 .lightbox .lbbar{display:flex;gap:16px;align-items:center;color:#fff;font:500 13px/1.3 var(--body)}
 .lightbox a{color:#fff}
+.lightbox #lbPos{font:400 12px/1 var(--mono);opacity:.7;font-variant-numeric:tabular-nums}
+.lbnav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(10,10,14,.55);color:#fff;font:400 22px/1 var(--body);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lbnav:hover{background:#fff;color:var(--ink)}
+.lbnav.prev{left:16px}.lbnav.next{right:16px}
+.lightbox{padding:16px 80px}
+@media (max-width:600px){.lightbox{padding:16px 16px 80px}.lbnav{top:auto;bottom:16px;transform:none}}
+.card .cheadrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.card .vote{margin:-2px -4px 0 0}
+.card:hover .vote{color:var(--paper)}
 .tag.low{border-style:dashed}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -295,7 +304,7 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .card .note{font:400 13px/1.4 var(--ui)}
 .card .footline{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .card .morefonts{margin:0;white-space:nowrap;font:400 14px/1.4 var(--body)}
-.card .zoom{top:21.5px;right:23.5px}
+.card .zoom{top:76px;right:42px}
 .card .tag.price{border-color:var(--line)}
 .card:hover .tag.price{border-color:currentColor}
 .row .rname{font-family:var(--stat)}
@@ -384,6 +393,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
         <option value="order">Board order</option>
         <option value="az">A to Z</option>
         <option value="new">Newest first</option>
+        <option value="votes" id="optFVotes" hidden>Most voted</option>
       </select>
     </div>
     <div class="bar-row">
@@ -398,7 +408,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   <div id="out"></div>
 </main>
 
-<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><div class="lbbar"><span id="lbName"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><button type="button" class="lbnav prev" id="lbPrev" aria-label="Previous">←</button><button type="button" class="lbnav next" id="lbNext" aria-label="Next">→</button><div class="lbbar"><span id="lbName"></span><span id="lbPos"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -426,29 +436,32 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
         const rows = await r.json(); rows.forEach(x => voteCount.set(x.font_id, x.n));
         if (rows.length < 1000) break;
       }
-      if (tab() === "fonts") render();
+      render();
     } catch(e) {}
   }
-  async function toggleVote(f, btn){
-    const on = !myVotes.has(f.id);
-    const paint = () => { btn.setAttribute("aria-pressed", myVotes.has(f.id)); btn.querySelector(".vn").textContent = voteCount.get(f.id) || ""; };
-    on ? myVotes.add(f.id) : myVotes.delete(f.id);
-    voteCount.set(f.id, Math.max(0, (voteCount.get(f.id) || 0) + (on ? 1 : -1))); paint(); saveMine();
+  // foundries are voted on in the same table, under "foundry:<id>"
+  const fkey = id => "foundry:" + id;
+  const foundryVotes = id => voteCount.get(fkey(id)) || 0;
+  async function toggleVote(key, btn){
+    const on = !myVotes.has(key);
+    const paint = () => { btn.setAttribute("aria-pressed", myVotes.has(key)); btn.querySelector(".vn").textContent = voteCount.get(key) || ""; };
+    on ? myVotes.add(key) : myVotes.delete(key);
+    voteCount.set(key, Math.max(0, (voteCount.get(key) || 0) + (on ? 1 : -1))); paint(); saveMine();
     try {
-      const r = await sb("rpc/" + (on ? "vote" : "unvote"), { method: "POST", body: JSON.stringify({ p_font: f.id, p_voter: voterId }) });
+      const r = await sb("rpc/" + (on ? "vote" : "unvote"), { method: "POST", body: JSON.stringify({ p_font: key, p_voter: voterId }) });
       if (!r.ok) throw 0;
     } catch(e) {
-      on ? myVotes.delete(f.id) : myVotes.add(f.id);
-      voteCount.set(f.id, Math.max(0, (voteCount.get(f.id) || 0) + (on ? -1 : 1))); paint(); saveMine();
+      on ? myVotes.delete(key) : myVotes.add(key);
+      voteCount.set(key, Math.max(0, (voteCount.get(key) || 0) + (on ? -1 : 1))); paint(); saveMine();
       toast("Your vote didn't go through. Try again in a moment.");
     }
   }
-  function voteBtn(f){
+  function voteBtn(f, key = f.id){
     const b = el("button","vote"); b.type = "button";
-    b.setAttribute("aria-pressed", myVotes.has(f.id)); b.setAttribute("aria-label", "Vote for " + f.name); b.title = "Vote";
+    b.setAttribute("aria-pressed", myVotes.has(key)); b.setAttribute("aria-label", "Vote for " + f.name); b.title = "Vote";
     b.innerHTML = '<span class="vn"></span><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path transform="translate(1.875 3.75)" d="M8.125 13.75S0 9.375 0 4.219A4.22 4.22 0 0 1 4.219 0C5.984 0 7.495.962 8.125 2.5 8.755.962 10.266 0 12.031 0A4.22 4.22 0 0 1 16.25 4.219C16.25 9.375 8.125 13.75 8.125 13.75Z"/></svg>';
-    b.querySelector(".vn").textContent = voteCount.get(f.id) || "";
-    b.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleVote(f, b); };
+    b.querySelector(".vn").textContent = voteCount.get(key) || "";
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleVote(key, b); };
     return b;
   }
   const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
@@ -481,14 +494,23 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   const shot = (id, at, full) => id ? "shots/" + id.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (at ? "?v=" + (Date.parse(at) || 0) : "") : null;
   const shotUrl = (it, full) => shot(it.shotId, it.shotAt, full);
   const setImg = (img, it, w) => { img.src = shotUrl(it); img.srcset = shotUrl(it) + " 800w, " + shotUrl(it, true) + " 1600w"; img.sizes = (w || 400) + "px"; };
-  function lightbox(it, name){
-    const lb = $("#lb"); lb.querySelector("img").src = shotUrl(it, true); lb.querySelector("img").alt = "Screenshot of " + name;
+  // full-screen viewer; ← → (or swipe) step through whatever the current tab shows, in its order
+  let lbList = [], lbAt = -1;
+  const lbName = it => { if (!it.foundryId) return it.name; const by = foundryLabel(items.find(i => i.id === it.foundryId) || {}); return it.name + (by ? " · " + by : ""); };
+  function lightbox(it){
+    const lb = $("#lb"); lbAt = lbList.indexOf(it);
+    const name = lbName(it);
+    lb.querySelector("img").src = shotUrl(it, true); lb.querySelector("img").alt = "Screenshot of " + name;
     $("#lbName").textContent = name; $("#lbLink").href = it.url; lb.hidden = false;
+    $("#lbPos").textContent = lbAt >= 0 && lbList.length > 1 ? `${lbAt + 1} / ${lbList.length}` : "";
+    $("#lbPrev").hidden = $("#lbNext").hidden = !(lbAt >= 0 && lbList.length > 1);
+    const nb = lbList[lbAt + 1]; if (nb) new Image().src = shotUrl(nb, true); // preload the next one
   }
+  const lbStep = d => { if (lbAt < 0 || lbList.length < 2) return; lightbox(lbList[(lbAt + d + lbList.length) % lbList.length]); };
   function zoomBtn(it, name){
     const b = el("button","zoom"); b.type = "button"; b.setAttribute("aria-label", "View larger screenshot of " + name);
     b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
-    b.onclick = e => { e.preventDefault(); e.stopPropagation(); lightbox(it, name); };
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); lightbox(it); };
     return b;
   }
   /* ---------- filtering ---------- */
@@ -508,7 +530,8 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     const by = {
       order: (a,b) => (a.order ?? 1e9) - (b.order ?? 1e9),
       az: (a,b) => String(a.name).localeCompare(String(b.name), undefined, {sensitivity:"base"}),
-      new: (a,b) => String(b.addedAt||"").localeCompare(String(a.addedAt||"")) || (b.order??0)-(a.order??0)
+      new: (a,b) => String(b.addedAt||"").localeCompare(String(a.addedAt||"")) || (b.order??0)-(a.order??0),
+      votes: (a,b) => foundryVotes(b.id) - foundryVotes(a.id) || (a.order ?? 1e9) - (b.order ?? 1e9)
     }[state.sort];
     return out.sort(by);
   }
@@ -537,7 +560,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     const a = el("a","hit"); a.href = it.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", it.name + " — open " + host(it.url));
     c.append(a);
     const nm = el("div","cname", it.name); if (isRTL(it.name)) nm.dir = "rtl";
-    c.append(nm);
+    if (votesOn) { const hr = el("div","cheadrow"); hr.append(nm, voteBtn(it, fkey(it.id))); c.append(hr); } else c.append(nm);
     const sh = el("div","shot");
     if (it.shotId) { const img = el("img"); img.onerror = () => { const fbk = el("div","fallback", it.name); if (isRTL(it.name)) fbk.dir = "rtl"; img.replaceWith(fbk); }; setImg(img, it, 400); img.alt = "Screenshot of " + host(it.url); img.loading = "lazy"; img.decoding = "async"; sh.append(img); c.append(zoomBtn(it, it.name)); }
     else if (it.scan === "failed") { const fb = el("div","fallback", it.name); if (isRTL(it.name)) fb.dir = "rtl"; sh.append(fb); }
@@ -595,6 +618,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     if (!items.length) return;
     if (!list.length) { out.append(el("p","empty","Nothing matches. Clear a filter or the search to see more.")); return; }
     const box = el("div", "grid");
+    lbList = list.filter(it => it.shotId);
     list.forEach((it,i) => box.append(card(it,i)));
     out.append(box);
   }
@@ -662,7 +686,8 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       if (q) { const fd = byId.get(f.foundryId); const hay = (f.name + " " + (fd ? fd.name + " " + (fd.tags||[]).join(" ") : "")).toLowerCase(); if (!hay.includes(q)) return false; }
       return true;
     });
-    const ford = id => (byId.get(id)||{}).order ?? 1e9;
+    // best-voted foundries first, then board order
+    const ford = id => -foundryVotes(id) * 1e4 + ((byId.get(id)||{}).order ?? 1e3);
     const sorters = {
       foundry: (a,b) => ford(a.foundryId) - ford(b.foundryId) || (a.order??0) - (b.order??0),
       az: (a,b) => a.name.localeCompare(b.name, undefined, {sensitivity:"base"}),
@@ -683,7 +708,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
     $("#status").textContent = [base, queued.length ? `${queued.length} more fonts are queued and will appear as the crawl captures them.` : ""].filter(Boolean).join(" · ");
     if (!done.length) { out.append(el("p","empty", items.length ? "No font screenshots yet. They appear here as the crawl captures each foundry's catalogue." : "")); return; }
     if (!list.length) { out.append(el("p","empty","No fonts match. Clear the search or pick another foundry.")); return; }
-    fontsVisible = list;
+    fontsVisible = list; lbList = list.filter(f => f.shotId);
     const rowFor = (f, i) => {
       const fd = byId.get(f.foundryId) || {};
       const r = el("div","row");
@@ -860,8 +885,10 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
   $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
-  $("#lb").onclick = e => { if (e.target.tagName !== "A") $("#lb").hidden = true; };
-  document.addEventListener("keydown", e => { if (e.key === "Escape") $("#lb").hidden = true; });
+  $("#lb").onclick = e => { if (e.target.closest(".lbnav")) { e.stopPropagation(); lbStep(e.target.closest(".lbnav").id === "lbPrev" ? -1 : 1); return; } if (e.target.tagName !== "A") $("#lb").hidden = true; };
+  document.addEventListener("keydown", e => { if ($("#lb").hidden) return; if (e.key === "Escape") $("#lb").hidden = true; else if (e.key === "ArrowLeft") { e.preventDefault(); lbStep(-1); } else if (e.key === "ArrowRight") { e.preventDefault(); lbStep(1); } });
+  { let x0 = null; $("#lb").addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+    $("#lb").addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) { e.preventDefault(); lbStep(dx < 0 ? 1 : -1); } }); }
 
   /* ---------- data ---------- */
   render();
@@ -876,7 +903,7 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       items = clean(snap.foundries);
       const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
       $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";
-      if (votesOn) $("#optVotes").hidden = false;
+      if (votesOn) { $("#optVotes").hidden = false; $("#optFVotes").hidden = false; }
       render(); loadVotes();
     } catch(e) {
       $("#status").textContent = "The index couldn't load. Reload the page to try again.";

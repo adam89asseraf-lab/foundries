@@ -9,6 +9,9 @@ fs.mkdirSync(path.join(out, "data"), { recursive: true });
 fs.copyFileSync(path.join(ROOT, "site/index.html"), path.join(out, "index.html"));
 const { data } = merge(loadData(), yamlEntries(loadYamlDoc()));
 data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
+// a paused foundry (skip: true) keeps its card, but fonts from a bad catalogue scan stay off the site
+const paused = new Set(data.foundries.filter(f => f.cfg?.skip).map(f => f.id));
+data.fonts = data.fonts.filter(f => !paused.has(f.foundryId));
 fs.writeFileSync(path.join(out, "data/data.json"), dump(forSave(data)));
 fs.cpSync(path.join(ROOT, "public/shots"), path.join(out, "shots"), { recursive: true });
 fs.writeFileSync(path.join(out, ".nojekyll"), "");
