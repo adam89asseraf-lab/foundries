@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Found rizz — Play</title>
+<meta name="description" content="Prototype of the Found rizz font games: Casting Call, Type Personality Quiz and Font Bracket.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Rethink+Sans:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ededea; --tile:#f7f7f5; --ink:#121214; --muted:#6b6b72; --line:#cfcfcb; --grey:#dcdcd8; --accent:#2b36e8; --good:#00a316;
+  --stat:"Rethink Sans","Instrument Sans",Arial,sans-serif; --body:"Instrument Sans","Helvetica Neue",Arial,sans-serif; --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --grey:#2a2a31; --accent:#8790ff; --good:#3ddc55; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --grey:#2a2a31; --accent:#8790ff; --good:#3ddc55; color-scheme:dark; }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 40px}
+/* header */
+.top{display:flex;align-items:center;gap:20px;padding:22px 0 18px;border-bottom:1px solid var(--ink)}
+.brand{font:700 30px/1 var(--stat);letter-spacing:-.03em;text-decoration:none}
+.games{display:flex;border:1px solid var(--line);margin-left:auto}
+.games a{padding:9px 16px;text-decoration:none;font:500 14px/1 var(--body);white-space:nowrap}
+.games a[aria-current="page"]{background:var(--ink);color:var(--paper)}
+.back{font:400 14px/1 var(--body);white-space:nowrap}
+.proto{margin:14px 0 0;font:500 11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+main{padding:28px 0 80px;min-height:60vh}
+/* bits */
+.eyebrow{font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0}
+h1.big{font:700 clamp(40px,6vw,72px)/1 var(--stat);letter-spacing:-.04em;margin:8px 0 12px}
+h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;margin:6px 0 24px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:560px;margin:0 0 24px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{height:44px;padding:0 20px;border:1px solid var(--ink);background:transparent;cursor:pointer;font:500 15px/1 var(--body);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:not(:disabled):hover{outline:2px solid var(--ink);outline-offset:1px}
+.link{border:0;background:none;padding:0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.tag{display:inline-flex;align-items:center;font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.02em;border:1px solid var(--line);padding:5px 10px;white-space:nowrap}
+.tag.ink{border-color:var(--ink)}
+.tag.fill{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.bar .grow{flex:1}
+.mono{font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.spec{display:block;aspect-ratio:5/2;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:0}
+.spec img{width:100%;height:100%;object-fit:cover;display:block}
+.fname{font:700 16px/1.2 var(--stat);margin-top:8px}
+.fby{font:400 11px/1.3 var(--mono);text-transform:uppercase;color:var(--muted)}
+/* choice cards */
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.choices.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.choice{all:unset;cursor:pointer;display:grid;gap:4px;align-content:start;position:relative}
+.choice:focus-visible .spec{outline:3px solid var(--accent);outline-offset:2px}
+.choice:hover .spec{border-color:var(--ink)}
+.choice.best .spec{border:2px solid var(--ink)}
+.choice.worst .spec{opacity:.45}
+.choice.worst .fname{text-decoration:line-through;color:var(--muted)}
+.choice .badge{position:absolute;top:10px;left:10px}
+.hint{color:var(--muted);margin:20px 0}
+/* meters */
+.meter{display:grid;gap:4px;margin-top:6px}
+.meter .lab{display:flex;justify-content:space-between;font:500 10px/1 var(--mono);text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.meter .lab b{color:var(--ink);font-weight:500}
+.track{height:8px;background:var(--grey);position:relative;overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.track.soft i{background:var(--muted)}
+.score{font:700 64px/1 var(--stat);letter-spacing:-.03em;color:var(--accent)}
+.points{display:flex;align-items:center;gap:20px;margin-bottom:24px}
+/* lobby tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:12px 0 24px}
+.tile{all:unset;cursor:pointer;background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px}
+.tile:hover,.tile:focus-visible{border-color:var(--ink)}
+.tile .t{display:flex;align-items:baseline;gap:8px;font:700 18px/1 var(--stat)}
+.stats{display:flex;gap:24px;flex-wrap:wrap}
+/* wrap / lists */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:48px;align-items:start}
+.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:20px}
+.list{display:grid;gap:12px;margin-top:12px}
+.li{display:grid;grid-template-columns:28px 120px minmax(0,1fr);gap:14px;align-items:center}
+.li .n{font:700 20px/1 var(--stat)}
+.li .spec{border-radius:4px}
+.li small{display:block;color:var(--muted)}
+/* quiz */
+.progress{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-bottom:20px}
+.progress i{height:6px;background:var(--grey)}
+.progress i.on{background:var(--ink)}
+.axis{display:grid;gap:6px;margin:10px 0}
+.axis .lab{display:flex;justify-content:space-between;font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.03em}
+.axis .rail{height:4px;background:var(--grey);position:relative}
+.axis .rail i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%);transition:left .6s}
+.cardpreview{width:100%;max-width:360px;border:1px solid var(--line);display:block}
+/* bracket */
+.bracket{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr)) minmax(150px,1fr);gap:20px;overflow-x:auto;padding-bottom:8px}
+.bcol{display:flex;flex-direction:column;min-height:480px}
+.champ h3{margin:0 0 6px}
+.bcol .slots{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px}
+.bcol h3{margin:0 0 6px}
+.slot{display:flex;align-items:center;justify-content:space-between;gap:6px;height:28px;padding:0 8px;background:var(--tile);border:1px solid var(--line);font:400 12.5px/1 var(--body);white-space:nowrap;overflow:hidden}
+.slot.win{font-weight:600;background:#fff;color:#121214}
+.slot.lose{opacity:.5}
+.slot.live{border:2px solid var(--ink)}
+.slot.empty{color:var(--muted);background:transparent}
+.slot em{font:500 10px/1 var(--mono);font-style:normal;color:var(--muted)}
+.champ{display:flex;flex-direction:column}
+.champ .slots{flex:1;display:flex;flex-direction:column;justify-content:center}
+.champbox{background:var(--ink);color:var(--paper);border-radius:6px;padding:16px;display:grid;gap:8px;text-align:center;font:700 18px/1.2 var(--stat)}
+.vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:20px;align-items:center}
+.vs .v{font:700 28px/1 var(--stat);color:var(--muted)}
+.themes{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 20px}
+.themes button{all:unset;cursor:pointer;font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.02em;border:1px solid var(--line);padding:7px 10px}
+.themes button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.empty{color:var(--muted)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.toast.show{opacity:1}
+@media (max-width:900px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr;gap:32px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.wrap{padding:0 16px}.top{flex-wrap:wrap;gap:12px}.games{margin-left:0;order:3;width:100%}.games a{flex:1;text-align:center;padding:10px 6px;font-size:13px}.back{margin-left:auto}
+  .choices.two{grid-template-columns:1fr}.vs{grid-template-columns:1fr}.vs .v{text-align:center}.tiles{grid-template-columns:1fr}.score{font-size:48px}}
+@media (prefers-reduced-motion:reduce){.track i,.axis .rail i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">Found rizz</a>
+    <nav class="games" aria-label="Games">
+      <a href="#casting" data-g="casting">Casting Call</a>
+      <a href="#quiz" data-g="quiz">Type Quiz</a>
+      <a href="#bracket" data-g="bracket">Font Bracket</a>
+    </nav>
+    <a class="back" href="./">← Index</a>
+  </header>
+  <p class="proto">Prototype · your picks stay in this browser · crowd results are simulated until enough people play</p>
+  <main id="app" aria-live="polite"><p class="empty">Loading fonts…</p></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const app = $("#app");
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200); };
+  const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} } };
+  const hash = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h / 4294967295; };
+  const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const shot = (f, full) => "shots/" + f.shotId.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (f.shotAt ? "?v=" + (Date.parse(f.shotAt) || 0) : "");
+
+  let FONTS = [], MAKER = new Map(), VOTES = new Map();
+  const VOTE_API = { url: "https://lulglxebjchreghaexjd.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1bGdseGViamNocmVnaGFleGpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MjMzNTgsImV4cCI6MjExMDk5OTM1OH0.G7g865fMppnvLe9khxq96f67obFMWCdNqHc8jmFX4w4" };
+  const byCat = c => FONTS.filter(f => f.category === c);
+
+  function specCard(f, opt = {}) {
+    const fig = el("figure", "spec"); const img = el("img"); img.src = shot(f, opt.full); img.alt = "Specimen of " + f.name; img.loading = "lazy"; img.decoding = "async"; fig.append(img); return fig;
+  }
+  function nameBlock(f, parent) { parent.append(el("div", "fname", f.name), el("div", "fby", MAKER.get(f.foundryId) || "")); }
+  function meter(label, pct, soft) {
+    const m = el("div", "meter"); const lab = el("div", "lab"); lab.append(el("span", "", label), el("b", "", pct + "%"));
+    const tr = el("div", "track" + (soft ? " soft" : "")); const i = el("i"); i.style.width = "0%"; tr.append(i); m.append(lab, tr);
+    requestAnimationFrame(() => requestAnimationFrame(() => { i.style.width = pct + "%"; })); return m;
+  }
+  function btn(label, primary, on) { const b = el("button", "btn" + (primary ? " primary" : ""), label); b.type = "button"; if (on) b.onclick = on; return b; }
+
+  /* =================== Casting Call =================== */
+  const ROLES = {
+    Display: ["The poster for a monster truck opera", "A heavy metal bakery", "Your villain origin story", "A cereal box from 2087", "A wrestler's entrance banner", "The sign above a haunted arcade", "A pizza place on Mars"],
+    Serif: ["A wedding invite for two lighthouse keepers", "A cursed museum label", "The menu at a pretentious soup bar", "A ransom note from a poet", "An apology letter from a duke", "The label on a 200-year-old jam"],
+    Sans: ["A startup that sells air", "The sign at a calm dentist", "A Scandinavian dog's passport", "An airport for ghosts", "The instructions for a very sad lamp", "A smart fridge's breakup text"],
+    Script: ["A breakup letter written by a swan", "A love note from a pirate", "A candle that costs too much", "A tattoo you regret, beautifully", "The menu at a mermaid's café"],
+    Mono: ["A hacker's grocery list", "The terminal on a haunted spaceship", "A robot's diary", "The receipt from a time machine", "A spy's shopping list"],
+  };
+  const CATS = Object.keys(ROLES);
+  let cc = null;
+  function ccLobby() {
+    app.replaceChildren();
+    app.append(el("p", "eyebrow", "Play · Casting call"), el("h1", "big", "Casting Call"), el("p", "lede", "We wrote the script. You cast the font. Pick the star and the flop, and score when you agree with the crowd."));
+    app.append(el("p", "eyebrow", "Pick a category · 5 roles"));
+    const tiles = el("div", "tiles");
+    for (const c of CATS) {
+      const list = byCat(c); if (list.length < 8) continue;
+      const t = el("button", "tile"); t.type = "button";
+      t.append(specCard(list[Math.floor(hash(c + new Date().toDateString()) * list.length)]));
+      const r = el("div", "t"); r.append(el("span", "", c), el("span", "mono", list.length + " fonts")); r.lastChild.style.color = "var(--muted)"; t.append(r);
+      t.onclick = () => ccStart(c); tiles.append(t);
+    }
+    app.append(tiles);
+    const best = store.get("fdx-cc-best", 0), played = store.get("fdx-cc-log", []).length;
+    const st = el("div", "stats"); st.append(el("span", "mono", "Best score · " + best), el("span", "mono", "Roles cast · " + played)); app.append(st);
+  }
+  function ccStart(cat) {
+    const roles = shuffle(ROLES[cat]).slice(0, 5);
+    cc = { cat, roles, i: 0, score: 0, matched: 0, history: [], used: new Set() };
+    ccRound();
+  }
+  function ccPickFonts() {
+    let pool = shuffle(byCat(cc.cat)).filter(f => !cc.used.has(f.id));
+    if (pool.length < 4) pool = shuffle(byCat(cc.cat));
+    const four = pool.slice(0, 4); four.forEach(f => cc.used.add(f.id)); return four;
+  }
+  function ccRound() {
+    const role = cc.roles[cc.i]; const fonts = ccPickFonts(); let best = null, worst = null;
+    app.replaceChildren();
+    const bar = el("div", "bar"); bar.append(el("span", "mono", `Round ${cc.i + 1} / ${cc.roles.length}`), el("span", "tag", cc.cat), el("span", "grow"), el("span", "mono", "Score " + cc.score)); app.append(bar);
+    app.append(el("p", "eyebrow", "The role"), el("h2", "role", role));
+    const grid = el("div", "choices"); const cards = [];
+    const paint = () => cards.forEach(({ b, f }) => {
+      b.classList.toggle("best", best === f); b.classList.toggle("worst", worst === f);
+      b.querySelector(".badge")?.remove();
+      if (best === f) { const t = el("span", "tag fill badge", "Gets the part"); b.append(t); }
+      if (worst === f) { const t = el("span", "tag ink badge", "Absolutely not"); t.style.background = "#fff"; t.style.color = "#121214"; b.append(t); }
+      b.setAttribute("aria-label", `${f.name}${best === f ? ", your star" : worst === f ? ", your flop" : ""}`);
+      go.disabled = !(best && worst);
+    });
+    const go = btn("Lock it in →", true, () => ccReveal(role, fonts, best, worst));
+    for (const f of fonts) {
+      const b = el("button", "choice"); b.type = "button"; b.append(specCard(f)); nameBlock(f, b);
+      b.onclick = () => {
+        if (best === f) best = null; else if (worst === f) worst = null;
+        else if (!best) best = f; else if (!worst) worst = f; else worst = f;
+        paint();
+      };
+      cards.push({ b, f }); grid.append(b);
+    }
+    app.append(grid, el("p", "hint", "Tap a font to cast it as the star, then tap another for “absolutely not”. Tap again to undo."));
+    const row = el("div", "row"); row.append(go, btn("Skip this role", false, () => { cc.i++; cc.i < cc.roles.length ? ccRound() : ccWrap(); })); app.append(row);
+    paint();
+  }
+  // simulated crowd until real votes exist: stable per role + font, nudged by heart votes
+  function ccCrowd(role, fonts) {
+    const castW = fonts.map(f => 0.25 + hash(role + "|" + f.id) + Math.min(1, (VOTES.get(f.id) || 0) * 0.15));
+    const notW = fonts.map(f => 0.25 + hash("not|" + role + "|" + f.id) * (1.4 - hash(role + "|" + f.id)));
+    const pct = w => { const s = w.reduce((a, b) => a + b, 0); const p = w.map(x => Math.round(100 * x / s)); p[p.indexOf(Math.max(...p))] += 100 - p.reduce((a, b) => a + b, 0); return p; };
+    return { cast: pct(castW), not: pct(notW) };
+  }
+  function ccReveal(role, fonts, best, worst) {
+    const crowd = ccCrowd(role, fonts);
+    const top = fonts[crowd.cast.indexOf(Math.max(...crowd.cast))], flop = fonts[crowd.not.indexOf(Math.max(...crowd.not))];
+    let pts = 0; const hitStar = best === top, hitFlop = worst === flop;
+    if (hitStar) pts += 100; if (hitFlop) pts += 50; if (!pts) pts = 10;
+    cc.score += pts; if (hitStar) cc.matched++;
+    cc.history.push({ role, best, top });
+    const log = store.get("fdx-cc-log", []); log.push({ role, cat: cc.cat, fonts: fonts.map(f => f.id), best: best.id, worst: worst.id, at: Date.now() }); store.set("fdx-cc-log", log.slice(-500));
+    app.replaceChildren();
+    const bar = el("div", "bar"); bar.append(el("span", "mono", `Round ${cc.i + 1} / ${cc.roles.length}`), el("span", "tag", cc.cat), el("span", "grow"), el("span", "mono", "Score " + cc.score)); app.append(bar);
+    const p = el("div", "points"); const msg = hitStar && hitFlop ? "You matched the crowd on the star and the flop." : hitStar ? "The crowd agrees with your star." : hitFlop ? "The crowd agrees with your flop." : "Bold casting. The crowd went another way.";
+    p.append(el("div", "score", "+" + pts), el("div", "lede", msg)); p.lastChild.style.margin = "0"; app.append(p);
+    app.append(el("p", "eyebrow", role));
+    const grid = el("div", "choices"); grid.style.marginTop = "12px";
+    fonts.forEach((f, k) => {
+      const c = el("div", "choice" + (f === best ? " best" : f === worst ? " worst" : "")); c.style.cursor = "default";
+      c.append(specCard(f)); nameBlock(f, c);
+      c.append(meter("Cast it", crowd.cast[k]), meter("Absolutely not", crowd.not[k], true));
+      if (f === best) c.append(Object.assign(el("span", "tag fill", hitStar ? "Your star · crowd agrees" : "Your star"), { style: "justify-self:start;margin-top:6px" }));
+      if (f === worst) c.append(Object.assign(el("span", "tag ink", hitFlop ? "Your flop · crowd agrees" : "Your flop"), { style: "justify-self:start;margin-top:6px" }));
+      grid.append(c);
+    });
+    app.append(grid);
+    const row = el("div", "row"); row.style.marginTop = "28px";
+    const last = cc.i + 1 >= cc.roles.length;
+    row.append(btn(last ? "See your score →" : "Next role →", true, () => { cc.i++; last ? ccWrap() : ccRound(); })); app.append(row);
+    row.querySelector("button").focus();
+  }
+  function ccWrap() {
+    const best = Math.max(store.get("fdx-cc-best", 0), cc.score); store.set("fdx-cc-best", best);
+    app.replaceChildren();
+    const s = el("div", "split");
+    const L = el("div"); L.append(el("p", "eyebrow", "That’s a wrap"), Object.assign(el("div", "score", String(cc.score)), { style: "font-size:120px;color:var(--ink)" }),
+      el("p", "lede", `You agreed with the crowd on ${cc.matched} of ${cc.roles.length} roles. Best score: ${best}.`));
+    const lvl = cc.matched >= 4 ? "Casting director" : cc.matched >= 2 ? "Assistant casting director" : "Wildcard agent";
+    L.append(Object.assign(el("span", "tag ink", lvl), { style: "margin-bottom:20px" }));
+    const r = el("div", "row"); r.append(btn("Play again", true, () => ccStart(cc.cat)), btn("Pick another category", false, ccLobby)); L.append(r);
+    const R = el("div", "panel"); R.append(el("p", "eyebrow", "The crowd’s stars this round"));
+    const list = el("div", "list");
+    cc.history.forEach((h, i) => { const li = el("div", "li"); li.append(el("span", "n", String(i + 1)), specCard(h.top)); const t = el("div"); t.append(el("strong", "", h.top.name), el("small", "", h.role)); li.append(t); list.append(li); });
+    if (!cc.history.length) list.append(el("p", "empty", "You skipped every role."));
+    R.append(list); s.append(L, R); app.append(s);
+  }
+
+  /* =================== Type Personality Quiz =================== */
+  // Four axes, 0 = left word, 1 = right word. Until crowd scores exist, each font is placed by its category (plus a stable nudge).
+  const AXES = [["Calm", "Loud"], ["Serious", "Playful"], ["Classic", "Futuristic"], ["Clean", "Rough"]];
+  const CAT_AXES = { Display: [.9, .65, .6, .7], Script: [.55, .9, .3, .65], Serif: [.3, .3, .15, .35], Slab: [.55, .4, .35, .5], Sans: [.35, .35, .7, .15], Mono: [.4, .45, .9, .3] };
+  const axesOf = f => { const b = CAT_AXES[f.category] || [.5, .5, .5, .5]; return b.map((v, i) => Math.max(0, Math.min(1, v + (hash(f.id + "|ax" + i) - .5) * .3))); };
+  const PROMPTS = ["Which one would you text your ex in?", "Name your boat in…", "Get it tattooed:", "Your wedding invite:", "Your band’s first album cover:", "The sign on your dream café:", "Your out-of-office email:", "A note on the shared fridge:", "Your protest sign:", "The app you’d build:", "Your plant’s name tag:", "The menu at your dinner party:", "Your villain monologue:", "Your gravestone (sorry):"];
+  const TYPE_A = { "loud,playful": "Chaotic", "loud,serious": "Brutalist", "calm,playful": "Whimsical", "calm,serious": "Quiet" };
+  const TYPE_B = { "classic,clean": "Classicist", "classic,rough": "Romantic", "futuristic,clean": "Modernist", "futuristic,rough": "Punk" };
+  const DESC_A = { Chaotic: "You want letters that make noise and have fun doing it.", Brutalist: "You like your type heavy, direct and unbothered.", Whimsical: "You lean gentle, with a wink in every curve.", Quiet: "You like type that lets the words do the talking." };
+  const DESC_B = { Classicist: "Underneath, you trust proportions that have worked for centuries.", Romantic: "There’s a soft spot for drama, history and a little ink spread.", Modernist: "Clean geometry and tidy systems keep you calm.", Punk: "You’d rather it look made by hand, today, slightly out of line." };
+  let qz = null;
+  function quizIntro() {
+    app.replaceChildren();
+    const s = el("div", "split");
+    const L = el("div"); L.append(el("p", "eyebrow", "Play · Type personality quiz"), el("h1", "big", "What’s your type?"), el("p", "lede", "10 quick picks between two fonts. Get your type personality, and the fonts that match it."));
+    const r = el("div", "row"); r.append(btn("Start the quiz →", true, quizStart)); L.append(r);
+    const last = store.get("fdx-quiz-last", null);
+    if (last) { const p = el("p", "hint", "Last time you were a "); p.append(el("strong", "", last)); p.append("."); L.append(p); }
+    const R = el("div", "panel"); R.append(el("p", "eyebrow", "How it works"));
+    const ul = el("div", "list"); ["Each question shows two fonts that differ a lot on one trait.", "Ten answers place you on four traits: calm or loud, serious or playful, classic or futuristic, clean or rough.", "You get one of 16 types, the fonts closest to it, and a card to share."].forEach((t, i) => { const li = el("div", "li"); li.style.gridTemplateColumns = "28px 1fr"; li.append(el("span", "n", String(i + 1)), el("span", "", t)); ul.append(li); });
+    R.append(ul); s.append(L, R); app.append(s);
+  }
+  function quizStart() {
+    const prompts = shuffle(PROMPTS).slice(0, 10);
+    qz = { prompts, i: 0, picks: [], used: new Set() };
+    quizQ();
+  }
+  function quizPair(axis) {
+    const scored = shuffle(FONTS).filter(f => !qz.used.has(f.id)).map(f => ({ f, a: axesOf(f) }));
+    const hi = scored.find(x => x.a[axis] > .62), lo = scored.find(x => x.a[axis] < .38 && (!hi || x.f.category !== hi.f.category));
+    const pair = [hi || scored[0], lo || scored[1]].map(x => x.f); pair.forEach(f => qz.used.add(f.id));
+    return Math.random() < .5 ? pair : pair.reverse();
+  }
+  function quizQ() {
+    const axis = qz.i % 4; const pair = quizPair(axis);
+    app.replaceChildren();
+    const prog = el("div", "progress"); for (let k = 0; k < 10; k++) prog.append(el("i", k <= qz.i ? "on" : "")); app.append(prog);
+    app.append(el("p", "eyebrow", `Question ${qz.i + 1} of 10`), el("h2", "role", qz.prompts[qz.i]));
+    const grid = el("div", "choices two");
+    const choose = f => { qz.picks.push(f); qz.i++; qz.i >= 10 ? quizResult() : quizQ(); };
+    pair.forEach((f, k) => {
+      const b = el("button", "choice"); b.type = "button"; b.append(specCard(f, { full: true }));
+      const r = el("div", "row"); r.style.marginTop = "6px"; r.append(el("span", "tag ink", k ? "B" : "A"), el("span", "fby", (k ? "→" : "←") + " key")); b.append(r);
+      b.setAttribute("aria-label", "Option " + (k ? "B" : "A") + ": " + f.name); b.onclick = () => choose(f); grid.append(b);
+    });
+    app.append(grid);
+    const row = el("div", "row"); row.style.marginTop = "20px";
+    const skip = el("button", "link", "Can’t decide? Skip"); skip.type = "button"; skip.onclick = () => { qz.i++; qz.i >= 10 ? quizResult() : quizQ(); };
+    row.append(skip); app.append(row);
+    qz.keys = pair;
+  }
+  function quizProfile() {
+    if (!qz.picks.length) return [.5, .5, .5, .5];
+    const sum = [0, 0, 0, 0]; qz.picks.forEach(f => axesOf(f).forEach((v, i) => sum[i] += v)); return sum.map(v => v / qz.picks.length);
+  }
+  function quizResult() {
+    qz.keys = null;
+    const p = quizProfile();
+    const a = TYPE_A[[p[0] >= .5 ? "loud" : "calm", p[1] >= .5 ? "playful" : "serious"].join(",")];
+    const b = TYPE_B[[p[2] >= .5 ? "futuristic" : "classic", p[3] >= .5 ? "rough" : "clean"].join(",")];
+    const name = `${a} ${b}`; store.set("fdx-quiz-last", name);
+    const dist = f => axesOf(f).reduce((s, v, i) => s + (v - p[i]) ** 2, 0);
+    const matches = [...FONTS].sort((x, y) => dist(x) - dist(y)).slice(0, 3);
+    app.replaceChildren();
+    const s = el("div", "split");
+    const L = el("div"); L.append(el("p", "eyebrow", "Your type"), el("h1", "big", name), el("p", "lede", DESC_A[a] + " " + DESC_B[b]));
+    AXES.forEach(([l, r], i) => { const ax = el("div", "axis"); const lab = el("div", "lab"); lab.append(el("span", "", l), el("span", "", r)); const rail = el("div", "rail"); const dot = el("i"); dot.style.left = "50%"; rail.append(dot); ax.append(lab, rail); L.append(ax); requestAnimationFrame(() => requestAnimationFrame(() => dot.style.left = Math.round(p[i] * 100) + "%")); });
+    const r = el("div", "row"); r.style.marginTop = "24px";
+    r.append(btn("Make my share card", true, () => quizCard(name, matches, L)), btn("Retake", false, quizStart)); L.append(r);
+    const R = el("div"); R.append(el("p", "eyebrow", "Your fonts"));
+    const list = el("div", "list"); list.style.gap = "18px";
+    matches.forEach(f => { const c = el("a", ""); c.href = f.url; c.target = "_blank"; c.rel = "noopener noreferrer"; c.style.textDecoration = "none"; c.append(specCard(f, { full: true })); nameBlock(f, c); list.append(c); });
+    R.append(list);
+    const more = el("a", "", "Find more in the index →"); more.href = "./"; more.style.display = "inline-block"; more.style.marginTop = "16px"; R.append(more);
+    s.append(L, R); app.append(s);
+  }
+  async function quizCard(name, fonts, where) {
+    const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
+    await document.fonts.load("700 96px 'Rethink Sans'"); await document.fonts.load("500 28px 'DM Mono'");
+    g.fillStyle = "#121214"; g.fillRect(0, 0, W, H);
+    g.fillStyle = "#9a9aa2"; g.font = "500 30px 'DM Mono'"; g.fillText("MY TYPE IS", 80, 130);
+    g.fillStyle = "#ededea"; g.font = "700 104px 'Rethink Sans'";
+    const words = name.split(" "); words.forEach((w, i) => g.fillText(w, 76, 250 + i * 108));
+    const imgs = await Promise.all(fonts.map(f => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = shot(f, true); })));
+    let y = 250 + words.length * 108 + 10;
+    for (const im of imgs) { if (!im) continue; g.fillStyle = "#fff"; g.beginPath(); g.roundRect(80, y, 920, 230, 16); g.fill(); g.save(); g.beginPath(); g.roundRect(80, y, 920, 230, 16); g.clip(); const sh = 920 * im.height / im.width; g.drawImage(im, 80, y + (230 - sh) / 2, 920, sh); g.restore(); y += 254; }
+    g.fillStyle = "#9a9aa2"; g.font = "500 26px 'DM Mono'"; g.fillText("FOUND RIZZ · WHAT’S YOUR TYPE?", 80, H - 70);
+    const url = c.toDataURL("image/png");
+    where.querySelector(".cardwrap")?.remove();
+    const w = el("div", "cardwrap"); w.style.marginTop = "24px";
+    const img = el("img", "cardpreview"); img.src = url; img.alt = "Share card: my type is " + name;
+    const a = el("a", "btn", "Download card"); a.href = url; a.download = "my-type-" + name.toLowerCase().replace(/\s+/g, "-") + ".png"; a.style.marginTop = "12px";
+    w.append(img, el("br"), a); where.append(w); a.focus();
+  }
+
+  /* =================== Font Bracket =================== */
+  const THEMES = [{ id: "grotesk", title: "Best grotesk of 2026", cat: "Sans" }, { id: "display", title: "Loudest display face", cat: "Display" }, { id: "serif", title: "Best serif for a menu", cat: "Serif" }];
+  let br = null;
+  function brSeed(theme) {
+    const pool = byCat(theme.cat).map(f => ({ f, s: (VOTES.get(f.id) || 0) + hash(theme.id + "|" + f.id + "|" + (br?.gen || 0)) }));
+    return pool.sort((a, b) => b.s - a.s).slice(0, 16).map(x => x.f);
+  }
+  function brNew(themeId, gen = 0) {
+    const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+    br = { theme, gen }; const seeds = brSeed(theme);
+    // standard seeding: 1v16, 8v9, …
+    const order = [0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10];
+    br.rounds = [order.map(i => seeds[i]), [], [], [], []]; br.splits = {}; br.picks = 0;
+    brOverview();
+  }
+  const RN = ["Round of 16", "Quarter-finals", "Semi-finals", "Final"];
+  function brNext() { for (let r = 0; r < 4; r++) { const cur = br.rounds[r], nxt = br.rounds[r + 1]; if (cur.length && nxt.length < cur.length / 2) return { r, m: nxt.length }; } return null; }
+  function brOverview() {
+    app.replaceChildren();
+    const nx = brNext();
+    app.append(el("p", "eyebrow", "Play · Font bracket · Week 48"));
+    const head = el("div", "bar"); const h = el("h1", "big", br.theme.title); h.style.margin = "4px 0"; head.append(h, el("span", "grow"));
+    if (nx) head.append(btn(br.picks ? "Keep voting →" : "Start voting →", true, brMatch)); else head.append(btn("See the champion →", true, brChampion));
+    app.append(head);
+    app.append(el("p", "mono", nx ? `${RN[nx.r]} · match ${nx.m + 1} of ${br.rounds[nx.r].length / 2} · voting closes Sunday 20:00` : "Bracket complete"));
+    const th = el("div", "themes"); THEMES.forEach(t => { const b = el("button", "", t.title); b.type = "button"; b.setAttribute("aria-pressed", t.id === br.theme.id); b.onclick = () => { if (t.id !== br.theme.id) brNew(t.id); }; th.append(b); }); app.append(th);
+    const grid = el("div", "bracket");
+    for (let r = 0; r < 4; r++) {
+      const col = el("div", "bcol"); col.append(el("h3", "mono", RN[r])); const slots = el("div", "slots"); col.append(slots);
+      const size = 16 >> r;
+      for (let k = 0; k < size; k++) {
+        const f = br.rounds[r][k]; const s = el("div", "slot" + (f ? "" : " empty"));
+        if (f) {
+          const winner = br.rounds[r + 1]?.includes(f); const decided = br.rounds[r + 1] && br.rounds[r + 1].length > Math.floor(k / 2);
+          if (decided) s.classList.add(winner ? "win" : "lose");
+          if (nx && nx.r === r && Math.floor(k / 2) === nx.m) s.classList.add("live");
+          s.append(el("span", "", f.name)); const pct = br.splits[r + ":" + f.id]; if (pct != null) s.append(el("em", "", pct + "%"));
+        } else s.append(el("span", "", "?"));
+        slots.append(s);
+      }
+      grid.append(col);
+    }
+    const ch = el("div", "champ"); ch.append(el("h3", "mono", "Champion")); const cs = el("div", "slots"); const cb = el("div", "champbox", br.rounds[4][0] ? br.rounds[4][0].name : "Sunday 20:00"); cs.append(cb); ch.append(cs); grid.append(ch);
+    app.append(grid);
+    const reset = el("button", "link", "Reseed this bracket"); reset.type = "button"; reset.style.marginTop = "16px"; reset.onclick = () => brNew(br.theme.id, br.gen + 1); app.append(reset);
+  }
+  function brMatch() {
+    const nx = brNext(); if (!nx) return brChampion();
+    const a = br.rounds[nx.r][nx.m * 2], b = br.rounds[nx.r][nx.m * 2 + 1];
+    app.replaceChildren();
+    const bar = el("div", "bar"); bar.append(el("span", "mono", `${RN[nx.r]} · match ${nx.m + 1} of ${br.rounds[nx.r].length / 2}`), el("span", "tag", br.theme.title), el("span", "grow"), el("span", "mono", br.picks + " voted")); app.append(bar);
+    app.append(el("h2", "role", nx.r === 3 ? "The final. Who takes the crown?" : "Which one goes through?"));
+    const vs = el("div", "vs"); const cards = [];
+    const vote = pick => {
+      // simulated crowd: lean towards your pick a little, stable per matchup
+      const base = 30 + Math.round(hash(br.theme.id + a.id + b.id + br.gen) * 40); let pa = Math.max(15, Math.min(85, base + (pick === a ? 9 : -9))); if (pa === 50) pa = pick === a ? 51 : 49;
+      br.splits[nx.r + ":" + a.id] = pa; br.splits[nx.r + ":" + b.id] = 100 - pa;
+      const winner = pa >= 50 ? a : b; br.rounds[nx.r + 1].push(winner); br.picks++;
+      cards.forEach(({ c, f }) => { c.disabled = true; c.style.cursor = "default"; c.classList.toggle("best", f === pick); const pct = f === a ? pa : 100 - pa; c.append(meter(f === pick ? "Your pick" : "", pct, f !== pick)); });
+      const total = 800 + Math.round(hash(a.id + b.id) * 900);
+      const res = el("p", "mono", `${winner.name} goes through · ${total.toLocaleString()} votes${winner === pick ? " · you called it" : ""}`); res.style.marginTop = "20px";
+      const row = el("div", "row"); row.style.marginTop = "12px";
+      const more = brNext();
+      row.append(btn(more ? "Next matchup →" : "See the champion →", true, more ? brMatch : brChampion), btn("Back to the bracket", false, brOverview));
+      app.append(res, row); row.querySelector("button").focus();
+    };
+    [a, b].forEach((f, k) => {
+      const c = el("button", "choice"); c.type = "button"; c.append(specCard(f, { full: true })); nameBlock(f, c); c.onclick = () => vote(f); cards.push({ c, f });
+      vs.append(c); if (!k) vs.append(el("span", "v", "vs"));
+    });
+    app.append(vs);
+    br.keys = [a, b];
+  }
+  function brChampion() {
+    br.keys = null;
+    const champ = br.rounds[4][0]; if (!champ) return brOverview();
+    app.replaceChildren();
+    app.append(el("p", "eyebrow", "Week 48 champion · " + br.theme.title), el("h1", "big", champ.name + " takes the crown"));
+    const s = el("div", "split");
+    const L = el("div"); L.append(specCard(champ, { full: true }));
+    const path = []; for (let r = 0; r < 4; r++) { const k = br.rounds[r].indexOf(champ); const opp = br.rounds[r][k ^ 1]; if (opp) path.push(`${opp.name} ${br.splits[r + ":" + champ.id]}%`); }
+    L.append(el("p", "mono", "Beat " + path.join(" · "))); L.lastChild.style.marginTop = "12px";
+    const r = el("div", "row"); r.style.marginTop = "16px"; const open = el("a", "btn primary", "Open " + champ.name + " ↗"); open.href = champ.url; open.target = "_blank"; open.rel = "noopener noreferrer"; r.append(open, btn("Back to the bracket", false, brOverview)); L.append(r);
+    const R = el("div", "panel"); R.append(el("p", "eyebrow", "Hall of fame"));
+    const list = el("div", "list");
+    [["W47", "Best mono for code", "Mono"], ["W46", "Loudest script", "Script"], ["W45", "Best slab for a poster", "Slab"]].forEach(([w, t, cat]) => {
+      const pool = byCat(cat); if (!pool.length) return; const f = pool[Math.floor(hash(w + cat) * pool.length)];
+      const li = el("div", "li"); li.append(el("span", "mono", w), specCard(f)); const tx = el("div"); tx.append(el("strong", "", f.name), el("small", "", t)); li.append(tx); list.append(li);
+    });
+    R.append(list);
+    const next = el("div", "panel"); next.style.marginTop = "16px"; next.append(el("p", "eyebrow", "Next week"), Object.assign(el("div", "fname", "Best serif for a cookbook"), { style: "font-size:20px;margin:6px 0 12px" }), btn("Suggest a theme", false, () => toast("Thanks! Theme suggestions open with the real launch.")));
+    R.append(next);
+    s.append(L, R); app.append(s);
+  }
+
+  /* =================== routing =================== */
+  function route() {
+    const g = (location.hash || "#casting").slice(1);
+    document.querySelectorAll(".games a").forEach(a => a.dataset.g === g ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+    if (!FONTS.length) return;
+    if (g === "quiz") quizIntro(); else if (g === "bracket") { br ? brOverview() : brNew("grotesk"); } else ccLobby();
+    window.scrollTo({ top: 0 });
+  }
+  window.addEventListener("hashchange", route);
+  document.addEventListener("keydown", e => {
+    if (e.target.closest && e.target.closest("input,textarea")) return;
+    const g = (location.hash || "#casting").slice(1);
+    const keys = g === "quiz" ? qz && qz.keys : g === "bracket" ? br && br.keys : null;
+    if (!keys) return;
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { const cards = app.querySelectorAll(".choice:not(:disabled)"); const c = cards[e.key === "ArrowLeft" ? 0 : 1]; if (c) { e.preventDefault(); c.click(); } }
+  });
+
+  (async () => {
+    try {
+      const r = await fetch("data/data.json", { cache: "no-cache" }); const snap = await r.json();
+      for (const f of snap.foundries || []) MAKER.set(f.id, f.kind === "Typeface" ? (f.by || f.name) : f.name);
+      // uniform Latin specimens only: every card looks the same, so people judge the letters
+      FONTS = (snap.fonts || []).filter(f => f.shot === "uniform" && f.uniformScript === "latin" && f.shotId && f.category && /^https?:/.test(f.url));
+    } catch (e) { app.replaceChildren(el("p", "empty", "Couldn’t load the fonts. Try again in a moment.")); return; }
+    try {
+      const r = await fetch(VOTE_API.url + "/rest/v1/vote_counts?select=font_id,n", { headers: { apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key } });
+      if (r.ok) (await r.json()).forEach(x => VOTES.set(x.font_id, x.n));
+    } catch (e) {}
+    route();
+  })();
+})();
+</script>
+</body>
+</html>
