@@ -2,7 +2,7 @@
 // Runs inside the font's own page (its webfont is already loaded there); nothing is downloaded.
 
 export const SAMPLE = {
-  latin: { head: "Hamburgefonts", body: "The quick brown fox jumps over the lazy dog 0123" },
+  latin: { head: "Quirky swamp tigers", body: "The quick brown fox jumps over the lazy dog 0123" },
   hebrew: { head: "אותיות בעברית", body: "דג סקרן שט בים מאוכזב ולפתע מצא חברה", dir: "rtl" },
   cyrillic: { head: "Шрифтология", body: "Съешь же ещё этих мягких французских булок 0123" },
 };
@@ -37,17 +37,26 @@ export function detectFace(fontName) {
     const prev = seen.get(key);
     if (!prev || score > prev.score) seen.set(key, { fam, weight: cs.fontWeight, style: cs.fontStyle, vars: cs.fontVariationSettings, stretch: cs.fontStretch, fs, score, named, text: txt.slice(0, 30) });
   }
-  const all = [...seen.values()].filter(c => c.named || !siteFams.has(c.fam)).sort((a, b) => (b.named - a.named) || (b.score - a.score));
+  // how far a family is from the font itself: another design (mono, condensed, stencil…) is far, an italic is a little off
+  const DESIGN = ["mono", "condensed", "cond", "compressed", "narrow", "extended", "expanded", "wide", "stencil", "sans", "serif", "slab", "rounded", "round", "soft", "script", "outline", "inline", "fono", "duplex"];
+  const words = s => String(s || "").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9]+/).filter(Boolean);
+  const nameWords = new Set(words(fontName));
+  const off = fam => { const w = words(fam); return 10 * DESIGN.filter(x => w.includes(x) && !nameWords.has(x)).length + (w.includes("italic") && !nameWords.has("italic") ? 1 : 0); };
+  for (const c of seen.values()) c.off = off(c.fam) + (c.style !== "normal" ? 1 : 0);
+  const all = [...seen.values()].filter(c => c.named || !siteFams.has(c.fam)).sort((a, b) => (b.named - a.named) || (a.off - b.off) || (b.score - a.score));
   const out = all.filter(c => c.named);
   // a loaded webfont named like the font (testers often load it without visible text): take its most regular style
   const loaded = [...document.fonts].filter(f => f.status === "loaded" && isNamed(f.family));
   if (loaded.length) {
     const w = f => { const n = parseInt(f.weight) || 400; return Math.abs(n - 500) + (f.style === "normal" ? 0 : 300); };
     for (const f of loaded.sort((a, b) => w(a) - w(b)).slice(0, 3))
-      out.push({ fam: f.family.replace(/^["']|["']$/g, ""), weight: String(parseInt(f.weight) || 400), style: f.style === "normal" ? "normal" : "italic", vars: "normal", stretch: "normal", named: isNamed(f.family), fromFaces: true });
+      out.push({ fam: f.family.replace(/^["']|["']$/g, ""), weight: String(parseInt(f.weight) || 400), style: f.style === "normal" ? "normal" : "italic", vars: "normal", stretch: "normal", named: isNamed(f.family), fromFaces: true, off: off(f.family) + (f.style === "normal" ? 0 : 1) });
   }
-  out.push(...all.filter(c => !c.named).slice(0, 3));
-  return out;
+  // a face named like the font exists: never fall back to some other face on the page (it would be the wrong font)
+  if (!out.length) out.push(...all.filter(c => !c.named).slice(0, 3));
+  const key = c => [c.fam, c.weight, c.style].join("|");
+  out.sort((a, b) => (b.named - a.named) || (a.off - b.off)); // closest to the font first; a sibling design only as a last resort
+  return out.filter((c, i) => out.findIndex(d => key(d) === key(c)) === i).slice(0, 8);
 }
 
 /** In page: how many characters of `text` this face is missing (they'd fall back to another font). */

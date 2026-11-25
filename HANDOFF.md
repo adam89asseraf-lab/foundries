@@ -56,7 +56,7 @@ Written 2026-11-24 when the owner moved Claude accounts. Read this together with
 
 ## Uniform specimens (done, live since 2026-11-25)
 
-**What it does:** most font cards now show the same background (#ededea), the same ink (#121214) and the same words: "Hamburgefonts" plus "The quick brown fox jumps over the lazy dog 0123". Fonts that cover Hebrew show Hebrew.
+**What it does:** most font cards now show the same background (#ededea), the same ink (#121214) and the same words: "Quirky swamp tigers" plus "The quick brown fox jumps over the lazy dog 0123". Fonts that cover Hebrew show Hebrew.
 
 **How it works** (`crawler/uniform.mjs`, the `--uniform` phase in `crawl.mjs`, which is part of the default nightly run):
 1. On the font's own page, `detectFace` finds the product's webfont. It prefers a family named like the font, skips the site's interface fonts, and also checks type-tester inputs and loaded `FontFace`s.
@@ -67,7 +67,9 @@ Written 2026-11-24 when the owner moved Claude accounts. Read this together with
 No font files are downloaded.
 
 **Results:**
-- About 1,330 fonts were re-shot (about 1,190 Latin, about 140 Hebrew).
+- About 1,090 fonts are uniform specimens: about 940 show "Quirky swamp tigers", about 150 Hebrew fonts show Hebrew, and a few dozen whose webfont lacks the new letters (mostly Dinamo) still show the first phrase, "Hamburgefonts".
+- **Guard against the site's own font:** a face not named like the font that's used for 2+ fonts of one foundry is the site's interface font (Brandon Nickerson's Manrope, for example). The crawler refuses it, and the post-run check puts the earlier screenshot back from the `.pre.webp` backup it keeps for such faces.
+- **Sibling faces:** a face whose name adds another design (mono, condensed, stencil…) is used only as a last resort, and italics are avoided when an upright style exists.
 - About 800 fonts keep their earlier screenshot:
   - about 500 are image-only (Future Fonts, Gumroad and similar);
   - about 150 pages have no matching webfont (205TF, Shriftovik, Bad Type Club, Font of the Month);

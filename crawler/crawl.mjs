@@ -440,12 +440,17 @@ async function uniformOne(ctx, page, cdp, font, f) {
   const cands = await page.evaluate(detectFace, font.name);
   if (!cands.length) return "no webfont for this font on its page";
   // the first candidate that draws a whole sample by itself (Hebrew fonts show Hebrew; Cyrillic only when Latin is missing)
+  // a face not named like the font that another font of this foundry already uses is the site's own font, not this one
+  const taken = new Set(data.fonts.filter(x => x.foundryId === font.foundryId && x.id !== font.id && x.shot === "uniform").map(x => x.uniformFace));
   for (const c of cands) for (const k of ["hebrew", "latin", "cyrillic"]) {
+    if (!c.named && taken.has(c.fam)) break;
     await page.evaluate(renderUniform, { face: c, sample: SAMPLE[k], colors: UNIFORM_COLORS });
     if ((await fallbackGlyphs(cdp)) !== 0) continue;
     await sleep(250);
+    // keep the previous screenshot when the face isn't named like the font, so a wrong guess can be undone
+    if (!c.named) for (const ext of [".webp", ".thumb.webp"]) { const src = path.join(ROOT, "public/shots/fonts", font.id + ext); if (fs.existsSync(src) && font.shot !== "uniform") fs.copyFileSync(src, src.replace(ext, ".pre" + ext)); }
     await writeShot(await page.screenshot({ type: "png" }), `fonts/${font.id}`);
-    Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), uniformAt: now(), shot: "uniform", uniformFace: c.fam, uniformScript: k });
+    Object.assign(font, { shotId: `fonts/${font.id}`, shotAt: now(), uniformAt: now(), shot: "uniform", uniformFace: c.fam, uniformScript: k, uniformHead: SAMPLE[k].head, uniformNamed: !!c.named });
     for (const key of ["quality", "qualityNote", "uniformFail"]) delete font[key];
     return null;
   }
@@ -474,6 +479,15 @@ async function uniform() {
       } finally { await ctx.close(); save(); }
     }
   });
+  // undo: an unnamed face used for 2+ fonts of one foundry is the site's own font → put the earlier screenshots back
+  const reused = {};
+  for (const x of data.fonts.filter(x => x.shot === "uniform" && x.uniformNamed === false)) (reused[x.foundryId + "|" + x.uniformFace] ||= []).push(x);
+  for (const list of Object.values(reused).filter(l => l.length >= 2)) for (const x of list) {
+    for (const ext of [".webp", ".thumb.webp"]) { const pre = path.join(ROOT, "public/shots/fonts", x.id + ".pre" + ext); if (fs.existsSync(pre)) fs.renameSync(pre, pre.replace(".pre" + ext, ext)); }
+    for (const k of ["shot", "uniformFace", "uniformScript", "uniformHead", "uniformNamed"]) delete x[k];
+    Object.assign(x, { uniformAt: now(), uniformFail: "the site's own font, not this font" }); ok--; no++;
+    log(`  ↩ ${x.id}: ${list[0].uniformFace} is the site's font; earlier screenshot restored`);
+  }
   stats.uniform = ok; stats.uniformKept = no;
 }
 
