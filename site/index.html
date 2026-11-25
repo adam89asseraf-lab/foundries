@@ -670,6 +670,9 @@ select.ctl{-webkit-appearance:none;appearance:none;padding:0 26px 0 8px;backgrou
       price: (a,b) => (a.price ? a.price.usd : Infinity) - (b.price ? b.price.usd : Infinity) || a.name.localeCompare(b.name)
     };
     list.sort(sorters[fstate.sort]);
+    // fonts shown as uniform specimens come first (stable, so the chosen order holds within each group);
+    // "Most voted" and "Price" stay pure rankings
+    if (!["votes", "price"].includes(fstate.sort)) { const u = list.filter(f => f.shot === "uniform"); if (u.length) list = [...u, ...list.filter(f => f.shot !== "uniform")]; }
 
     const out = $("#out"); out.replaceChildren();
     if (!$("#status").dataset.base) $("#status").dataset.base = $("#status").textContent.startsWith("Updated") ? $("#status").textContent : "";
