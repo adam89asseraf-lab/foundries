@@ -464,7 +464,7 @@ header.mast{border-bottom:0;padding:32px 0 20px;gap:24px}
 .stats b{font:700 28px/1 var(--ui);letter-spacing:-.02em}
 /* toolbar rows */
 .bar-row + .bar-row{border-top:0}
-#fontBar .bar-row:first-child{padding:16px 0 0;gap:16px;flex-wrap:nowrap}
+#fontBar .bar-row:first-child{padding:16px 0 0;gap:16px;flex-wrap:nowrap;align-items:flex-start}
 #fontBar .bar-row:first-child .search{flex:1 1 0;min-width:0}
 #fontBar #fPick{flex:1 1 0;max-width:none;min-width:0}
 #fontBar #lPick,#fontBar #fSort{flex:0 0 206px;max-width:206px;min-width:0}
@@ -1345,12 +1345,19 @@ select.ctl{height:38px}
     }
     function update(opts, n){
       all = opts; note = n || ""; const byKey = new Map(opts.map(o => [o.id, o]));
-      chips.replaceChildren(...[...sel()].filter(id => byKey.has(id)).map(id => {
-        const b = el("button", "fpchip"); b.type = "button"; b.setAttribute("aria-label", "Remove " + byKey.get(id).name);
-        b.append(el("span", null, byKey.get(id).name), el("b", null, "×"));
-        b.onclick = e => { e.stopPropagation(); sel().delete(id); changed(); input.focus(); };
+      // every liked foundry picked: one "Liked foundries" chip instead of a chip per name
+      const group = favOpt ? favOpt.ids(all) : [];
+      const grouped = group.length > 1 && group.every(id => sel().has(id)) ? new Set(group) : null;
+      const chip = (label, title, remove) => {
+        const b = el("button", "fpchip"); b.type = "button"; b.setAttribute("aria-label", "Remove " + title);
+        b.append(el("span", null, label), el("b", null, "×"));
+        b.onclick = e => { e.stopPropagation(); remove(); changed(); input.focus(); };
         return b;
-      }));
+      };
+      const list = [];
+      if (grouped) { const c = chip(`♥ ${favOpt.chip} ${group.length}`, favOpt.chip.toLowerCase(), () => group.forEach(id => sel().delete(id))); c.title = group.map(id => byKey.get(id)?.name).filter(Boolean).join(", "); list.push(c); }
+      for (const id of sel()) if (byKey.has(id) && !(grouped && grouped.has(id))) list.push(chip(byKey.get(id).name, byKey.get(id).name, () => sel().delete(id)));
+      chips.replaceChildren(...list);
       root.classList.toggle("has", sel().size > 0);
       input.placeholder = sel().size ? addLabel : allLabel;
       if (onUpdate) onUpdate();
@@ -1362,14 +1369,18 @@ select.ctl{height:38px}
       if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!isOpen()) { open(); return; } const n = rows.length; if (!n) return; act = e.key === "ArrowDown" ? (act + 1) % n : (act <= 0 ? n - 1 : act - 1); draw(); }
       else if (e.key === "Enter") { if (isOpen() && act >= 0 && rows[act]) { e.preventDefault(); rows[act].fav ? toggleGroup(favOpt.ids(all)) : toggle(rows[act].id); } }
       else if (e.key === "Escape") { if (input.value) { input.value = ""; act = -1; draw(); } else if (isOpen()) close(); else return; e.preventDefault(); e.stopPropagation(); }
-      else if (e.key === "Backspace" && !input.value && sel().size) { const last = [...sel()].pop(); sel().delete(last); changed(); }
+      else if (e.key === "Backspace" && !input.value && sel().size) {
+        const group = favOpt ? favOpt.ids(all) : [], others = [...sel()].filter(id => !group.includes(id));
+        if (group.length > 1 && group.every(id => sel().has(id)) && !others.length) group.forEach(id => sel().delete(id));
+        else { const last = (others.length && group.length > 1 && group.every(id => sel().has(id)) ? others : [...sel()]).pop(); sel().delete(last); }
+        changed(); }
       else if (e.key === "Tab") close();
     });
     document.addEventListener("pointerdown", e => { if (isOpen() && !root.contains(e.target)) close(); });
     return { update };
   }
   const fpick = makePicker({ root: $("#fPick"), set: () => fstate.foundries, noun: "foundry", nouns: "foundries", all: "All foundries", add: "Add foundry",
-    favRow: { match: "liked favourites favorites", label: "All liked foundries", empty: "No liked foundries yet", ids: all => all.filter(o => myVotes.has("foundry:" + o.id)).map(o => o.id) },
+    favRow: { match: "liked favourites favorites", label: "All liked foundries", chip: "Liked foundries", empty: "No liked foundries yet", ids: all => all.filter(o => myVotes.has("foundry:" + o.id)).map(o => o.id) },
     onUpdate: () => writeFoundryParam() }); // also covers picks made from a font card
   const lpick = makePicker({ root: $("#lPick"), set: () => fstate.langs, noun: "language", nouns: "languages", all: "All languages", add: "Add language" });
   readFoundryParam();
