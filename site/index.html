@@ -452,12 +452,112 @@ body.tray{padding-bottom:80px}
 .vote:active svg{transform:scale(.9)}
 .vote .vn:empty{display:none}
 .vote:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-@media (max-width:960px){.grid,.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.seg.cols{display:none}}
+@media (max-width:960px){.grid,.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.seg.cols,.gsize{display:none}}
 @media (max-width:600px){.grid,.fgrid{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== Figma v4 (Nov 26, 2026) — values follow the frames' auto layout ===== */
+/* masthead: padding 32/0/20 inside the 40px page margin, rule across the full width */
+.mastwrap{border-bottom:1px solid var(--ink)}
+header.mast{border-bottom:0;padding:32px 0 20px;gap:24px}
+.mast h1{font-weight:800;font-variation-settings:"wdth" 100,"opsz" 96;letter-spacing:-.035em}
+.stats{gap:40px;padding-right:16px}
+.stats b{font:700 28px/1 var(--ui);letter-spacing:-.02em}
+/* toolbar rows */
+.bar-row + .bar-row{border-top:0}
+#fontBar .bar-row:first-child{padding:16px 0 0;gap:16px;flex-wrap:nowrap}
+#fontBar .bar-row:first-child .search{flex:1 1 0;min-width:0}
+#fontBar #fPick{flex:1 1 0;max-width:none;min-width:0}
+#fontBar #lPick,#fontBar #fSort{flex:0 0 206px;max-width:206px;min-width:0}
+.search input{font:400 15px/1.45 var(--ui);letter-spacing:.01em}
+.fpinput,select.ctl{font:400 15px/1.45 var(--ui);letter-spacing:.01em}
+select.ctl{height:38px}
+.frow2{padding:16px 0!important;gap:20px!important;flex-wrap:wrap}
+.frow2 .slider{gap:10px}
+.frow2 .slider input[type=range]{width:114px}
+.frow2 .slider .range{width:121px;margin:0}
+.frow2 .slider output{min-width:22px}
+.fpick .fpfield{min-height:38px;padding:0 26px 0 8px}
+.fpick .fpchip{padding:3px 6px 4px 8px}
+/* category chips: 5 joined 109px cells */
+.cgrid{display:grid!important;grid-template-columns:repeat(5,109px);gap:0!important;padding:0 1px 1px 0}
+.cgrid .chip{margin:0 -1px -1px 0;height:23px;padding:5px 8px 6px;display:flex;align-items:center;gap:6px;text-align:left;border-color:var(--line);position:relative}
+.cgrid .chip .n{margin-left:0}
+.cgrid .chip:hover{z-index:1;border-color:var(--ink)}
+.cgrid .chip[aria-pressed="true"]{z-index:2}
+.cgrid .chip:focus-visible{z-index:3}
+.cgrid .sep{display:none}
+/* grid size: label + 4 joined buttons (46 tall next to the chip block, 38 on the foundries bar) */
+.gsize{display:flex;align-items:center;gap:8px}
+.glabel{font:500 12px/1 var(--mono);text-transform:uppercase;letter-spacing:.01em;color:var(--muted);white-space:nowrap}
+.gsize .seg.cols{height:38px}
+.gsize .seg.cols button{width:36px;min-width:36px;padding:0}
+.frow2 .gsize .seg.cols{height:46px}
+/* foundries bar: one row — search, divider, sort (200), grid size */
+#foundryBar .bar-row:first-child{padding:12px 0;gap:10px;flex-wrap:nowrap}
+#foundryBar .search{flex:1 1 0;min-width:0}
+#foundryBar #sort{flex:0 0 200px}
+#foundryBar .gsize{padding-left:8px}
+.vsep{width:1px;height:24px;background:var(--line);flex:none}
+.tagrow{padding:0 0 12px!important;gap:10px!important}
+.tagrow .chip .x{opacity:.7}
+.tagbtn{position:relative;z-index:2;background:transparent;color:inherit;cursor:pointer}
+.tagbtn:hover{border-color:var(--ink)}
+.card:hover .tagbtn:hover{background:var(--paper);color:var(--ink)}
+/* main: cards start 38px under the toolbar (24 + 14) on Fonts, 30px (16 + 14) on Foundries */
+.fgrid{margin:38px 0 24px;gap:16px}
+.grid{margin:30px 0 24px}
+.status{margin:0 0 64px}
+/* tags: IBM Plex Mono 10.5, padding 5/10, joined, rows 6 apart */
+.tag{font:500 10.5px/1 var(--mono);letter-spacing:.02em;padding:4px 10px 5px;height:21px;display:inline-flex;align-items:center}
+.tags.joined{row-gap:6px}
+/* font card: body 12/14/14, head and props 14 apart, name Bricolage Bold 20 */
+.fcard .fshot{border-radius:8px}
+.fcard .fbody{padding:12px 14px 14px;gap:14px}
+.fcard .fheadrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.fcard .fhead{gap:2px}
+.fcard .fname{font:700 20px/1.1 var(--display);font-variation-settings:normal;letter-spacing:-.015em}
+.fcard .fmeta .maker,.fcard .fmeta .linkbtn{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+/* foundry card: padding 24/32/12, name Inter Tight Bold 26, shot 16 below, foot 14/0/16 */
+.card{padding:24px 32px 12px}
+.card .cheadrow{gap:10px;min-height:28px}
+.card .cname{font:700 26px/1 var(--ui);letter-spacing:-.02em}
+.card .shot{margin:16px 0 0;border-radius:6px}
+.card .foot{padding:14px 0 16px;gap:16px}
+.card .footline{gap:10px;align-items:flex-start}
+.card .morefonts{font:400 14px/1.45 var(--body)}
+/* phones */
+@media (max-width:700px){
+  header.mast{padding:20px 0;gap:16px;grid-template-columns:1fr;justify-items:center;text-align:center}
+  .mleft{align-items:center;gap:4px}
+  .mast h1{font-size:72px;align-items:center}
+  .mright{align-items:center;gap:16px;width:100%}
+  .stats{width:100%;justify-content:space-between;padding:0 24px;gap:16px}
+  .stats > div{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .stats b{font:600 22px/1 var(--display);letter-spacing:-.02em;margin:0}
+  .tabs-main,.tabs-main .seg2{width:auto;justify-content:center}
+  .tabs-main .seg2 a{flex:0 0 auto}
+  #fontBar .bar-row:first-child,#foundryBar .bar-row:first-child{flex-wrap:wrap;padding:8px 0;gap:8px}
+  #fontBar #fPick,#fontBar #lPick,#fontBar #fSort,#foundryBar #sort{flex:1 1 100%;max-width:none}
+  .filtersBtn{height:38px;padding:0 16px;gap:6px;border-color:var(--ink)}
+  .filtersBtn .n{font:400 11px/1.3 var(--tagmono);padding:2px 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+  .vsep{display:none}
+  .frow2{gap:16px!important}
+  .cgrid{grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+  .fgrid{margin-top:18px}
+  .grid{margin-top:18px}
+}
+@media (max-width:960px){.gsize{display:none!important}}
+@media (max-width:700px){.cgrid .chip{grid-column:auto!important}}
+/* touch screens: a round expand button on the screenshot instead of the hover bar */
+@media (hover:none),(max-width:700px){
+  .examine{left:auto;right:10px;top:10px;bottom:auto;width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);transform:none}
+  .examine span{display:none}
+  .examine svg{width:14px;height:14px}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap mastwrap">
   <header class="mast">
     <div class="mleft"><div class="eyebrow erow">Type &amp; foundry index<button class="tplay" id="titlePlay" type="button" aria-pressed="true" aria-label="Pause title animation" title="Pause title animation" hidden><svg class="ipause" width="8" height="9" viewBox="0 0 8 9" aria-hidden="true"><rect width="3" height="9"/><rect x="5" width="3" height="9"/></svg><svg class="iplay" width="8" height="9" viewBox="0 0 8 9" aria-hidden="true"><path d="M0 0l8 4.5L0 9z"/></svg></button></div><h1><span class="title" id="title">Found rizz</span></h1></div>
     <div class="mright">
@@ -495,12 +595,12 @@ body.tray{padding-bottom:80px}
         <option value="price">Price, low to high</option>
         <option value="votes" id="optVotes" hidden>Most voted</option>
       </select>
-      <div class="seg cols" role="group" aria-label="Cards per row" title="Cards per row"><button type="button" data-cols="2">2</button><button type="button" data-cols="3">3</button><button type="button" data-cols="4">4</button><button type="button" data-cols="5">5</button></div>
     </div>
-    <div class="bar-row"><div class="chips" id="fChips"></div></div>
-    <div class="bar-row sliders">
+    <div class="bar-row frow2">
+      <div class="chips cgrid" id="fChips"></div>
+      <div class="gsize"><span class="glabel" aria-hidden="true">Grid size</span><div class="seg cols" role="group" aria-label="Cards per row" title="Cards per row"><button type="button" data-cols="2">2</button><button type="button" data-cols="3">3</button><button type="button" data-cols="4">4</button><button type="button" data-cols="5">5</button></div></div>
       <div class="slider"><label for="fStyles">Styles</label><input id="fStyles" type="range" min="1" max="20" value="1"><output id="fStylesOut">Any</output></div>
-      <div class="slider"><label for="fPriceMin">Price / weight</label><div class="range" id="fPrice"><div class="rtrack"></div><div class="rfill" id="fPriceFill"></div><input id="fPriceMin" type="range" min="0" max="200" step="5" value="0" aria-label="Minimum price per weight"><input id="fPriceMax" type="range" min="0" max="200" step="5" value="200" aria-label="Maximum price per weight"></div><output id="fPriceOut">Any</output></div>
+      <div class="slider"><label for="fPriceMin" title="Price per weight">Price</label><div class="range" id="fPrice"><div class="rtrack"></div><div class="rfill" id="fPriceFill"></div><input id="fPriceMin" type="range" min="0" max="200" step="5" value="0" aria-label="Minimum price per weight"><input id="fPriceMax" type="range" min="0" max="200" step="5" value="200" aria-label="Maximum price per weight"></div><output id="fPriceOut">Any</output></div>
       <button type="button" class="btn small" id="fReset">Reset filters</button>
     </div>
     <div class="bar-row sliders moods" id="fMoods" hidden role="group" aria-label="Filter by personality"><span class="moodtitle">Personality</span></div>
@@ -515,24 +615,24 @@ body.tray{padding-bottom:80px}
         <input id="q" type="search" placeholder="Search names, makers, tags, domains" aria-label="Search">
       </div>
       <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="foundryBar">Filters<span class="n"></span></button>
+      <span class="vsep" aria-hidden="true"></span>
       <select class="ctl" id="sort" aria-label="Sort">
         <option value="order">Board order</option>
         <option value="az">A to Z</option>
         <option value="new">Newest first</option>
         <option value="votes" id="optFVotes" hidden>Most voted</option>
       </select>
-      <div class="seg cols" role="group" aria-label="Cards per row" title="Cards per row"><button type="button" data-cols="2">2</button><button type="button" data-cols="3">3</button><button type="button" data-cols="4">4</button><button type="button" data-cols="5">5</button></div>
+      <div class="gsize"><span class="glabel" aria-hidden="true">Grid size</span><div class="seg cols" role="group" aria-label="Cards per row" title="Cards per row"><button type="button" data-cols="2">2</button><button type="button" data-cols="3">3</button><button type="button" data-cols="4">4</button><button type="button" data-cols="5">5</button></div></div>
     </div>
-    <div class="bar-row">
-      <div class="chips" id="tags" role="group" aria-label="Filter by tag"></div>
-      <div class="spacer"></div>
+    <div class="bar-row tagrow" id="tagRow" hidden>
+      <span class="glabel">Tag</span><div class="chips" id="tags" role="group" aria-label="Active tag filters"></div>
     </div>
   </div>
 </div>
 
 <main class="wrap">
-  <div class="status" id="status"></div>
   <div id="out"></div>
+  <div class="status" id="status"></div>
 </main>
 
 <div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><div class="lbtext" id="lbText" hidden></div><button type="button" class="lbnav prev" id="lbPrev" aria-label="Previous">←</button><button type="button" class="lbnav next" id="lbNext" aria-label="Next">→</button><div class="lbbar"><span id="lbVote"></span><span id="lbName"></span><span id="lbPos"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
@@ -885,7 +985,8 @@ body.tray{padding-bottom:80px}
     items.filter(i => i.kind === state.kind).forEach(i => (i.tags||[]).forEach(t => counts.set(t, (counts.get(t)||0)+1)));
     const tagsSorted = [...counts.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
     const t = $("#tags"); t.replaceChildren();
-    tagsSorted.forEach(([tag,n]) => t.append(mk(tag, n, state.tags.has(tag), () => { state.tags.has(tag) ? state.tags.delete(tag) : state.tags.add(tag); render(); })));
+    tagsSorted.filter(([tag]) => state.tags.has(tag)).forEach(([tag,n]) => { const b = mk(tag, n, true, () => { state.tags.delete(tag); render(); }); b.setAttribute("aria-label", "Remove tag filter " + tag); b.append(el("span","x"," ×")); t.append(b); });
+    $("#tagRow").hidden = !state.tags.size;
   }
 
   function card(it, i){
@@ -904,7 +1005,7 @@ body.tray{padding-bottom:80px}
     const line = el("div","footline");
     const tags = el("div","tags joined");
     if (isNew(it)) tags.append(el("span","tag new","New"));
-    (it.tags||[]).forEach(t => tags.append(el("span","tag",t)));
+    (it.tags||[]).forEach(t => { const b = el("button","tag tagbtn",t); b.type = "button"; b.title = "Show only " + t; b.setAttribute("aria-pressed", state.tags.has(t)); b.onclick = e => { e.preventDefault(); e.stopPropagation(); state.tags.has(t) ? state.tags.delete(t) : state.tags.add(t); window.scrollTo({top:0}); render(); }; tags.append(b); });
     if (it.price && !(it.price.amount === 0 && (it.tags||[]).includes("Free"))) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
     line.append(tags);
     const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
@@ -989,10 +1090,12 @@ body.tray{padding-bottom:80px}
     const CATS = ["Sans","Serif","Slab","Mono","Display","Script"];
     const isFree = f => f.free === true || (f.price && f.price.amount === 0) || ftags(f).includes("Free");
     const PROPS = { Variable: f => !!f.variable, Free: isFree };
+    // order as in the design: All, Free, the categories, Variable (a 5-wide grid of joined cells)
+    const prop = k => { const n = done.filter(PROPS[k]).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = PAGE; render(); })); };
     ch.append(mkc("All", null, !fstate.cat, () => { fstate.cat = null; render(); }));
+    prop("Free");
     CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = PAGE; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
-    ch.append(Object.assign(el("span","sep"), {ariaHidden:"true"}));
-    Object.entries(PROPS).forEach(([k, fn]) => { const n = done.filter(fn).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = PAGE; render(); })); });
+    prop("Variable");
     const maxStyles = Math.max(1, ...done.map(f => +f.styles || 0));
     const sl = $("#fStyles"); sl.max = Math.max(2, Math.min(60, maxStyles)); sl.value = fstate.minStyles; sl.disabled = maxStyles < 2;
     $("#fStylesOut").textContent = fstate.minStyles > 1 ? fstate.minStyles + "+" : "Any";
@@ -1013,6 +1116,7 @@ body.tray{padding-bottom:80px}
 
     const nNew = done.filter(fIsNew).length;
     if (nNew) { const b = el("button","chip newchip","New releases"); b.type="button"; b.append(el("span","n",String(nNew))); b.setAttribute("aria-pressed", fstate.onlyNew); b.onclick = () => { fstate.onlyNew = !fstate.onlyNew; render(); }; ch.append(b); }
+    { const k = ch.children.length, last = ch.lastElementChild; if (last) last.style.gridColumn = k % 5 ? `span ${5 - (k - 1) % 5}` : ""; }
 
     const q = fstate.q.toLowerCase().trim();
     let list = done.filter(f => {
@@ -1116,7 +1220,7 @@ body.tray{padding-bottom:80px}
   // and where two sans faces meet they're far apart (condensed vs geometric, display vs quirky)
   (() => {
     const FACES = [
-      { family: '"Bricolage Grotesque"', weight: 700, vars: '"wdth" 78, "opsz" 96' }, // condensed grotesque
+      { family: '"Bricolage Grotesque"', weight: 800, vars: '"wdth" 100, "opsz" 96' }, // grotesque, as in the design
       { family: '"Young Serif"', weight: 400 },   // only has Regular; no faux bold
       { family: '"Clash Grotesk"', weight: 700 }, // geometric
       { family: '"Sharpie"', weight: 700 },       // marker
