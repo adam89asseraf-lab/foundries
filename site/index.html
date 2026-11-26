@@ -431,6 +431,11 @@ body.tray{padding-bottom:80px}
 .cmptextnote{flex-basis:100%;font:400 12px/1.4 var(--mono);color:var(--muted)}
 .cmpcol .cshot{position:relative}
 .cmpcol .clive{position:absolute;inset:0;display:flex;align-items:center;padding:6% 7%;background:#fff;color:#121214;line-height:1.05;overflow:hidden;overflow-wrap:anywhere;font-size:64px}
+.cmpcol .cshot.busy img{opacity:.35}
+.cmpcol .cshot .pbusy{position:absolute;inset:0;display:grid;place-items:center;font:500 11px/1.4 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;color:#121214;text-align:center;padding:0 16px}
+.cmpcol .cshot .pbusy::before{content:"";width:18px;height:18px;border:2px solid #121214;border-right-color:transparent;border-radius:50%;animation:pspin .8s linear infinite;margin:0 auto 8px;display:block}
+@keyframes pspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.cmpcol .cshot .pbusy::before{animation:none}}
 .cmpcol .cshot .ptag{position:absolute;right:8px;bottom:8px;font:500 10px/1 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;background:var(--paper);color:var(--muted);border:1px solid var(--line);padding:4px 6px}
 @media (max-width:900px){.cmpgrid{--cols:2 !important}}
 @media (max-width:600px){.cmpview{padding:16px}.cmpgrid{--cols:1 !important}.cmphead h2{font-size:24px}.cmptray{left:16px;right:16px;transform:none;bottom:12px;gap:8px}.cmpcount{display:none}.cmpthumb{width:56px;height:28px}.cmptray .btn{padding:0 12px}}
@@ -541,8 +546,9 @@ body.tray{padding-bottom:80px}
     <button type="button" class="cmpclose" id="cmpClose" aria-label="Close compare">✕</button>
   </div>
   <div class="cmptext">
-    <input id="cmpText" type="text" maxlength="120" placeholder="Type your own sentence" aria-label="Your own sentence" aria-describedby="cmpTextNote" autocomplete="off" spellcheck="false">
+    <input id="cmpText" type="text" maxlength="80" placeholder="Type your own sentence" aria-label="Your own sentence" aria-describedby="cmpTextNote" autocomplete="off" spellcheck="false">
     <button type="button" class="linkbtn" id="cmpTextClear" hidden>Clear</button>
+    <button type="button" class="btn small" id="cmpDraw" hidden>Draw it in the paid fonts</button>
     <span class="cmptextnote" id="cmpTextNote"></span>
   </div>
   <div class="cmpgrid" id="cmpGrid"></div>
@@ -665,7 +671,9 @@ body.tray{padding-bottom:80px}
       const fd = items.find(i => i.id === f.foundryId) || {};
       const col = el("article","cmpcol");
       const sh = el("div","cshot");
+      const pv = cmpText && !f.gf ? paidPv(f.id) : null;
       if (cmpText && f.gf) { sh.append(liveText(f)); }
+      else if (pv && pv.status === "done" && pv.image) { const img = el("img"); img.src = pv.image; img.alt = `“${pvKey()}” in ${f.name}`; sh.append(img); }
       else if (f.shotId) { const img = el("img"); img.src = shotUrl(f, true); img.alt = "Specimen of " + f.name; img.onerror = () => img.replaceWith(el("div","fallback", f.name)); sh.append(img); } else sh.append(el("div","fallback", f.name));
       const by = el("div","cby", foundryLabel(fd) || "");
       const nm = el("div","cname2", f.name); if (isRTL(f.name)) nm.dir = "rtl";
@@ -677,15 +685,63 @@ body.tray{padding-bottom:80px}
       const a = el("a","", "Open site ↗"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer";
       const rm = el("button","linkbtn","Remove"); rm.type = "button"; rm.onclick = () => toggleCmp(id);
       acts.append(a, rm);
-      if (cmpText && !f.gf) sh.append(Object.assign(el("span","ptag","Preview only"), { title: "A paid font: only the foundry's own screenshot can be shown" }));
+      if (cmpText && !f.gf) {
+        if (pv && pv.status === "queued") { sh.classList.add("busy"); sh.append(el("div","pbusy", pv.slow ? "Still drawing… taking longer than usual" : "Drawing your sentence… about 1–2 minutes")); }
+        else if (pv && pv.status === "done") sh.append(Object.assign(el("span","ptag","Your sentence"), { title: "Drawn on the foundry's page in its own webfont" }));
+        else if (pv && pv.status === "failed") sh.append(Object.assign(el("span","ptag","Couldn't draw it"), { title: pv.error || "" }));
+        else if (!canDraw(f)) sh.append(Object.assign(el("span","ptag","No preview for this font"), { title: "No webfont for this font was found on the foundry's page" }));
+        else sh.append(el("span","ptag","Preview only"));
+      }
       col.append(sh, by, nm, dl, acts); grid.append(col);
     }
-    const live = cmp.map(id => fonts.find(x => x.id === id)).filter(f => f && f.gf).length;
-    $("#cmpTextNote").textContent = live === cmp.length ? "All of these are free fonts, so each one draws your sentence."
-      : live ? `${live} of ${cmp.length} are free fonts and draw your sentence. Paid fonts keep the foundry's screenshot.`
-      : "Your sentence works with free Google Fonts and Fontshare fonts. These are paid fonts, so they keep the foundry's screenshot.";
+    const list = cmp.map(id => fonts.find(x => x.id === id)).filter(Boolean);
+    const live = list.filter(f => f.gf).length;
+    const todo = cmpText ? list.filter(f => !f.gf && canDraw(f) && !paidPv(f.id)) : [];
+    const waiting = cmpText ? list.filter(f => !f.gf && (paidPv(f.id) || {}).status === "queued").length : 0;
+    const draw = $("#cmpDraw"); draw.hidden = !todo.length || !votesOn;
+    draw.textContent = `Draw it in ${todo.length === 1 ? "the paid font" : `the ${todo.length} paid fonts`}`;
+    $("#cmpTextNote").textContent = waiting ? `Drawing your sentence on the foundries' own pages. It takes about 1–2 minutes; you can keep browsing.`
+      : todo.length ? `${live ? live + " free " + (live === 1 ? "font draws" : "fonts draw") + " your sentence live. " : ""}Paid fonts can't load here: confirm and we'll draw it on each foundry's page (about 1–2 minutes).`
+      : live === list.length ? "All of these are free fonts, so each one draws your sentence."
+      : "Free fonts draw your sentence live; paid fonts show it once drawn.";
     $("#cmpTextClear").hidden = !cmpText;
   }
+  // paid fonts: the sentence is drawn by a GitHub job on the foundry's own page (supabase/previews.sql,
+  // crawler/previews.mjs) and comes back as a picture; kept in this browser per font + sentence
+  const pvKey = () => cmpText.trim().replace(/\s+/g, " ");
+  const canDraw = f => f.shot === "uniform" && !!f.uniformFace;
+  let paid = {}; try { paid = JSON.parse(localStorage.getItem("fdx-cmp-paid") || "{}"); } catch(e) {}
+  const savePaid = () => { try { const keys = Object.keys(paid); if (keys.length > 200) keys.slice(0, keys.length - 200).forEach(k => delete paid[k]); localStorage.setItem("fdx-cmp-paid", JSON.stringify(paid)); } catch(e){} };
+  const paidPv = id => paid[id + "\u0000" + pvKey()] || null;
+  let pvTimer = 0, pvStarted = 0;
+  async function drawPaid(){
+    const text = pvKey(); if (!text) return;
+    const ids = cmp.map(id => fonts.find(x => x.id === id)).filter(f => f && !f.gf && canDraw(f)).map(f => f.id);
+    if (!ids.length) return;
+    const btn = $("#cmpDraw"); btn.disabled = true;
+    try {
+      const r = await sb("rpc/request_previews", { method: "POST", body: JSON.stringify({ p_fonts: ids, p_body: text }) });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || r.status);
+      for (const row of await r.json()) paid[row.font_id + "\u0000" + text] = { id: row.id, status: row.status, image: row.image, error: row.error };
+      savePaid(); pvStarted = Date.now(); pollPaid();
+    } catch(e) { toast(/busy/.test(e.message) ? "Lots of sentences queued. Try again in a few minutes." : "That didn't go through. Try again in a moment."); }
+    btn.disabled = false; renderCompare();
+  }
+  async function pollPaid(){
+    clearTimeout(pvTimer);
+    const open = Object.values(paid).filter(p => p.status === "queued");
+    if (!open.length) return;
+    try {
+      const r = await sb("rpc/get_previews", { method: "POST", body: JSON.stringify({ p_ids: open.map(p => p.id).slice(0, 12) }) });
+      if (r.ok) { const rows = await r.json(); let changed = false;
+        for (const row of rows) for (const p of open) if (p.id === row.id && row.status !== "queued") { Object.assign(p, { status: row.status, image: row.image, error: row.error }); changed = true; }
+        if (pvStarted && Date.now() - pvStarted > 4 * 60000) open.forEach(p => { if (p.status === "queued" && !p.slow) { p.slow = true; changed = true; } });
+        if (changed) { savePaid(); if (!$("#cmp").hidden) renderCompare(); }
+      }
+    } catch(e) {}
+    if (Object.values(paid).some(p => p.status === "queued") && (!pvStarted || Date.now() - pvStarted < 15 * 60000)) pvTimer = setTimeout(pollPaid, 5000);
+  }
+  $("#cmpDraw").onclick = drawPaid;
   // own sentence: free fonts (Google Fonts, Fontshare) are loaded from their public CSS and draw the text live;
   // paid foundry fonts can't be loaded here, so they stay as screenshots
   let cmpText = ""; try { cmpText = localStorage.getItem("fdx-cmp-text") || ""; } catch(e) {}
@@ -712,7 +768,7 @@ body.tray{padding-bottom:80px}
   $("#cmpText").addEventListener("input", e => { cmpText = e.target.value.trim() ? e.target.value : ""; try { localStorage.setItem("fdx-cmp-text", cmpText); } catch(e){} clearTimeout(cmpTextT); cmpTextT = setTimeout(renderCompare, 120); });
   $("#cmpTextClear").onclick = () => { cmpText = ""; $("#cmpText").value = ""; try { localStorage.removeItem("fdx-cmp-text"); } catch(e){} renderCompare(); $("#cmpText").focus(); };
   let cmpReturn = null;
-  function openCompare(){ if (cmp.length < 2) return; cmpReturn = document.activeElement; renderCompare(); $("#cmp").hidden = false; document.documentElement.style.overflow = "hidden"; $("#cmpClose").focus(); }
+  function openCompare(){ if (cmp.length < 2) return; cmpReturn = document.activeElement; if (!pvStarted) pvStarted = Date.now(); pollPaid(); renderCompare(); $("#cmp").hidden = false; document.documentElement.style.overflow = "hidden"; $("#cmpClose").focus(); }
   function closeCompare(){ $("#cmp").hidden = true; document.documentElement.style.overflow = ""; if (cmpReturn && cmpReturn.focus) cmpReturn.focus(); }
   const LANGS = [["latin","Latin"],["latin-ext","Extended Latin","Central & Eastern European, Turkish, Baltic"],["cyrillic","Cyrillic"],["greek","Greek"],["hebrew","Hebrew"],["arabic","Arabic"],["vietnamese","Vietnamese"],["devanagari","Devanagari"],["thai","Thai"],["japanese","Japanese"],["korean","Korean"],["chinese-simplified","Chinese"]];
   const fstate = { q:"", foundries:new Set(), kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], langs:new Set(), card:260, tags:new Set(), onlyNew:false, sort:"popular", showQueued:false, limit:60 };
