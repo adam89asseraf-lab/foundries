@@ -298,7 +298,12 @@ select.ctl{border:0;border-bottom:1px solid var(--ink);border-radius:0;backgroun
 .fcard .fmeta .maker{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--muted)}
 .fcard .fmeta .linkbtn{font:400 11px/1.3 var(--mono);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
 .fcard .fprops{gap:0}
-.fcard .zoom{top:10px;right:10px}
+.fcard .fshot{position:relative}
+.examine{position:absolute;left:0;right:0;bottom:0;z-index:2;height:34px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:#121214;color:#fff;font:500 11px/1 var(--tagmono);text-transform:uppercase;letter-spacing:.06em;cursor:zoom-in;transform:translateY(101%);transition:transform .18s ease}
+.fcard:hover .examine,.examine:focus-visible{transform:none}
+.examine:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (hover:none){.examine{transform:none;height:30px}}
+@media (prefers-reduced-motion:reduce){.examine{transition:none}}
 /* foundry card: name on top, screenshot, note, tags + "N fonts →" */
 .card{padding:24px 32px 12px;min-height:0}
 .card .cname{font:700 26px/1 var(--stat);letter-spacing:-.02em;font-variation-settings:normal}
@@ -639,6 +644,13 @@ body.tray{padding-bottom:80px}
     b.onclick = e => { e.preventDefault(); e.stopPropagation(); lightbox(it); };
     return b;
   }
+  // font cards: a bar that slides up from the bottom of the thumbnail on hover
+  function examineBtn(it, name){
+    const b = el("button","examine"); b.type = "button"; b.setAttribute("aria-label", "Examine " + name + " full screen");
+    b.innerHTML = '<span>Examine font</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+    b.onclick = e => { e.preventDefault(); e.stopPropagation(); lightbox(it); };
+    return b;
+  }
   /* ---------- filtering ---------- */
   function visible(){
     const q = state.q.toLowerCase().trim();
@@ -868,7 +880,8 @@ body.tray{padding-bottom:80px}
       const pr = [f.category, f.styles ? f.styles + (f.styles == 1 ? " style" : " styles") : null, f.variable ? "Variable" : null].filter(Boolean);
       const pt = fmtPrice(f.price);
       if (pr.length || pt || fIsNew(f)) { const pp = el("div","fprops tags joined"); if (fIsNew(f)) pp.append(el("span","tag new","New")); pr.forEach(x => pp.append(el("span","tag",x))); if (pt) { const t = el("span","tag price",pt); t.title = "Basic price for one weight"; pp.append(t); } body.append(pp); }
-      c.append(a, sh, body); if (f.shotId) c.append(zoomBtn(f, f.name + (foundryLabel(fd) ? " · " + foundryLabel(fd) : "")));
+      if (f.shotId) sh.append(examineBtn(f, f.name + (foundryLabel(fd) ? " · " + foundryLabel(fd) : "")));
+      c.append(a, sh, body);
       return c;
     };
     // Endless scroll: append the next page when the sentinel nears the viewport (no re-render, no jump).
