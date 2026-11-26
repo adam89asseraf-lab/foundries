@@ -428,6 +428,13 @@ body.tray{padding-bottom:80px}
 .cmpcol .cacts{display:flex;justify-content:space-between;align-items:center;gap:10px;font:400 14px/1.4 var(--body)}
 .cmpcol .cacts a{color:var(--ink)}
 .cmpempty{color:var(--muted);font:400 15px/1.5 var(--body)}
+.cmptext{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:-8px 0 24px}
+.cmptext input{flex:1 1 360px;min-width:0;height:48px;border:0;border-bottom:1px solid var(--ink);background:transparent;color:var(--ink);font:400 20px/1 var(--body);padding:0 2px;outline:none}
+.cmptext input:focus-visible{border-bottom-width:2px}
+.cmptextnote{flex-basis:100%;font:400 12px/1.4 var(--mono);color:var(--muted)}
+.cmpcol .cshot{position:relative}
+.cmpcol .clive{position:absolute;inset:0;display:flex;align-items:center;padding:6% 7%;background:#fff;color:#121214;line-height:1.05;overflow:hidden;overflow-wrap:anywhere;font-size:64px}
+.cmpcol .cshot .ptag{position:absolute;right:8px;bottom:8px;font:500 10px/1 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;background:var(--paper);color:var(--muted);border:1px solid var(--line);padding:4px 6px}
 @media (max-width:900px){.cmpgrid{--cols:2 !important}}
 @media (max-width:600px){.cmpview{padding:16px}.cmpgrid{--cols:1 !important}.cmphead h2{font-size:24px}.cmptray{left:16px;right:16px;transform:none;bottom:12px;gap:8px}.cmpcount{display:none}.cmpthumb{width:56px;height:28px}.cmptray .btn{padding:0 12px}}
 /* votes */
@@ -532,6 +539,11 @@ body.tray{padding-bottom:80px}
     <h2 id="cmpTitle">Compare</h2>
     <button type="button" class="btn" id="cmpClear2">Clear all</button>
     <button type="button" class="cmpclose" id="cmpClose" aria-label="Close compare">✕</button>
+  </div>
+  <div class="cmptext">
+    <input id="cmpText" type="text" maxlength="120" placeholder="Type your own sentence" aria-label="Your own sentence" aria-describedby="cmpTextNote" autocomplete="off" spellcheck="false">
+    <button type="button" class="linkbtn" id="cmpTextClear" hidden>Clear</button>
+    <span class="cmptextnote" id="cmpTextNote"></span>
   </div>
   <div class="cmpgrid" id="cmpGrid"></div>
 </div>
@@ -653,7 +665,8 @@ body.tray{padding-bottom:80px}
       const fd = items.find(i => i.id === f.foundryId) || {};
       const col = el("article","cmpcol");
       const sh = el("div","cshot");
-      if (f.shotId) { const img = el("img"); img.src = shotUrl(f, true); img.alt = "Specimen of " + f.name; img.onerror = () => img.replaceWith(el("div","fallback", f.name)); sh.append(img); } else sh.append(el("div","fallback", f.name));
+      if (cmpText && f.gf) { sh.append(liveText(f)); }
+      else if (f.shotId) { const img = el("img"); img.src = shotUrl(f, true); img.alt = "Specimen of " + f.name; img.onerror = () => img.replaceWith(el("div","fallback", f.name)); sh.append(img); } else sh.append(el("div","fallback", f.name));
       const by = el("div","cby", foundryLabel(fd) || "");
       const nm = el("div","cname2", f.name); if (isRTL(f.name)) nm.dir = "rtl";
       const dl = el("dl");
@@ -664,9 +677,40 @@ body.tray{padding-bottom:80px}
       const a = el("a","", "Open site ↗"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer";
       const rm = el("button","linkbtn","Remove"); rm.type = "button"; rm.onclick = () => toggleCmp(id);
       acts.append(a, rm);
+      if (cmpText && !f.gf) sh.append(Object.assign(el("span","ptag","Preview only"), { title: "A paid font: only the foundry's own screenshot can be shown" }));
       col.append(sh, by, nm, dl, acts); grid.append(col);
     }
+    const live = cmp.map(id => fonts.find(x => x.id === id)).filter(f => f && f.gf).length;
+    $("#cmpTextNote").textContent = live === cmp.length ? "All of these are free fonts, so each one draws your sentence."
+      : live ? `${live} of ${cmp.length} are free fonts and draw your sentence. Paid fonts keep the foundry's screenshot.`
+      : "Your sentence works with free Google Fonts and Fontshare fonts. These are paid fonts, so they keep the foundry's screenshot.";
+    $("#cmpTextClear").hidden = !cmpText;
   }
+  // own sentence: free fonts (Google Fonts, Fontshare) are loaded from their public CSS and draw the text live;
+  // paid foundry fonts can't be loaded here, so they stay as screenshots
+  let cmpText = ""; try { cmpText = localStorage.getItem("fdx-cmp-text") || ""; } catch(e) {}
+  const liveLoaded = new Set();
+  function liveFont(f){
+    const g = f.gf, w = g.weights && g.weights.length ? g.weights.reduce((a, b) => Math.abs(b - 400) < Math.abs(a - 400) ? b : a) : 400;
+    const href = g.provider === "fontshare" ? `https://api.fontshare.com/v2/css?f[]=${encodeURIComponent(g.slug)}@${w}&display=swap`
+      : `https://fonts.googleapis.com/css2?family=${encodeURIComponent(g.family).replace(/%20/g, "+")}:wght@${w}&display=swap`;
+    if (!liveLoaded.has(href)) { liveLoaded.add(href); document.head.append(Object.assign(document.createElement("link"), { rel: "stylesheet", href })); }
+    return { fam: g.family, w };
+  }
+  function liveText(f){
+    const { fam, w } = liveFont(f);
+    const d = el("div","clive", cmpText); d.style.fontFamily = `"${fam}", sans-serif`; d.style.fontWeight = w;
+    if (isRTL(cmpText)) d.dir = "rtl";
+    d.setAttribute("aria-label", `“${cmpText}” in ${f.name}`);
+    const fit = () => { let s = 96; d.style.fontSize = s + "px"; while (s > 12 && (d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1)) { s -= 2; d.style.fontSize = s + "px"; } };
+    requestAnimationFrame(fit);
+    document.fonts.load(`${w} 40px "${fam}"`, cmpText).then(() => requestAnimationFrame(fit), () => {});
+    return d;
+  }
+  let cmpTextT = 0;
+  $("#cmpText").value = cmpText;
+  $("#cmpText").addEventListener("input", e => { cmpText = e.target.value.trim() ? e.target.value : ""; try { localStorage.setItem("fdx-cmp-text", cmpText); } catch(e){} clearTimeout(cmpTextT); cmpTextT = setTimeout(renderCompare, 120); });
+  $("#cmpTextClear").onclick = () => { cmpText = ""; $("#cmpText").value = ""; try { localStorage.removeItem("fdx-cmp-text"); } catch(e){} renderCompare(); $("#cmpText").focus(); };
   let cmpReturn = null;
   function openCompare(){ if (cmp.length < 2) return; cmpReturn = document.activeElement; renderCompare(); $("#cmp").hidden = false; document.documentElement.style.overflow = "hidden"; $("#cmpClose").focus(); }
   function closeCompare(){ $("#cmp").hidden = true; document.documentElement.style.overflow = ""; if (cmpReturn && cmpReturn.focus) cmpReturn.focus(); }
