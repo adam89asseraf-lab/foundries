@@ -209,7 +209,7 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
     app.replaceChildren();
     const bar = el("div", "bar"); bar.append(el("span", "mono", `Round ${cc.i + 1} / ${cc.roles.length}`), el("span", "tag", cc.cat), el("span", "grow"), el("span", "mono", "Score " + cc.score)); app.append(bar);
     app.append(el("p", "eyebrow", "The role"), el("h2", "role", role));
-    const grid = el("div", "choices"); const cards = [];
+    const grid = el("div", "choices two"); const cards = [];
     const paint = () => cards.forEach(({ b, f }) => {
       b.classList.toggle("best", best === f); b.classList.toggle("worst", worst === f);
       b.querySelector(".badge")?.remove();
@@ -252,7 +252,7 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
     const p = el("div", "points"); const msg = hitStar && hitFlop ? "You matched the crowd on the star and the flop." : hitStar ? "The crowd agrees with your star." : hitFlop ? "The crowd agrees with your flop." : "Bold casting. The crowd went another way.";
     p.append(el("div", "score", "+" + pts), el("div", "lede", msg)); p.lastChild.style.margin = "0"; app.append(p);
     app.append(el("p", "eyebrow", role));
-    const grid = el("div", "choices"); grid.style.marginTop = "12px";
+    const grid = el("div", "choices two"); grid.style.marginTop = "12px";
     fonts.forEach((f, k) => {
       const c = el("div", "choice" + (f === best ? " best" : f === worst ? " worst" : "")); c.style.cursor = "default";
       c.append(specCard(f)); nameBlock(f, c);
