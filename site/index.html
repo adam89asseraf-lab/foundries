@@ -260,8 +260,10 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .card:hover .zoom,.fcard:hover .zoom,.zoom:focus-visible{opacity:1}
 @media (hover:none){.zoom{opacity:1}}
 .card .zoom{top:22px;right:24px}
-.lightbox{position:fixed;inset:0;z-index:40;background:rgba(10,10,14,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;cursor:zoom-out}
+.lightbox{position:fixed;inset:0;z-index:50;background:rgba(10,10,14,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;cursor:zoom-out}
 .lightbox img{max-width:min(1600px,100%);max-height:calc(100vh - 90px);width:auto;height:auto;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:var(--tile)}
+.lightbox .lbtext{position:relative;width:min(1600px,100%,calc((100vh - 90px) * 2.5));aspect-ratio:5/2;background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;cursor:default}
+
 .lightbox .lbbar{display:flex;gap:16px;align-items:center;color:#fff;font:500 13px/1.3 var(--body)}
 .lightbox a{color:#fff}
 .lightbox #lbVote .vote{color:#fff;margin:0;height:32px}
@@ -429,8 +431,10 @@ body.tray{padding-bottom:80px}
 .cmptext input{flex:1 1 360px;min-width:0;height:48px;border:0;border-bottom:1px solid var(--ink);background:transparent;color:var(--ink);font:400 20px/1 var(--body);padding:0 2px;outline:none}
 .cmptext input:focus-visible{border-bottom-width:2px}
 .cmptextnote{flex-basis:100%;font:400 12px/1.4 var(--mono);color:var(--muted)}
-.cmpcol .cshot{position:relative}
-.cmpcol .clive{position:absolute;inset:0;display:flex;align-items:center;padding:6% 7%;background:#fff;color:#121214;line-height:1.05;overflow:hidden;overflow-wrap:anywhere;font-size:64px}
+.cmpcol .cshot{position:relative;display:block;width:100%;padding:0;margin:0;font:inherit;color:inherit;cursor:zoom-in;text-align:left}
+.cmpcol .cshot:hover{border-color:var(--ink)}
+.cmpcol .cshot:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.clive{position:absolute;inset:0;display:flex;align-items:center;padding:6% 7%;background:#fff;color:#121214;line-height:1.05;overflow:hidden;overflow-wrap:anywhere;font-size:64px}
 .cmpcol .cshot.busy img{opacity:.35}
 .cmpcol .cshot .pbusy{position:absolute;inset:0;display:grid;place-items:center;font:500 11px/1.4 var(--tagmono);text-transform:uppercase;letter-spacing:.04em;color:#121214;text-align:center;padding:0 16px}
 .cmpcol .cshot .pbusy::before{content:"";width:18px;height:18px;border:2px solid #121214;border-right-color:transparent;border-radius:50%;animation:pspin .8s linear infinite;margin:0 auto 8px;display:block}
@@ -531,7 +535,7 @@ body.tray{padding-bottom:80px}
   <div id="out"></div>
 </main>
 
-<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><button type="button" class="lbnav prev" id="lbPrev" aria-label="Previous">←</button><button type="button" class="lbnav next" id="lbNext" aria-label="Next">→</button><div class="lbbar"><span id="lbVote"></span><span id="lbName"></span><span id="lbPos"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot"><img alt=""><div class="lbtext" id="lbText" hidden></div><button type="button" class="lbnav prev" id="lbPrev" aria-label="Previous">←</button><button type="button" class="lbnav next" id="lbNext" aria-label="Next">→</button><div class="lbbar"><span id="lbVote"></span><span id="lbName"></span><span id="lbPos"></span><a id="lbLink" target="_blank" rel="noopener noreferrer">Open site ↗</a></div></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="cmptray" id="cmpTray" hidden role="region" aria-label="Fonts to compare">
   <div class="cmpthumbs" id="cmpThumbs"></div>
@@ -670,7 +674,8 @@ body.tray{padding-bottom:80px}
       const f = fonts.find(x => x.id === id); if (!f) continue;
       const fd = items.find(i => i.id === f.foundryId) || {};
       const col = el("article","cmpcol");
-      const sh = el("div","cshot");
+      const sh = el("button","cshot"); sh.type = "button"; sh.title = "View full screen (← → to move between fonts)";
+      sh.setAttribute("aria-label", "View " + f.name + " full screen"); sh.onclick = () => openCmpViewer(f.id);
       const pv = cmpText && !f.gf ? paidPv(f.id) : null;
       if (cmpText && f.gf) { sh.append(liveText(f)); }
       else if (pv && pv.status === "done" && pv.image) { const img = el("img"); img.src = pv.image; img.alt = `“${pvKey()}” in ${f.name}`; sh.append(img); }
@@ -753,12 +758,12 @@ body.tray{padding-bottom:80px}
     if (!liveLoaded.has(href)) { liveLoaded.add(href); document.head.append(Object.assign(document.createElement("link"), { rel: "stylesheet", href })); }
     return { fam: g.family, w };
   }
-  function liveText(f){
+  function liveText(f, max = 96){
     const { fam, w } = liveFont(f);
     const d = el("div","clive", cmpText); d.style.fontFamily = `"${fam}", sans-serif`; d.style.fontWeight = w;
     if (isRTL(cmpText)) d.dir = "rtl";
     d.setAttribute("aria-label", `“${cmpText}” in ${f.name}`);
-    const fit = () => { let s = 96; d.style.fontSize = s + "px"; while (s > 12 && (d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1)) { s -= 2; d.style.fontSize = s + "px"; } };
+    const fit = () => { let s = max; d.style.fontSize = s + "px"; while (s > 12 && (d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1)) { s -= 2; d.style.fontSize = s + "px"; } };
     requestAnimationFrame(fit);
     document.fonts.load(`${w} 40px "${fam}"`, cmpText).then(() => requestAnimationFrame(fit), () => {});
     return d;
@@ -802,12 +807,24 @@ body.tray{padding-bottom:80px}
   const shotUrl = (it, full) => shot(it.shotId, it.shotAt, full);
   const setImg = (img, it, w) => { img.src = shotUrl(it); img.srcset = shotUrl(it) + " 800w, " + shotUrl(it, true) + " 1600w"; img.sizes = (w || 400) + "px"; };
   // full-screen viewer; ← → (or swipe) step through whatever the current tab shows, in its order
-  let lbList = [], lbAt = -1;
+  let lbList = [], lbAt = -1, lbMode = null, lbKeep = null;
+  // Compare opens the viewer with its own fonts; the grid's list comes back when it closes
+  function openCmpViewer(id){
+    const list = cmp.map(x => fonts.find(f => f.id === x)).filter(Boolean); const it = list.find(f => f.id === id); if (!it) return;
+    if (lbMode !== "cmp") lbKeep = lbList;
+    lbMode = "cmp"; lbList = list; lightbox(it);
+  }
+  function closeLb(){ $("#lb").hidden = true; if (lbMode === "cmp") { lbMode = null; if (lbKeep) lbList = lbKeep; lbKeep = null; } }
   const lbName = it => { if (!it.foundryId) return it.name; const by = foundryLabel(items.find(i => i.id === it.foundryId) || {}); return it.name + (by ? " · " + by : ""); };
   function lightbox(it){
     const lb = $("#lb"); lbAt = lbList.indexOf(it);
     const name = lbName(it);
-    lb.querySelector("img").src = shotUrl(it, true); lb.querySelector("img").alt = "Screenshot of " + name;
+    const img = lb.querySelector("img"), tx = $("#lbText");
+    const inCmp = lbMode === "cmp" && cmpText && !!it.foundryId, pv = inCmp && !it.gf ? paidPv(it.id) : null;
+    tx.hidden = !(inCmp && it.gf); img.hidden = !tx.hidden;
+    if (!tx.hidden) tx.replaceChildren(liveText(it, 220));
+    else if (pv && pv.status === "done" && pv.image) { img.src = pv.image; img.alt = `“${pvKey()}” in ${name}`; }
+    else { img.src = shotUrl(it, true); img.alt = "Screenshot of " + name; }
     $("#lbName").textContent = name; $("#lbLink").href = it.url; lb.hidden = false;
     const slot = $("#lbVote"); slot.replaceChildren();
     if (votesOn) { const vb = voteBtn(it, it.foundryId ? it.id : fkey(it.id)); vb.title = "Like (L)"; vb.setAttribute("aria-keyshortcuts", "L"); slot.append(vb); }
@@ -1319,12 +1336,12 @@ body.tray{padding-bottom:80px}
   $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
-  $("#lb").onclick = e => { if (e.target.closest(".lbnav")) { e.stopPropagation(); lbStep(e.target.closest(".lbnav").id === "lbPrev" ? -1 : 1); return; } if (e.target.tagName !== "A") $("#lb").hidden = true; };
+  $("#lb").onclick = e => { if (e.target.closest(".lbnav")) { e.stopPropagation(); lbStep(e.target.closest(".lbnav").id === "lbPrev" ? -1 : 1); return; } if (e.target.tagName !== "A" && !e.target.closest(".vote")) closeLb(); };
   $("#cmpOpen").onclick = openCompare;
   $("#cmpClose").onclick = closeCompare;
   $("#cmpClear").onclick = $("#cmpClear2").onclick = () => { cmp = []; saveCmp(); syncCmp(); };
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#cmp").hidden) { closeCompare(); return; } });
-  document.addEventListener("keydown", e => { if ($("#lb").hidden) return; if (e.key === "Escape") $("#lb").hidden = true; else if ((e.key === "l" || e.key === "L") && !e.metaKey && !e.ctrlKey && !e.altKey) { const v = $("#lbVote .vote"); if (v) { e.preventDefault(); v.click(); } } else if (e.key === "ArrowLeft") { e.preventDefault(); lbStep(-1); } else if (e.key === "ArrowRight") { e.preventDefault(); lbStep(1); } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#cmp").hidden && $("#lb").hidden) { closeCompare(); return; } });
+  document.addEventListener("keydown", e => { if ($("#lb").hidden) return; if (e.key === "Escape") { e.stopImmediatePropagation(); closeLb(); } else if ((e.key === "l" || e.key === "L") && !e.metaKey && !e.ctrlKey && !e.altKey) { const v = $("#lbVote .vote"); if (v) { e.preventDefault(); v.click(); } } else if (e.key === "ArrowLeft") { e.preventDefault(); lbStep(-1); } else if (e.key === "ArrowRight") { e.preventDefault(); lbStep(1); } });
   { let x0 = null; $("#lb").addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
     $("#lb").addEventListener("touchend", e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 50) { e.preventDefault(); lbStep(dx < 0 ? 1 : -1); } }); }
 

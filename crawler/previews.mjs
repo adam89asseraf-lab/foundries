@@ -62,7 +62,7 @@ async function drawOne(ctx, cdp, page, font, text) {
   const miss = await fallbackGlyphs(cdp);
   if (miss) throw new Error(miss === Infinity ? "couldn't draw on this page" : "this font is missing some of these characters");
   const shot = await page.screenshot({ type: "png" });
-  return (await frameSpecimen(shot, { dir: /[֐-׿؀-ۿ]/.test(text) ? "rtl" : "ltr" })).thumb;
+  return (await frameSpecimen(shot, { dir: /[֐-׿؀-ۿ]/.test(text) ? "rtl" : "ltr" })).full; // 1600×640, sharp in the full-screen viewer too
 }
 
 async function upload(id, buf) {
