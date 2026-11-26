@@ -76,6 +76,8 @@ jobs:
           else
             node crawler/crawl.mjs $ARGS
           fi
+          # scripts: which writing systems each font draws (Latin, Cyrillic, Hebrew…), for the language filter
+          node crawler/crawl.mjs --scripts --limit 400 --max-minutes 15 ${ONLY:+--only $ONLY}
           # personality: Claude Haiku rates new/changed screenshots (skips itself without the ANTHROPIC_API_KEY secret)
           node crawler/crawl.mjs --personality --limit 3000 --max-minutes 12 ${ONLY:+--only $ONLY}
 

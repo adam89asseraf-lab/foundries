@@ -9,17 +9,17 @@ import { loadData, saveData, forSave, dump, loadYamlDoc, yamlEntries, merge, cle
 import { launch, open, prepare, shoot, writeShot, writeImageShot, removeShot, pool } from "./lib/browser.mjs";
 import { typeSnippet, qualityCheck, scrollToTypeTester, discoverLinks, pageText, finishAnimations, hideCookieBanners, coverImage } from "./snippets.mjs";
 import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
-import { googleFamilies, specimenHtml, googleFontRecord } from "./google-fonts.mjs";
+import { googleFamilies, specimenHtml, googleFontRecord, googleSubsets } from "./google-fonts.mjs";
 import { fontshareFamilies } from "./fontshare.mjs";
 import { ratePersonality, personalityEnabled } from "./personality.mjs";
-import { SAMPLE, detectFace, renderUniform, fallbackGlyphs } from "./uniform.mjs";
+import { SAMPLE, detectFace, renderUniform, fallbackGlyphs, SCRIPT_TESTS, scriptsFromSubsets } from "./uniform.mjs";
 import { writeSpecimen } from "./lib/specimen-frame.mjs";
 
 /* ---------- args ---------- */
 const argv = process.argv.slice(2);
 const flag = f => argv.includes(f);
 const opt = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
-const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check"), personality: flag("--personality"), uniform: flag("--uniform") };
+const PHASES = { homepages: flag("--homepages"), discover: flag("--discover"), capture: flag("--capture"), release: flag("--release-check"), personality: flag("--personality"), uniform: flag("--uniform"), scripts: flag("--scripts") };
 if (!Object.values(PHASES).some(Boolean)) PHASES.homepages = PHASES.discover = PHASES.capture = PHASES.uniform = true;
 const LIMIT = +opt("--limit", Infinity);
 const ONLY = opt("--only", "").split(",").map(s => s.trim()).filter(Boolean);
@@ -492,6 +492,74 @@ async function uniform() {
   stats.uniform = ok; stats.uniformKept = no;
 }
 
+/* ---------- scripts: which writing systems each font can draw (Latin, Cyrillic, Greek, Hebrew, Arabic…) ---------- */
+// Google Fonts: from Google's own subset list. Everything else: the face found for the uniform specimen is asked,
+// on its own page, to draw a test string per script; a script counts only when no character falls back.
+async function scripts() {
+  const ids = new Set(foundries.map(f => f.id));
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && (x.gf || x.uniformFace) && (!x.scriptsAt || x.scriptsAt < (x.uniformAt || "")))
+    .sort((a, b) => (byId.get(a.foundryId).order - byId.get(b.foundryId).order) || (a.order - b.order)).slice(0, LIMIT);
+  log(`scripts: ${due.length} fonts to check`);
+  let ok = 0, no = 0;
+  const google = due.filter(x => x.gf && x.gf.provider !== "fontshare");
+  if (google.length) {
+    const subsets = await googleSubsets().catch(e => { log("  ✗ google subsets", e.message); return null; });
+    if (subsets) for (const x of google) {
+      const s = subsets.get(x.gf.family.toLowerCase());
+      if (s) { Object.assign(x, { scripts: scriptsFromSubsets(s), scriptsAt: now() }); ok++; }
+    }
+    save();
+  }
+  const rest = due.filter(x => !google.includes(x));
+  const groups = [...rest.reduce((m, x) => m.set(x.foundryId, [...(m.get(x.foundryId) || []), x]), new Map()).values()];
+  await pool(groups, CONC, async list => {
+    for (const font of list) {
+      if (timeUp()) return;
+      const ctx = await newContext(); const page = await ctx.newPage();
+      try {
+        let face;
+        if (font.gf) { await page.setContent(specimenHtml(font.gf), { waitUntil: "load", timeout: 45000 }); face = { fam: font.gf.family, weight: "400", style: "normal" }; }
+        else {
+          await open(page, font.url); await prepare(page);
+          for (let i = 0; i < 4; i++) { await page.evaluate(() => { document.scrollingElement.scrollTop += innerHeight; }); await sleep(300); }
+          const cands = await page.evaluate(detectFace, font.name);
+          const c = cands.find(c => c.fam === font.uniformFace);
+          face = c ? { fam: c.fam, weight: String(c.weight || 400), style: c.style === "normal" ? "normal" : "italic" } : { fam: font.uniformFace, weight: "400", style: "normal" };
+        }
+        // one line per script in this face; Chrome reports which fonts drew each line — only the webfont may appear
+        const cdp = await ctx.newCDPSession(page); await cdp.send("DOM.enable"); await cdp.send("CSS.enable");
+        await page.evaluate(async ({ face, tests }) => {
+          const box = document.createElement("div"); box.id = "__scr";
+          box.style.cssText = "position:fixed;left:0;top:0;z-index:2147483647;background:#fff;color:#000";
+          for (const [k, text] of Object.entries(tests)) {
+            const d = document.createElement("div"); d.id = "__scr_" + k.replace(/\W/g, "_"); d.textContent = text;
+            d.style.cssText = `font-family:"${face.fam}";font-weight:${face.weight};font-style:${face.style};font-size:24px;white-space:nowrap`;
+            box.append(d);
+          }
+          document.documentElement.append(box);
+          await Promise.all(Object.values(tests).map(t => document.fonts.load(`${face.style === "italic" ? "italic " : ""}${face.weight} 24px "${face.fam}"`, t).catch(() => {})));
+          await document.fonts.ready;
+        }, { face, tests: SCRIPT_TESTS });
+        await sleep(300);
+        const { root } = await cdp.send("DOM.getDocument", { depth: 0 });
+        const found = [];
+        for (const k of Object.keys(SCRIPT_TESTS)) {
+          const { nodeId } = await cdp.send("DOM.querySelector", { nodeId: root.nodeId, selector: "#__scr_" + k.replace(/\W/g, "_") });
+          if (!nodeId) continue;
+          const { fonts } = await cdp.send("CSS.getPlatformFontsForNode", { nodeId });
+          if (fonts.length && fonts.every(f => f.isCustomFont)) found.push(k);
+        }
+        if (!found.length) throw new Error("the face drew none of the test strings");
+        Object.assign(font, { scripts: found, scriptsAt: now() }); ok++;
+        log(`  ✓ scripts ${font.id}: ${found.join(", ")}`);
+      } catch (e) {
+        Object.assign(font, { scriptsAt: now() }); delete font.scripts; no++; log("  ✗ scripts", font.id, String(e.message).slice(0, 80));
+      } finally { await ctx.close(); save(); }
+    }
+  });
+  stats.scripts = ok; stats.scriptsFailed = no;
+}
+
 /* ---------- personality (Claude Haiku rates each screenshot once) ---------- */
 async function personality() {
   if (!personalityEnabled()) { log("personality: skipped (no ANTHROPIC_API_KEY)"); return; }
@@ -527,6 +595,7 @@ try {
   if (PHASES.discover) await discover(false);
   if (PHASES.capture) await capture();
   if (PHASES.uniform) await uniform();
+  if (PHASES.scripts) await scripts();
   if (PHASES.personality) await personality();
 } finally {
   await browser.close();

@@ -7,6 +7,22 @@ export const SAMPLE = {
   cyrillic: { head: "Шрифтология", body: "Съешь же ещё этих мягких французских булок 0123" },
 };
 
+/** Test strings per script: a script counts when the face draws every character of its string. */
+export const SCRIPT_TESTS = {
+  latin: "AaBbCcGgKkQqRrSsWwXxYyZz",
+  "latin-ext": "ĄąČčĘęĞğŁłŃńŐőŘřŚśŞşŠšŰűŹźŽžİı",
+  cyrillic: "АБВГДЖЗИЙКЛПФЦЧШЩЫЭЮЯабвгджзийклпфцчшщыэюя",
+  greek: "ΑΒΓΔΘΛΞΠΣΦΨΩαβγδθλξπσφψω",
+  hebrew: "אבגדהוזחטיכלמנסעפצקרשת",
+  arabic: "ابتثجحخدذرزسشصضطظعغفقكلمنهوي",
+};
+/** Google Fonts subsets → the same names (Cyrillic/Greek "-ext" count as the base script). */
+export function scriptsFromSubsets(subsets) {
+  const out = new Set();
+  for (const s of subsets) { if (["menu", "math", "symbols", "emoji", "music"].includes(s)) continue; out.add(s === "cyrillic-ext" ? "cyrillic" : s === "greek-ext" ? "greek" : s); }
+  return [...out];
+}
+
 /** In page: candidate faces for the font on this page, best first (a family named like the font, then the
  *  biggest text). The site's own interface fonts (nav, header, links, buttons, body) only count when named. */
 export function detectFace(fontName) {

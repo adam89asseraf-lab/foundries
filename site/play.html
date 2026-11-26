@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Found rizz — Play</title>
-<meta name="description" content="Prototype of the Found rizz font games: Casting Call, Type Personality Quiz and Font Bracket.">
+<meta name="description" content="Found rizz font games: Casting Call, Type Personality Quiz, Font Bracket and Tier List.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Rethink+Sans:wght@500;700&display=swap" rel="stylesheet">
@@ -121,6 +121,29 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
 .empty{color:var(--muted)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
 .toast.show{opacity:1}
+/* tier list */
+.tierboard{display:grid;gap:6px;margin:8px 0 16px}
+.trow{display:grid;grid-template-columns:72px minmax(0,1fr);min-height:104px;border:1px solid var(--line);background:var(--tile)}
+.trow.drop,.tpool.drop{outline:2px dashed var(--ink);outline-offset:-4px}
+.trow.armed{cursor:pointer}
+.trow.armed:hover{border-color:var(--ink)}
+.tlab{all:unset;display:grid;place-items:center;font:700 34px/1 var(--stat);color:#121214;cursor:default}
+.trow.armed .tlab{cursor:pointer}
+.tlab:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.t5 .tlab{background:#ff7f7f}.t4 .tlab{background:#ffbf7f}.t3 .tlab{background:#ffdf7f}.t2 .tlab{background:#bfff7f}.t1 .tlab{background:#7fbfff}
+.tcards{display:flex;flex-wrap:wrap;gap:8px;padding:8px;align-content:flex-start}
+.tpool{border:1px solid var(--line);padding:8px;display:flex;flex-wrap:wrap;gap:8px;min-height:104px}
+.tcard{all:unset;cursor:grab;width:176px;display:grid;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px}
+.tcard .spec{border-radius:4px}
+.tcard .tn{font:600 12px/1.2 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px 2px}
+.tcard[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.tcard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tcard.dragging{opacity:.4}
+.tcmp{display:grid;grid-template-columns:28px 120px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.tchip{display:inline-grid;place-items:center;width:30px;height:30px;font:700 16px/1 var(--stat);color:#121214}
+.tchip.t5{background:#ff7f7f}.tchip.t4{background:#ffbf7f}.tchip.t3{background:#ffdf7f}.tchip.t2{background:#bfff7f}.tchip.t1{background:#7fbfff}.tchip.t0{background:var(--grey);color:var(--muted)}
+.fsel{height:44px;border:1px solid var(--ink);background:transparent;padding:0 12px;font:500 15px/1 var(--body);min-width:220px}
+@media (max-width:640px){.trow{grid-template-columns:48px minmax(0,1fr);min-height:84px}.tlab{font-size:24px}.tcard{width:calc(50% - 4px)}.tcmp{grid-template-columns:24px 84px minmax(0,1fr) auto auto;gap:8px}.fsel{min-width:0;width:100%}}
 @media (max-width:900px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr;gap:32px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.wrap{padding:0 16px}.top{flex-wrap:wrap;gap:12px}.games{margin-left:0;order:3;width:100%}.games a{flex:1;text-align:center;padding:10px 6px;font-size:13px}.back{margin-left:auto}
   .choices.two{grid-template-columns:1fr}.vs{grid-template-columns:1fr}.vs .v{text-align:center}.tiles{grid-template-columns:1fr}.score{font-size:48px}}
@@ -135,10 +158,11 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
       <a href="#casting" data-g="casting">Casting Call</a>
       <a href="#quiz" data-g="quiz">Type Quiz</a>
       <a href="#bracket" data-g="bracket">Font Bracket</a>
+      <a href="#tiers" data-g="tiers">Tier List</a>
     </nav>
     <a class="back" href="./">← Index</a>
   </header>
-  <p class="proto">Prototype · your picks stay in this browser · crowd results are simulated until enough people play</p>
+  <p class="proto" id="proto">Prototype · your picks stay in this browser · crowd results are simulated until enough people play</p>
   <main id="app" aria-live="polite"><p class="empty">Loading fonts…</p></main>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -153,7 +177,7 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
   const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const shot = (f, full) => "shots/" + f.shotId.split("/").map(encodeURIComponent).join("/") + (full ? ".webp" : ".thumb.webp") + (f.shotAt ? "?v=" + (Date.parse(f.shotAt) || 0) : "");
 
-  let FONTS = [], MAKER = new Map(), VOTES = new Map();
+  let FONTS = [], TIER_FONTS = [], MAKER = new Map(), VOTES = new Map();
   const VOTE_API = { url: "https://lulglxebjchreghaexjd.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1bGdseGViamNocmVnaGFleGpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MjMzNTgsImV4cCI6MjExMDk5OTM1OH0.G7g865fMppnvLe9khxq96f67obFMWCdNqHc8jmFX4w4" };
   const byCat = c => FONTS.filter(f => f.category === c);
 
@@ -473,12 +497,160 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
     s.append(L, R); app.append(s);
   }
 
+
+  /* =================== Tier List =================== */
+  // Rank one foundry's fonts S–D. Tiers are saved anonymously (one per browser per font) and averaged into the
+  // popularity score that orders the Fonts tab for everyone.
+  const TIERS = [[5, "S"], [4, "A"], [3, "B"], [2, "C"], [1, "D"]];
+  const TIER_MAX = 12;
+  const TIER_SCORES = new Map(); // font id -> { n, total }
+  let tl = null;
+  const voterId = (() => { let v = null; try { v = localStorage.getItem("fdx-voter"); if (!v) { v = crypto.randomUUID(); localStorage.setItem("fdx-voter", v); } } catch (e) { v = v || crypto.randomUUID(); } return v; })();
+  const myTiers = () => store.get("fdx-tiers", {}); // font id -> tier
+  const crowdTier = id => { const s = TIER_SCORES.get(id); if (!s || !s.n) return 0; return Math.min(5, Math.max(1, Math.round(s.total / s.n))); };
+  const letter = t => (TIERS.find(([v]) => v === t) || [0, "–"])[1];
+  async function loadTierScores() {
+    try {
+      for (let from = 0; ; from += 1000) {
+        const r = await fetch(VOTE_API.url + "/rest/v1/tier_scores?select=font_id,n,total", { headers: { apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key, Range: `${from}-${from + 999}` } });
+        if (!r.ok) break;
+        const rows = await r.json(); rows.forEach(x => TIER_SCORES.set(x.font_id, { n: x.n, total: x.total }));
+        if (rows.length < 1000) break;
+      }
+    } catch (e) {}
+  }
+  const tierFoundries = () => {
+    const m = new Map(); for (const f of TIER_FONTS) m.set(f.foundryId, (m.get(f.foundryId) || 0) + 1);
+    return [...m].filter(([, n]) => n >= 3).map(([id, n]) => ({ id, n, name: MAKER.get(id) || id })).sort((a, b) => a.name.localeCompare(b.name));
+  };
+  function tlLobby() {
+    tl = null; app.replaceChildren();
+    app.append(el("p", "eyebrow", "Play · Tier list"), el("h1", "big", "Tier List"), el("p", "lede", "Pick a foundry and rank its fonts from S to D. Every tier list counts towards the popularity order on the Fonts tab."));
+    const all = tierFoundries(), mine = myTiers();
+    const doneF = new Set(TIER_FONTS.filter(f => mine[f.id]).map(f => f.foundryId));
+    const fresh = all.filter(x => !doneF.has(x.id));
+    const pick = shuffle(fresh.length >= 6 ? fresh : all).slice(0, 6);
+    app.append(el("p", "eyebrow", "Rank one of these"));
+    const tiles = el("div", "tiles");
+    for (const x of pick) {
+      const list = TIER_FONTS.filter(f => f.foundryId === x.id);
+      const t = el("button", "tile"); t.type = "button"; t.append(specCard(list[Math.floor(hash(x.id + new Date().toDateString()) * list.length)]));
+      const r = el("div", "t"); r.append(el("span", "", x.name), el("span", "mono", Math.min(x.n, TIER_MAX) + " fonts")); r.lastChild.style.color = "var(--muted)"; t.append(r);
+      t.onclick = () => tlStart(x.id); tiles.append(t);
+    }
+    app.append(tiles);
+    const row = el("div", "row"); const sel = el("select", "fsel"); sel.setAttribute("aria-label", "Choose a foundry");
+    sel.append(Object.assign(el("option", "", "Or choose any foundry…"), { value: "" }));
+    for (const x of all) sel.append(Object.assign(el("option", "", `${x.name} (${x.n})${doneF.has(x.id) ? " ✓" : ""}`), { value: x.id }));
+    sel.onchange = () => sel.value && tlStart(sel.value);
+    row.append(sel, btn("Surprise me", false, () => tlStart((fresh.length ? fresh : all)[Math.floor(Math.random() * (fresh.length || all.length))].id)));
+    app.append(row);
+    const st = el("div", "stats"); st.style.marginTop = "24px"; st.append(el("span", "mono", "Foundries ranked · " + doneF.size), el("span", "mono", "Fonts ranked · " + Object.keys(mine).length)); app.append(st);
+  }
+  function tlStart(foundryId) {
+    const mine = myTiers();
+    // big catalogues: a round of 12, the ones you haven't ranked yet first
+    const list = shuffle(TIER_FONTS.filter(f => f.foundryId === foundryId)).sort((a, b) => (mine[a.id] ? 1 : 0) - (mine[b.id] ? 1 : 0)).slice(0, TIER_MAX);
+    tl = { foundryId, fonts: list, place: new Map(list.filter(f => mine[f.id]).map(f => [f.id, mine[f.id]])), sel: null };
+    tlBoard();
+  }
+  function tlBoard() {
+    app.replaceChildren();
+    const name = MAKER.get(tl.foundryId) || "";
+    const bar = el("div", "bar"); bar.append(el("span", "mono", "Tier list"), el("span", "tag", name), el("span", "grow"));
+    const cnt = el("span", "mono"); bar.append(cnt); app.append(bar);
+    app.append(el("h2", "role", "Rank " + name));
+    const board = el("div", "tierboard"); const rows = new Map();
+    const byId = new Map(tl.fonts.map(f => [f.id, f]));
+    const put = (id, t) => { if (t) tl.place.set(id, t); else tl.place.delete(id); tl.sel = null; draw(); };
+    const zone = (node, t) => {
+      node.addEventListener("dragover", e => { e.preventDefault(); node.classList.add("drop"); });
+      node.addEventListener("dragleave", () => node.classList.remove("drop"));
+      node.addEventListener("drop", e => { e.preventDefault(); node.classList.remove("drop"); const id = e.dataTransfer.getData("text/plain"); if (byId.has(id)) put(id, t); });
+      node.addEventListener("click", e => { if (tl.sel && !e.target.closest(".tcard")) put(tl.sel, t); });
+    };
+    for (const [v, L] of TIERS) {
+      const r = el("div", "trow t" + v); const lab = el("button", "tlab", L); lab.type = "button"; lab.setAttribute("aria-label", "Put the selected font in tier " + L);
+      const cards = el("div", "tcards"); r.append(lab, cards); zone(r, v); rows.set(v, { r, cards }); board.append(r);
+    }
+    const poolHead = el("p", "eyebrow", "Unranked"); poolHead.style.marginTop = "8px";
+    const pool = el("div", "tpool"); zone(pool, 0);
+    const hint = el("p", "hint", "Drag fonts into a tier, or tap a font and then a tier. With a keyboard: focus a font and press S, A, B, C or D (0 to unrank).");
+    const row = el("div", "row");
+    const save = btn("Save my tier list →", true, () => tlSave());
+    row.append(save, btn("Pick another foundry", false, tlLobby));
+    app.append(board, poolHead, pool, hint, row);
+    function card(f) {
+      const c = el("button", "tcard"); c.type = "button"; c.draggable = true; c.dataset.id = f.id;
+      c.setAttribute("aria-pressed", tl.sel === f.id); c.setAttribute("aria-label", f.name + (tl.place.get(f.id) ? ", tier " + letter(tl.place.get(f.id)) : ", unranked"));
+      c.append(specCard(f), el("span", "tn", f.name));
+      c.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", f.id); e.dataTransfer.effectAllowed = "move"; c.classList.add("dragging"); });
+      c.addEventListener("dragend", () => c.classList.remove("dragging"));
+      c.onclick = e => { e.stopPropagation(); tl.sel = tl.sel === f.id ? null : f.id; draw(f.id); };
+      c.onkeydown = e => {
+        const k = e.key.toUpperCase(); const hit = TIERS.find(([, L]) => L === k);
+        if (hit || k === "0") { e.preventDefault(); put(f.id, hit ? hit[0] : 0); app.querySelector(`.tcard[data-id="${CSS.escape(f.id)}"]`)?.focus(); }
+      };
+      return c;
+    }
+    function draw(focusId) {
+      for (const { cards } of rows.values()) cards.replaceChildren();
+      pool.replaceChildren();
+      for (const f of tl.fonts) (tl.place.get(f.id) ? rows.get(tl.place.get(f.id)).cards : pool).append(card(f));
+      if (!pool.children.length) pool.append(el("span", "empty", "All ranked. Save it, or keep moving fonts around."));
+      for (const { r } of rows.values()) r.classList.toggle("armed", !!tl.sel);
+      cnt.textContent = `${tl.place.size} / ${tl.fonts.length} ranked`;
+      save.disabled = tl.place.size < Math.min(3, tl.fonts.length);
+      if (focusId) app.querySelector(`.tcard[data-id="${CSS.escape(focusId)}"]`)?.focus();
+    }
+    for (const [v] of TIERS) rows.get(v).r.querySelector(".tlab").onclick = e => { e.stopPropagation(); if (tl.sel) put(tl.sel, v); };
+    draw();
+  }
+  async function tlSave() {
+    const ratings = [...tl.place].map(([f, t]) => ({ f, t }));
+    const mine = myTiers(); const before = {};
+    for (const { f, t } of ratings) { before[f] = mine[f] || 0; mine[f] = t; }
+    try {
+      const r = await fetch(VOTE_API.url + "/rest/v1/rpc/rate_tiers", { method: "POST", headers: { apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key, "Content-Type": "application/json" }, body: JSON.stringify({ p_voter: voterId, p_ratings: ratings }) });
+      if (!r.ok) throw new Error(r.status);
+    } catch (e) { toast("Your tier list didn't save. Try again in a moment."); return; }
+    store.set("fdx-tiers", mine);
+    // count it locally too, so the result shows your list straight away
+    for (const { f, t } of ratings) { const s = TIER_SCORES.get(f) || { n: 0, total: 0 }; if (before[f]) s.total += t - before[f]; else { s.n++; s.total += t; } TIER_SCORES.set(f, s); }
+    tlResult();
+  }
+  function tlResult() {
+    app.replaceChildren();
+    const name = MAKER.get(tl.foundryId) || "";
+    app.append(el("p", "eyebrow", "Tier list · " + name), el("h1", "big", "Saved. Here's the crowd."));
+    const p = el("p", "lede", "Your tiers next to everyone's average. These scores now help order the Fonts tab."); app.append(p);
+    const panel = el("div", "panel");
+    const ranked = tl.fonts.filter(f => tl.place.has(f.id)).sort((a, b) => {
+      const s = f => { const x = TIER_SCORES.get(f.id); return x && x.n ? x.total / x.n : 0; };
+      return s(b) - s(a) || tl.place.get(b.id) - tl.place.get(a.id);
+    });
+    const head = el("div", "tcmp"); head.append(el("span", "mono", "#"), el("span"), el("span", "mono", "Font"), el("span", "mono", "You"), el("span", "mono", "Crowd")); head.style.color = "var(--muted)"; panel.append(head);
+    ranked.forEach((f, i) => {
+      const s = TIER_SCORES.get(f.id) || { n: 0 };
+      const r = el("div", "tcmp"); const tx = el("div"); tx.append(el("div", "fname", f.name), el("div", "fby", s.n + (s.n === 1 ? " ranking" : " rankings")));
+      const you = tl.place.get(f.id), crowd = crowdTier(f.id);
+      r.append(el("span", "mono", String(i + 1)), specCard(f), tx, el("span", "tchip t" + you, letter(you)), el("span", "tchip t" + crowd, letter(crowd)));
+      panel.append(r);
+    });
+    app.append(panel);
+    const row = el("div", "row"); row.style.marginTop = "20px";
+    row.append(btn("Rank another foundry →", true, tlLobby), btn("Change my tiers", false, tlBoard));
+    const open = el("a", "btn", "See it on the Fonts tab ↗"); open.href = "./#fonts?foundry=" + encodeURIComponent(tl.foundryId); row.append(open);
+    app.append(row);
+  }
+
   /* =================== routing =================== */
   function route() {
     const g = (location.hash || "#casting").slice(1);
     document.querySelectorAll(".games a").forEach(a => a.dataset.g === g ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (!FONTS.length) return;
-    if (g === "quiz") quizIntro(); else if (g === "bracket") { br ? brOverview() : brNew("grotesk"); } else ccLobby();
+    $("#proto").hidden = g === "tiers"; // tier lists are real and shared, not simulated
+    if (g === "quiz") quizIntro(); else if (g === "bracket") { br ? brOverview() : brNew("grotesk"); } else if (g === "tiers") { tl ? tlBoard() : tlLobby(); } else ccLobby();
     window.scrollTo({ top: 0 });
   }
   window.addEventListener("hashchange", route);
@@ -496,11 +668,15 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
       for (const f of snap.foundries || []) MAKER.set(f.id, f.kind === "Typeface" ? (f.by || f.name) : f.name);
       // uniform Latin specimens only: every card looks the same, so people judge the letters
       FONTS = (snap.fonts || []).filter(f => f.shot === "uniform" && f.uniformScript === "latin" && f.shotId && f.category && /^https?:/.test(f.url));
+      // tier lists: every font with a uniform specimen (Hebrew ones too), libraries left out
+      const libs = new Set((snap.foundries || []).filter(f => f.kind === "Library").map(f => f.id));
+      TIER_FONTS = (snap.fonts || []).filter(f => f.shot === "uniform" && f.shotId && !libs.has(f.foundryId) && /^https?:/.test(f.url));
     } catch (e) { app.replaceChildren(el("p", "empty", "Couldn’t load the fonts. Try again in a moment.")); return; }
     try {
       const r = await fetch(VOTE_API.url + "/rest/v1/vote_counts?select=font_id,n", { headers: { apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key } });
       if (r.ok) (await r.json()).forEach(x => VOTES.set(x.font_id, x.n));
     } catch (e) {}
+    await loadTierScores();
     route();
   })();
 })();

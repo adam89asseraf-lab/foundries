@@ -12,6 +12,14 @@ const SAMPLES = {
   "thai": "เป็นมนุษย์สุดประเสริฐเลิศคุณค่า", "bengali": "আমার সোনার বাংলা", "tamil": "யாமறிந்த மொழிகளிலே",
 };
 
+/** family (lower case) → its subsets, from Google's public metadata */
+export async function googleSubsets() {
+  const res = await fetch(META, { headers: { "user-agent": "Mozilla/5.0 (foundries index)" } });
+  if (!res.ok) throw new Error("Google Fonts metadata HTTP " + res.status);
+  const txt = await res.text();
+  return new Map(JSON.parse(txt.slice(txt.indexOf("{"))).familyMetadataList.map(f => [f.family.toLowerCase(), f.subsets || []]));
+}
+
 export async function googleFamilies({ limit = 300, newDays = 30, include = [] } = {}) {
   const res = await fetch(META, { headers: { "user-agent": "Mozilla/5.0 (foundries index)" } });
   if (!res.ok) throw new Error("Google Fonts metadata HTTP " + res.status);
