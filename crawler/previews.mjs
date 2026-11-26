@@ -31,6 +31,8 @@ async function renderSentence({ face, text }) {
   document.getElementById("__uni")?.remove();
   if (!document.documentElement.dataset.uni) {
     document.documentElement.dataset.uni = "1";
+    // keep the page's font definitions: some sites (Dinamo) put their @font-face <style> tags in <body>
+    try { document.querySelectorAll("body style, body link[rel~=stylesheet]").forEach(n => document.head.append(n)); } catch {}
     try { document.body.replaceChildren(); } catch {}
     for (const el of [document.documentElement, document.body]) for (const [k, v] of [["margin", "0"], ["padding", "0"], ["transform", "none"], ["filter", "none"], ["overflow", "hidden"], ["background", "#fff"]]) el.style.setProperty(k, v, "important");
   }
@@ -38,10 +40,11 @@ async function renderSentence({ face, text }) {
   box.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:#fff;color:#121214;display:flex;align-items:center;padding:0 7vw;box-sizing:border-box;overflow:hidden";
   box.dir = /[֐-׿؀-ۿ]/.test(text) ? "rtl" : "ltr";
   const h = document.createElement("div"); h.id = "__uni_h"; h.textContent = text;
-  h.style.cssText = `font-family:"${face.fam}",serif;font-weight:${face.weight || 400};font-style:${face.style === "italic" ? "italic" : "normal"};font-synthesis:none;font-variation-settings:normal;font-feature-settings:normal;text-transform:none;letter-spacing:0;line-height:1.08;width:100%;overflow-wrap:anywhere;margin:0`;
+  const fams = (face.stack || [face.fam]).map(f => `"${f}"`).join(",");
+  h.style.cssText = `font-family:${fams},serif;font-weight:${face.weight || 400};font-style:${face.style === "italic" ? "italic" : "normal"};font-synthesis:none;font-variation-settings:normal;font-feature-settings:normal;text-transform:none;letter-spacing:0;line-height:1.08;width:100%;overflow-wrap:anywhere;margin:0`;
   const b = document.createElement("div"); b.id = "__uni_b"; // empty: fallbackGlyphs checks both ids
   box.append(h, b); document.documentElement.append(box);
-  try { await document.fonts.load(`${face.weight || 400} 80px "${face.fam}"`, text); } catch {}
+  try { await document.fonts.load(`${face.weight || 400} 80px ${fams}`, text); } catch {}
   await document.fonts.ready;
   // biggest size that keeps it within 3 lines and the screen
   const lh = s => { h.style.fontSize = s + "px"; return h.getBoundingClientRect().height; };

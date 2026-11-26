@@ -1092,7 +1092,8 @@ select.ctl{height:38px}
     const PROPS = { Variable: f => !!f.variable, Free: isFree };
     // order as in the design: All, Free, the categories, Variable (a 5-wide grid of joined cells)
     const prop = k => { const n = done.filter(PROPS[k]).length; if (n) ch.append(mkc(k, n, fstate.props.has(k), () => { fstate.props.has(k) ? fstate.props.delete(k) : fstate.props.add(k); fstate.limit = PAGE; render(); })); };
-    ch.append(mkc("All", null, !fstate.cat, () => { fstate.cat = null; render(); }));
+    // "All" clears every option in this grid (category, Free, Variable, New releases)
+    ch.append(mkc("All", null, !fstate.cat && !fstate.props.size && !fstate.onlyNew, () => { fstate.cat = null; fstate.props.clear(); fstate.onlyNew = false; fstate.limit = PAGE; render(); }));
     prop("Free");
     CATS.forEach(c => { const n = done.filter(f => f.category === c).length; const b = mkc(c, n, fstate.cat === c, () => { fstate.cat = fstate.cat === c ? null : c; fstate.limit = PAGE; render(); }); b.classList.add("cat"); if (!n) b.disabled = true, b.style.opacity = .4; ch.append(b); });
     prop("Variable");

@@ -524,7 +524,7 @@ async function scripts() {
           for (let i = 0; i < 4; i++) { await page.evaluate(() => { document.scrollingElement.scrollTop += innerHeight; }); await sleep(300); }
           const cands = await page.evaluate(detectFace, font.name);
           const c = cands.find(c => c.fam === font.uniformFace);
-          face = c ? { fam: c.fam, weight: String(c.weight || 400), style: c.style === "normal" ? "normal" : "italic" } : { fam: font.uniformFace, weight: "400", style: "normal" };
+          face = c ? { fam: c.fam, weight: String(c.weight || 400), style: c.style === "normal" ? "normal" : "italic", stack: c.stack } : { fam: font.uniformFace, weight: "400", style: "normal" };
         }
         // one line per script in this face; Chrome reports which fonts drew each line — only the webfont may appear
         const cdp = await ctx.newCDPSession(page); await cdp.send("DOM.enable"); await cdp.send("CSS.enable");
@@ -533,11 +533,11 @@ async function scripts() {
           box.style.cssText = "position:fixed;left:0;top:0;z-index:2147483647;background:#fff;color:#000";
           for (const [k, text] of Object.entries(tests)) {
             const d = document.createElement("div"); d.id = "__scr_" + k.replace(/\W/g, "_"); d.textContent = text;
-            d.style.cssText = `font-family:"${face.fam}";font-weight:${face.weight};font-style:${face.style};font-size:24px;white-space:nowrap`;
+            d.style.cssText = `font-family:${(face.stack || [face.fam]).map(f => `"${f}"`).join(",")};font-weight:${face.weight};font-style:${face.style};font-size:24px;white-space:nowrap`;
             box.append(d);
           }
           document.documentElement.append(box);
-          await Promise.all(Object.values(tests).map(t => document.fonts.load(`${face.style === "italic" ? "italic " : ""}${face.weight} 24px "${face.fam}"`, t).catch(() => {})));
+          await Promise.all(Object.values(tests).map(t => document.fonts.load(`${face.style === "italic" ? "italic " : ""}${face.weight} 24px ${(face.stack || [face.fam]).map(f => `"${f}"`).join(",")}`, t).catch(() => {})));
           await document.fonts.ready;
         }, { face, tests: SCRIPT_TESTS });
         await sleep(300);

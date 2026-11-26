@@ -57,7 +57,7 @@ export function detectFace(fontName) {
   const DESIGN = ["mono", "condensed", "cond", "compressed", "narrow", "extended", "expanded", "wide", "stencil", "sans", "serif", "slab", "rounded", "round", "soft", "script", "outline", "inline", "fono", "duplex"];
   const words = s => String(s || "").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9]+/).filter(Boolean);
   const nameWords = new Set(words(fontName));
-  const off = fam => { const w = words(fam); return 10 * DESIGN.filter(x => w.includes(x) && !nameWords.has(x)).length + (w.includes("italic") && !nameWords.has("italic") ? 1 : 0); };
+  const off = fam => { const w = words(fam); return 10 * DESIGN.filter(x => w.includes(x) && !nameWords.has(x)).length + ((w.includes("italic") || w.includes("it") || w.includes("obl") || w.includes("oblique")) && !nameWords.has("italic") ? 1 : 0); };
   for (const c of seen.values()) c.off = off(c.fam) + (c.style !== "normal" ? 1 : 0);
   const all = [...seen.values()].filter(c => c.named || !siteFams.has(c.fam)).sort((a, b) => (b.named - a.named) || (a.off - b.off) || (b.score - a.score));
   const out = all.filter(c => c.named);
@@ -72,6 +72,13 @@ export function detectFace(fontName) {
   if (!out.length) out.push(...all.filter(c => !c.named).slice(0, 3));
   const key = c => [c.fam, c.weight, c.style].join("|");
   out.sort((a, b) => (b.named - a.named) || (a.off - b.off)); // closest to the font first; a sibling design only as a last resort
+  // some foundries (Dinamo) split one font over several @font-face families, "Repro-A", "Repro-B"…, each
+  // holding part of the letters: draw with all the parts together
+  const famsOnPage = [...new Set([...document.fonts].map(f => f.family.replace(/^["']|["']$/g, "")))];
+  for (const c of out) {
+    const m = /^(.*)-([A-Z])$/.exec(c.fam);
+    if (m) { const parts = famsOnPage.filter(f => new RegExp("^" + m[1].replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "-[A-Z]$").test(f)).sort(); if (parts.length > 1) c.stack = parts; }
+  }
   return out.filter((c, i) => out.findIndex(d => key(d) === key(c)) === i).slice(0, 8);
 }
 
@@ -96,6 +103,8 @@ export async function renderUniform({ face, sample, colors }) {
   // first time: empty the page (its fonts stay loaded) and undo smooth-scroll/transform tricks that would move our layer
   if (!document.documentElement.dataset.uni) {
     document.documentElement.dataset.uni = "1";
+    // keep the page's font definitions: some sites (Dinamo) put their @font-face <style> tags in <body>
+    try { document.querySelectorAll("body style, body link[rel~=stylesheet]").forEach(n => document.head.append(n)); } catch {}
     try { document.body.replaceChildren(); } catch {}
     const reset = `margin:0;padding:0;transform:none;filter:none;contain:none;perspective:none;overflow:hidden;width:100vw;height:100vh;position:static;background:${colors.bg}`;
     for (const el of [document.documentElement, document.body]) for (const decl of reset.split(";")) { const [k, v] = decl.split(":"); el.style.setProperty(k, v, "important"); }
@@ -105,7 +114,8 @@ export async function renderUniform({ face, sample, colors }) {
   box.style.cssText = `position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483647;background:${colors.bg};color:${colors.ink};display:flex;flex-direction:column;justify-content:center;gap:4vh;padding:0 7vw;box-sizing:border-box;overflow:hidden`;
   box.dir = sample.dir || "ltr";
   // every font in its regular upright style (the closest real one if it has none; never faked)
-  const font = `font-family:"${face.fam}",serif;font-weight:400;font-style:normal;font-synthesis:none;font-variation-settings:normal;font-stretch:normal;font-feature-settings:normal;text-transform:none;letter-spacing:0;word-spacing:normal;margin:0;white-space:nowrap;font-kerning:normal`;
+  const fams = (face.stack || [face.fam]).map(f => `"${f}"`).join(",");
+  const font = `font-family:${fams},serif;font-weight:400;font-style:normal;font-synthesis:none;font-variation-settings:normal;font-stretch:normal;font-feature-settings:normal;text-transform:none;letter-spacing:0;word-spacing:normal;margin:0;white-space:nowrap;font-kerning:normal`;
   const fitTo = "align-self:flex-start;width:max-content;max-width:none";
   const head = document.createElement("div"); head.id = "__uni_h"; head.textContent = sample.head; head.style.cssText = font + `;${fitTo};line-height:1.05;font-size:100px`;
   const body = document.createElement("div"); body.id = "__uni_b"; body.textContent = sample.body; body.style.cssText = font + `;${fitTo};line-height:1.2;font-size:40px`;
