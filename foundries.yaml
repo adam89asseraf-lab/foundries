@@ -574,7 +574,7 @@ foundries:
     name: Limitype
     url: https://limitype.com/
     fonts:
-      all: { skip: true }   # the "All" catalogue link, not a font
+      all: { skip: true } # the "All" catalogue link, not a font
     kind: Foundry
     order: 65
     addedAt: 2026-11-22T08:00:00Z
@@ -775,7 +775,8 @@ foundries:
     kind: Foundry
     order: 94
     addedAt: 2026-11-25T12:00:00Z
-    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+    catalogUrl: https://goodtypefoundry.com/
+    fontLinkPattern: "goodtypefoundry\\.com/(?!(goods|about|cart)/?$)(?!custom-fonts|my-account|product)[a-z]+/?$"
   - id: fontef
     name: Fontef
     url: https://fontef.com/
@@ -783,7 +784,8 @@ foundries:
     tags: [ Hebrew ]
     order: 95
     addedAt: 2026-11-25T12:00:00Z
-    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+    catalogUrl: https://fontef.com/fonts
+    fontLinkPattern: "fontef\\.com/(?!fonts$|tester$|custom$|in-use|shop|read|info$|trial|he$|account|cart)[a-z0-9-]+$"
   - id: ezer-type-house
     name: Ezer Type House
     url: https://www.ezertypehouse.com/
@@ -797,7 +799,19 @@ foundries:
     kind: Foundry
     order: 97
     addedAt: 2026-11-25T12:00:00Z
-    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+    catalogUrl: https://ragdesign.co/font-shop/
+    fontLinkPattern: "ragdesign\\.co/family/[^/]+/?$"
+    fonts:
+      rag-sans-hb: { name: "Rag Sans" }
+      ragdrugulin: { name: "Rag Drugulin" }
+      raggottlieb: { name: "Rag Gottlieb" }
+      ragtavorpro: { name: "Rag Tavor Pro" }
+      klops: { name: "Klops" }
+      rag-marom-hb: { name: "Marom" }
+      marom-poster: { name: "Marom Poster" }
+      rag-dosto-hb: { name: "Dosto" }
+      rag-canaan-hb: { name: "Rag Canaan" }
+      rag-margoza-hb: { name: "Rag Margoza" }
   - id: nomad-type
     name: Nomad Type
     url: https://www.nomad-type.com/
@@ -817,6 +831,8 @@ foundries:
     tags: [ Swiss ]
     order: 100
     addedAt: 2026-11-25T12:00:00Z
+    catalogUrl: https://optimo.ch/typefaces
+    fontLinkPattern: "optimo\\.ch/typefaces/[a-z0-9_]+$"
   - id: blast-foundry
     name: Blast Foundry
     url: https://blast-foundry.com/
@@ -831,7 +847,7 @@ foundries:
     order: 102
     addedAt: 2026-11-25T12:00:00Z
     catalogUrl: https://nonfoundry.com/types
-    skip: true   # crawl paused: its catalogue picked up the wrong pages (fix fontLinkPattern, then remove)
+    fontLinkPattern: "nonfoundry\\.com/non-[a-z0-9-]+$"
   - id: pyte-foundry
     name: The Pyte Foundry
     url: https://thepytefoundry.net/
@@ -845,12 +861,24 @@ foundries:
     tags: [ Cyrillic ]
     order: 104
     addedAt: 2026-11-25T12:00:00Z
+    fontUrls:
+      - { url: "https://kyivtypefoundry.com/cirk", name: "Cirk" }
+      - { url: "https://kyivtypefoundry.com/compact", name: "Compact" }
+      - { url: "https://kyivtypefoundry.com/jermilov", name: "Jermilov" }
+      - { url: "https://kyivtypefoundry.com/olivier", name: "Olivier" }
+      - { url: "https://kyivtypefoundry.com/prima", name: "Prima" }
+      - { url: "https://kyivtypefoundry.com/roman", name: "Roman" }
+      - { url: "https://kyivtypefoundry.com/rublena", name: "Rublena" }
+    skip: true # crawl paused: the site gives no clean specimen (screenshots are scrolled pages with text and buttons)
   - id: spoke
     name: Spoke
     url: https://spoketype.com/
     kind: Foundry
     order: 105
     addedAt: 2026-11-25T12:00:00Z
+    catalogUrl: https://spoketype.com/fonts/
+    fontLinkPattern: "spoketype\\.com/fonts/[a-z0-9-]+/?$"
+    nameStrip: "^About\\s+"
   - id: sm-foundry
     name: SM Foundry
     url: https://s-m.nu/
@@ -863,6 +891,7 @@ foundries:
     kind: Foundry
     order: 107
     addedAt: 2026-11-25T12:00:00Z
+    skip: true # crawl paused: ddott.net refuses headless Chrome (ERR_HTTP2_PROTOCOL_ERROR / empty response)
   - id: east-of-rome
     name: East of Rome
     url: https://www.eastofrome.com/
