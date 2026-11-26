@@ -123,6 +123,36 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .linkbtn{position:relative;z-index:2;background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .linkbtn:hover{color:var(--accent)}
 .fbar-select{max-width:240px}
+/* foundry picker: type-ahead with chips (multi-select) */
+.fpick{position:relative;flex:0 1 340px;max-width:340px;min-width:200px}
+.fpfield{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:38px;padding:4px 26px 4px 8px;border-bottom:1px solid var(--ink);cursor:text;position:relative}
+.fpchips{display:contents}
+.fpchip{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 5px 8px;background:var(--ink);color:var(--paper);border:0;font:500 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.01em;cursor:pointer;max-width:100%}
+.fpchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fpchip b{font:400 14px/1 var(--ui)}
+.fpchip:hover b,.fpchip:focus-visible b{color:var(--accent)}
+.fpchip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#fpInput{flex:1 1 70px;min-width:70px;border:0;background:transparent;font:400 15px/1 var(--ui);color:var(--ink);padding:6px 0;outline:none}
+#fpInput::placeholder{color:var(--ink)}
+.fpick.has #fpInput::placeholder{color:var(--muted)}
+.fpchev{position:absolute;right:8px;top:50%;margin-top:-3px;color:var(--ink);pointer-events:none;transition:transform .15s}
+.fpick.open .fpchev{transform:rotate(180deg)}
+.fppanel{position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:max(100%,360px);background:var(--tile);border:1px solid var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.fppanel[hidden]{display:none}
+.fphead{padding:10px 12px 4px;font:500 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.01em;color:var(--muted)}
+.fplist{list-style:none;margin:0;padding:0 0 4px;max-height:320px;overflow-y:auto;overscroll-behavior:contain}
+.fplist li{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;font:400 15px/1.2 var(--ui)}
+.fplist li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fplist li .nm b{font-weight:600}
+.fplist li .ct{font:500 12px/1 var(--mono);color:var(--muted)}
+.fplist li .bx{flex:none;width:16px;height:16px;border:1px solid var(--ink);display:grid;place-items:center}
+.fplist li[aria-selected="true"] .bx{background:var(--ink)}
+.fplist li[aria-selected="true"] .bx::after{content:"";width:9px;height:5px;border:solid var(--paper);border-width:0 0 1.6px 1.6px;transform:translateY(-1px) rotate(-45deg)}
+.fplist li[aria-selected="true"] .nm{font-weight:600}
+.fplist li.act{background:var(--grey)}
+.fplist .none{cursor:default;color:var(--muted)}
+.fpkeys{display:flex;flex-wrap:wrap;gap:14px;padding:9px 12px;border-top:1px solid var(--line);font:500 11px/1 var(--mono);text-transform:uppercase;color:var(--muted)}
+@media (hover:none){.fpkeys{display:none}}
 .morefonts{position:relative;z-index:2;justify-self:start;margin-top:2px}
 .edit{position:absolute;top:10px;right:10px;z-index:2;opacity:0;border:1px solid currentColor;background:var(--paper);color:var(--ink);border-radius:999px;font:500 11px/1 var(--mono);text-transform:uppercase;padding:6px 10px;cursor:pointer}
 .card:hover .edit,.edit:focus-visible{opacity:1}
@@ -201,6 +231,9 @@ input[type=range]{accent-color:var(--accent);width:120px}
   .bar.open .chips{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px;scrollbar-width:none}
   .bar.open .sep{display:none}
   .bar.open .fbar-select{max-width:none;flex:1 1 100%}
+  .fppanel{position:static;width:auto;box-shadow:none;margin-top:6px}
+  .fplist{max-height:44vh}
+  .fplist li{padding:12px}
   .tester{flex-wrap:wrap}
   header.mast{padding-top:20px}
   .mast h1{font-size:60px}
@@ -424,7 +457,10 @@ body.tray{padding-bottom:80px}
         <input id="fq" type="search" placeholder="Search fonts or foundries" aria-label="Search fonts">
       </div>
       <button type="button" class="btn filtersBtn" aria-expanded="false" aria-controls="fontBar">Filters<span class="n"></span></button>
-      <select class="ctl fbar-select" id="fFoundry" aria-label="Filter by foundry"><option value="">All foundries</option></select>
+      <div class="fpick fbar-select" id="fPick">
+        <div class="fpfield" id="fpField"><span class="fpchips" id="fpChips"></span><input id="fpInput" type="text" autocomplete="off" spellcheck="false" placeholder="All foundries" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="fpList" aria-label="Filter by foundry"><svg class="fpchev" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>
+        <div class="fppanel" id="fpPanel" hidden><div class="fphead" id="fpHead"></div><ul class="fplist" id="fpList" role="listbox" aria-multiselectable="true" aria-label="Foundries"></ul><div class="fpkeys" aria-hidden="true"><span>↑↓ move</span><span>Enter add</span><span>⌫ remove last</span><span>Esc close</span></div></div>
+      </div>
       <select class="ctl" id="fSort" aria-label="Sort fonts">
         <option value="foundry">By foundry</option>
         <option value="az">A to Z</option>
@@ -608,7 +644,7 @@ body.tray{padding-bottom:80px}
   let cmpReturn = null;
   function openCompare(){ if (cmp.length < 2) return; cmpReturn = document.activeElement; renderCompare(); $("#cmp").hidden = false; document.documentElement.style.overflow = "hidden"; $("#cmpClose").focus(); }
   function closeCompare(){ $("#cmp").hidden = true; document.documentElement.style.overflow = ""; if (cmpReturn && cmpReturn.focus) cmpReturn.focus(); }
-  const fstate = { q:"", foundry:"", kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
+  const fstate = { q:"", foundries:new Set(), kind:null, cat:null, props:new Set(), minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], card:260, tags:new Set(), onlyNew:false, sort:"foundry", showQueued:false, limit:60 };
   const tab = () => location.hash === "#foundries" ? "foundries" : location.hash === "#libraries" ? "libraries" : "fonts";
   let shuffleKey = Math.random();
   const state = { q:"", kind:null, onlyNew:false, tags:new Set(), sort:"order", view:"grid" };
@@ -728,7 +764,7 @@ body.tray{padding-bottom:80px}
     if (it.price && !(it.price.amount === 0 && (it.tags||[]).includes("Free"))) { const t = el("span","tag price", fmtPrice(it.price)); t.title = "Basic price for one weight"; tags.append(t); }
     line.append(tags);
     const nf = fonts.filter(f => f.foundryId === it.id && f.shotId).length;
-    if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = it.id; fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; line.append(b); }
+    if (nf) { const b = el("button","linkbtn morefonts", nf + (nf === 1 ? " font" : " fonts") + " →"); b.type = "button"; b.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundries = new Set([it.id]); fstate.q = ""; $("#fq").value = ""; location.hash = "#fonts"; }; line.append(b); }
     foot.append(line);
     c.append(foot);
     return c;
@@ -797,11 +833,10 @@ body.tray{padding-bottom:80px}
       .forEach(([l,n]) => { const d = el("div"); d.append(el("b", null, String(n)), document.createTextNode(l)); s.append(d); });
 
     // foundry select
-    const sel = $("#fFoundry"); const cur = fstate.foundry;
     const counts = new Map(); done.forEach(f => counts.set(f.foundryId, (counts.get(f.foundryId)||0)+1));
     const opts = [...counts.keys()].map(id => byId.get(id)).filter(fd => fd && !isTypeface(fd)).sort((a,b)=>a.name.localeCompare(b.name));
-    sel.replaceChildren(Object.assign(el("option",null,"All foundries"),{value:""}), ...opts.map(fd => Object.assign(el("option", null, `${fd.name} (${counts.get(fd.id)})`), {value: fd.id})));
-    sel.value = counts.has(cur) ? cur : ""; if (!counts.has(cur)) fstate.foundry = "";
+    if (counts.size) for (const id of [...fstate.foundries]) if (!counts.has(id)) fstate.foundries.delete(id); // not before the data has loaded
+    if (counts.size) fpick.update(opts.map(fd => ({ id: fd.id, name: fd.name, n: counts.get(fd.id) })));
 
     const ch = $("#fChips"); ch.replaceChildren();
     const fk = f => (byId.get(f.foundryId)||{}).kind || "Foundry";
@@ -828,7 +863,7 @@ body.tray{padding-bottom:80px}
 
     const q = fstate.q.toLowerCase().trim();
     let list = done.filter(f => {
-      if (fstate.foundry && f.foundryId !== fstate.foundry) return false;
+      if (fstate.foundries.size && !fstate.foundries.has(f.foundryId)) return false;
       if (fstate.onlyNew && !fIsNew(f)) return false;
       if (fstate.cat && f.category !== fstate.cat) return false;
       for (const k of fstate.props) if (!PROPS[k](f)) return false;
@@ -868,7 +903,7 @@ body.tray{padding-bottom:80px}
       const a = el("a","hit"); a.href = f.url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.setAttribute("aria-label", `${f.name} by ${fd.name || ""}`);
       const img = f.shotId ? Object.assign(el("img","rthumb"), { src: shotUrl(f), alt: "", loading: "lazy" }) : el("span");
       const nm = el("span","rname", f.name); if (isRTL(f.name)) nm.dir = "rtl";
-      const fb = isTypeface(fd) ? el("span","rby", foundryLabel(fd)) : el("button","linkbtn rby", fd.name || ""); if (!isTypeface(fd)) { fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); }; }
+      const fb = isTypeface(fd) ? el("span","rby", foundryLabel(fd)) : el("button","linkbtn rby", fd.name || ""); if (!isTypeface(fd)) { fb.type = "button"; fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundries.add(f.foundryId); fstate.limit = PAGE; window.scrollTo({top:0}); render(); }; }
       const k = el("span","rkind"); k.append(el("span","tag kind", fd.kind || "Foundry"));
       const tgs = el("span","rtags tags"); (fd.tags||[]).forEach(t => tgs.append(el("span","tag",t))); if (fIsNew(f)) tgs.prepend(el("span","tag new","New"));
       r.append(a, el("span","rn", String(i+1).padStart(3,"0")), img, nm, fb, k, tgs, el("span","rdom", host(f.url) + " ↗"), el("span","rprice", fmtPrice(f.price) || ""));
@@ -887,7 +922,7 @@ body.tray{padding-bottom:80px}
       if (isTypeface(fd)) { if (fd.by) meta.append(el("span","maker", fd.by)); }
       else {
         const fb = el("button","linkbtn", fd.name || "Unknown"); fb.type = "button"; fb.title = "Show only " + (fd.name||"") + " fonts";
-        fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundry = f.foundryId; fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
+        fb.onclick = e => { e.preventDefault(); e.stopPropagation(); fstate.foundries.add(f.foundryId); fstate.limit = PAGE; window.scrollTo({top:0}); render(); };
         meta.append(fb);
       }
       const head = el("div","fhead"); head.append(meta, nm);
@@ -983,12 +1018,79 @@ body.tray{padding-bottom:80px}
     const open = !bar.classList.contains("open"); bar.classList.toggle("open", open); b.setAttribute("aria-expanded", open);
   });
   function updateFilterCounts(){
-    const nF = (fstate.foundry?1:0) + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + ((fstate.minPrice!=null||fstate.maxPrice!=null)?1:0) + (moodActive()?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
+    const nF = fstate.foundries.size + (fstate.cat?1:0) + fstate.props.size + (fstate.minStyles>1?1:0) + ((fstate.minPrice!=null||fstate.maxPrice!=null)?1:0) + (moodActive()?1:0) + fstate.tags.size + (fstate.onlyNew?1:0);
     const nD = state.tags.size + (state.onlyNew?1:0);
     const a = document.querySelector('#fontBar .filtersBtn .n'), b = document.querySelector('#foundryBar .filtersBtn .n');
     if (a) a.textContent = nF || ""; if (b) b.textContent = nD || "";
   }
-  window.addEventListener("hashchange", () => { fstate.limit = PAGE; render(); window.scrollTo({top:0}); });
+  window.addEventListener("hashchange", () => { readFoundryParam(); fstate.limit = PAGE; render(); window.scrollTo({top:0}); });
+
+  /* ---------- foundry picker: type-ahead with chips, several at once; kept in the URL (#fonts?foundry=a,b) ---------- */
+  function readFoundryParam(){
+    const m = location.hash.match(/[?&]foundry=([^&]*)/);
+    if (m) fstate.foundries = new Set(decodeURIComponent(m[1]).split(",").filter(Boolean));
+  }
+  function writeFoundryParam(){
+    if (tab() !== "fonts") return;
+    const ids = [...fstate.foundries], h = "#fonts" + (ids.length ? "?foundry=" + ids.map(encodeURIComponent).join(",") : "");
+    if (location.hash !== h && !(h === "#fonts" && !location.hash)) history.replaceState(null, "", h);
+  }
+  const fpick = (() => {
+    const root = $("#fPick"), field = $("#fpField"), chips = $("#fpChips"), input = $("#fpInput"), panel = $("#fpPanel"), list = $("#fpList"), head = $("#fpHead");
+    let all = [], shown = [], act = -1;
+    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const isOpen = () => !panel.hidden;
+    function open(){ if (isOpen()) return; panel.hidden = false; root.classList.add("open"); input.setAttribute("aria-expanded", "true"); draw(); }
+    function close(){ panel.hidden = true; root.classList.remove("open"); input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); act = -1; }
+    function changed(){ fstate.limit = PAGE; render(); }
+    function toggle(id){
+      fstate.foundries.has(id) ? fstate.foundries.delete(id) : fstate.foundries.add(id);
+      input.value = ""; changed(); input.focus();
+    }
+    function draw(){
+      const q = norm(input.value.trim());
+      shown = q ? all.filter(o => norm(o.name).includes(q)).sort((a,b) => (norm(b.name).startsWith(q) - norm(a.name).startsWith(q)) || a.name.localeCompare(b.name)) : all;
+      head.textContent = q ? `${shown.length} ${shown.length === 1 ? "match" : "matches"} for “${input.value.trim()}”` : `${all.length} foundries` + (fstate.foundries.size ? ` · ${fstate.foundries.size} picked` : "");
+      if (act >= shown.length) act = shown.length - 1; if (q && act < 0 && shown.length) act = 0;
+      list.replaceChildren(...shown.map((o, i) => {
+        const li = el("li"); li.id = "fpo-" + i; li.setAttribute("role", "option"); li.setAttribute("aria-selected", fstate.foundries.has(o.id));
+        if (i === act) li.classList.add("act");
+        const nm = el("span", "nm"); const k = q ? norm(o.name).indexOf(q) : -1;
+        if (k >= 0) nm.append(o.name.slice(0, k), el("b", null, o.name.slice(k, k + q.length)), o.name.slice(k + q.length)); else nm.textContent = o.name;
+        li.append(el("span", "bx"), nm, el("span", "ct", String(o.n)));
+        li.onmousedown = e => e.preventDefault(); // keep focus in the input
+        li.onclick = () => { act = i; toggle(o.id); };
+        return li;
+      }));
+      if (!shown.length) list.append(el("li", "none", "No foundry matches"));
+      if (act >= 0 && shown.length) { input.setAttribute("aria-activedescendant", "fpo-" + act); list.children[act]?.scrollIntoView({ block: "nearest" }); } else input.removeAttribute("aria-activedescendant");
+    }
+    function update(opts){
+      all = opts; const byKey = new Map(opts.map(o => [o.id, o]));
+      chips.replaceChildren(...[...fstate.foundries].filter(id => byKey.has(id)).map(id => {
+        const b = el("button", "fpchip"); b.type = "button"; b.setAttribute("aria-label", "Remove " + byKey.get(id).name);
+        b.append(el("span", null, byKey.get(id).name), el("b", null, "×"));
+        b.onclick = e => { e.stopPropagation(); fstate.foundries.delete(id); changed(); input.focus(); };
+        return b;
+      }));
+      root.classList.toggle("has", fstate.foundries.size > 0);
+      input.placeholder = fstate.foundries.size ? "Add foundry" : "All foundries";
+      writeFoundryParam(); // also covers picks made from a font card
+      if (isOpen()) draw();
+    }
+    field.addEventListener("click", e => { if (e.target.closest(".fpchip")) return; input.focus(); isOpen() ? (input.value ? null : close()) : open(); });
+    input.addEventListener("input", () => { act = -1; open(); draw(); });
+    input.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!isOpen()) { open(); return; } const n = shown.length; if (!n) return; act = e.key === "ArrowDown" ? (act + 1) % n : (act <= 0 ? n - 1 : act - 1); draw(); }
+      else if (e.key === "Enter") { if (isOpen() && act >= 0 && shown[act]) { e.preventDefault(); toggle(shown[act].id); } }
+      else if (e.key === "Escape") { if (input.value) { input.value = ""; act = -1; draw(); } else if (isOpen()) close(); else return; e.preventDefault(); e.stopPropagation(); }
+      else if (e.key === "Backspace" && !input.value && fstate.foundries.size) { const last = [...fstate.foundries].pop(); fstate.foundries.delete(last); changed(); }
+      else if (e.key === "Tab") close();
+    });
+    document.addEventListener("pointerdown", e => { if (isOpen() && !root.contains(e.target)) close(); });
+    return { update };
+  })();
+  readFoundryParam();
   // cards per row (2–5): one setting for every grid; also picks how big an image each card loads
   const COL_CARD = { 2: 560, 3: 400, 4: 300, 5: 240 };
   let cols = 3;
@@ -1051,9 +1153,8 @@ body.tray{padding-bottom:80px}
     });
   }
   $("#fPriceMax").addEventListener("input", onPrice("max"));
-  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundry:"", cat:null, onlyNew:false, minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
+  $("#fReset").onclick = () => { Object.assign(fstate, { q:"", foundries:new Set(), cat:null, onlyNew:false, minStyles:1, minPrice:null, maxPrice:null, mood:[[0,100],[0,100],[0,100],[0,100]], limit:60 }); fstate.props.clear(); fstate.tags.clear(); $("#fq").value = ""; render(); };
   $("#fq").addEventListener("input", e => { fstate.q = e.target.value; fstate.limit = PAGE; render(); });
-  $("#fFoundry").addEventListener("change", e => { fstate.foundry = e.target.value; fstate.limit = PAGE; render(); });
   $("#fSort").addEventListener("change", e => { fstate.sort = e.target.value; if (e.target.value === "shuffle") shuffleKey = Math.random(); render(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
   $("#sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
