@@ -462,6 +462,7 @@ header.mast{border-bottom:0;padding:32px 0 20px;gap:24px}
 .mast h1{font-weight:800;font-variation-settings:"wdth" 100,"opsz" 96;letter-spacing:-.035em}
 .stats{gap:40px;padding-right:16px}
 .stats b{font:700 28px/1 var(--ui);letter-spacing:-.02em}
+.tabs-main .seg2 a{height:36px;display:inline-flex;align-items:baseline;padding:10px 16px;box-sizing:border-box}
 /* toolbar rows */
 .bar-row + .bar-row{border-top:0}
 #fontBar .bar-row:first-child{padding:16px 0 0;gap:16px;flex-wrap:nowrap;align-items:flex-start}
@@ -536,6 +537,8 @@ select.ctl{height:38px}
   .stats b{font:600 22px/1 var(--display);letter-spacing:-.02em;margin:0}
   .tabs-main,.tabs-main .seg2{width:auto;justify-content:center}
   .tabs-main .seg2 a{flex:0 0 auto}
+  .tabs-main .seg2 a{padding:10px 14px}
+  .tabs-main .seg2 a .n{display:none}  /* the stats row above already shows the counts */
   #fontBar .bar-row:first-child,#foundryBar .bar-row:first-child{flex-wrap:wrap;padding:8px 0;gap:8px}
   #fontBar #fPick,#fontBar #lPick,#fontBar #fSort,#foundryBar #sort{flex:1 1 100%;max-width:none}
   .filtersBtn{height:38px;padding:0 16px;gap:6px;border-color:var(--ink)}
@@ -563,7 +566,7 @@ select.ctl{height:38px}
     <div class="mright">
       <div class="stats" id="stats" aria-live="polite"></div>
       <nav class="tabs-main" aria-label="Views">
-        <span class="seg2"><a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a><a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a><a href="#libraries" id="tabLibraries">Libraries<span class="n" id="nLibraries"></span></a></span>
+        <span class="seg2"><a href="#fonts" id="tabFonts">Fonts<span class="n" id="nFonts"></span></a><a href="#foundries" id="tabFoundries">Foundries<span class="n" id="nFoundries"></span></a><a href="#libraries" id="tabLibraries">Libraries<span class="n" id="nLibraries"></span></a><a href="play.html#tiers" id="tabPlay">Play</a></span>
       </nav>
     </div>
   </header>
