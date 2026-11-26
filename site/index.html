@@ -151,6 +151,10 @@ input[type=range]{accent-color:var(--accent);width:120px}
 .fplist li[aria-selected="true"] .nm{font-weight:600}
 .fplist li.act{background:var(--grey)}
 .fplist .none{cursor:default;color:var(--muted)}
+.fplist li.fav{border-bottom:1px solid var(--line)}
+.fplist li.fav .nm::before{content:"♥ ";color:var(--accent)}
+.fplist li.fav.off{cursor:default;color:var(--muted);font-size:13px}
+.fplist li.fav.off .bx{border-color:var(--line)}
 .fpkeys{display:flex;flex-wrap:wrap;gap:14px;padding:9px 12px;border-top:1px solid var(--line);font:500 11px/1 var(--mono);text-transform:uppercase;color:var(--muted)}
 @media (hover:none){.fpkeys{display:none}}
 .morefonts{position:relative;z-index:2;justify-self:start;margin-top:2px}
@@ -1037,7 +1041,8 @@ body.tray{padding-bottom:80px}
   }
   const fpick = (() => {
     const root = $("#fPick"), field = $("#fpField"), chips = $("#fpChips"), input = $("#fpInput"), panel = $("#fpPanel"), list = $("#fpList"), head = $("#fpHead");
-    let all = [], shown = [], act = -1;
+    let all = [], shown = [], rows = [], act = -1;
+    const liked = () => all.filter(o => myVotes.has("foundry:" + o.id)).map(o => o.id); // foundries you hearted, that have fonts
     const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const isOpen = () => !panel.hidden;
     function open(){ if (isOpen()) return; panel.hidden = false; root.classList.add("open"); input.setAttribute("aria-expanded", "true"); draw(); }
@@ -1047,12 +1052,30 @@ body.tray{padding-bottom:80px}
       fstate.foundries.has(id) ? fstate.foundries.delete(id) : fstate.foundries.add(id);
       input.value = ""; changed(); input.focus();
     }
+    function toggleLiked(){
+      const ids = liked(); if (!ids.length) return;
+      const allOn = ids.every(id => fstate.foundries.has(id));
+      ids.forEach(id => allOn ? fstate.foundries.delete(id) : fstate.foundries.add(id));
+      input.value = ""; changed(); input.focus();
+    }
     function draw(){
       const q = norm(input.value.trim());
       shown = q ? all.filter(o => norm(o.name).includes(q)).sort((a,b) => (norm(b.name).startsWith(q) - norm(a.name).startsWith(q)) || a.name.localeCompare(b.name)) : all;
+      const favIds = liked(), favRow = !q || "liked favourites favorites".includes(q);
+      rows = (favRow ? [{ fav: true }] : []).concat(shown);
       head.textContent = q ? `${shown.length} ${shown.length === 1 ? "match" : "matches"} for “${input.value.trim()}”` : `${all.length} foundries` + (fstate.foundries.size ? ` · ${fstate.foundries.size} picked` : "");
-      if (act >= shown.length) act = shown.length - 1; if (q && act < 0 && shown.length) act = 0;
-      list.replaceChildren(...shown.map((o, i) => {
+      if (act >= rows.length) act = rows.length - 1; if (q && act < 0 && shown.length) act = rows.indexOf(shown[0]);
+      list.replaceChildren(...rows.map((o, i) => {
+        if (o.fav) {
+          const li = el("li", "fav" + (favIds.length ? "" : " off")); li.id = "fpo-" + i; li.setAttribute("role", "option");
+          const on = favIds.length > 0 && favIds.every(id => fstate.foundries.has(id));
+          li.setAttribute("aria-selected", on); if (!favIds.length) li.setAttribute("aria-disabled", "true");
+          if (i === act) li.classList.add("act");
+          li.append(el("span", "bx"), el("span", "nm", favIds.length ? "All liked foundries" : "No liked foundries yet"), el("span", "ct", favIds.length ? String(favIds.length) : ""));
+          li.onmousedown = e => e.preventDefault();
+          li.onclick = () => { act = i; toggleLiked(); };
+          return li;
+        }
         const li = el("li"); li.id = "fpo-" + i; li.setAttribute("role", "option"); li.setAttribute("aria-selected", fstate.foundries.has(o.id));
         if (i === act) li.classList.add("act");
         const nm = el("span", "nm"); const k = q ? norm(o.name).indexOf(q) : -1;
@@ -1063,7 +1086,7 @@ body.tray{padding-bottom:80px}
         return li;
       }));
       if (!shown.length) list.append(el("li", "none", "No foundry matches"));
-      if (act >= 0 && shown.length) { input.setAttribute("aria-activedescendant", "fpo-" + act); list.children[act]?.scrollIntoView({ block: "nearest" }); } else input.removeAttribute("aria-activedescendant");
+      if (act >= 0 && rows.length) { input.setAttribute("aria-activedescendant", "fpo-" + act); list.children[act]?.scrollIntoView({ block: "nearest" }); } else input.removeAttribute("aria-activedescendant");
     }
     function update(opts){
       all = opts; const byKey = new Map(opts.map(o => [o.id, o]));
@@ -1081,8 +1104,8 @@ body.tray{padding-bottom:80px}
     field.addEventListener("click", e => { if (e.target.closest(".fpchip")) return; input.focus(); isOpen() ? (input.value ? null : close()) : open(); });
     input.addEventListener("input", () => { act = -1; open(); draw(); });
     input.addEventListener("keydown", e => {
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!isOpen()) { open(); return; } const n = shown.length; if (!n) return; act = e.key === "ArrowDown" ? (act + 1) % n : (act <= 0 ? n - 1 : act - 1); draw(); }
-      else if (e.key === "Enter") { if (isOpen() && act >= 0 && shown[act]) { e.preventDefault(); toggle(shown[act].id); } }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!isOpen()) { open(); return; } const n = rows.length; if (!n) return; act = e.key === "ArrowDown" ? (act + 1) % n : (act <= 0 ? n - 1 : act - 1); draw(); }
+      else if (e.key === "Enter") { if (isOpen() && act >= 0 && rows[act]) { e.preventDefault(); rows[act].fav ? toggleLiked() : toggle(rows[act].id); } }
       else if (e.key === "Escape") { if (input.value) { input.value = ""; act = -1; draw(); } else if (isOpen()) close(); else return; e.preventDefault(); e.stopPropagation(); }
       else if (e.key === "Backspace" && !input.value && fstate.foundries.size) { const last = [...fstate.foundries].pop(); fstate.foundries.delete(last); changed(); }
       else if (e.key === "Tab") close();
