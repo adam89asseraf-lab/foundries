@@ -160,3 +160,22 @@ The games on the Play page (`site/play.html`) use the same project. Run these on
 - [`supabase/casting.sql`](supabase/casting.sql) for Casting Call.
 
 Both store answers anonymously, keyed by the browser's random ID. Visitors can only call the `rate_tiers()` and `cast_vote()` functions and read the totals.
+
+## Admin: fix fonts yourself
+
+`admin.html` (live at `…/foundries/admin.html`, not linked from the site) lets the owner fix a font's **category**, **name**, or **hide** it, one at a time or in bulk.
+- Changes are stored in Supabase (`font_overrides`) and show on the site straight away. Index and Play read them on load, so no deploy is needed.
+- **Undo fix** puts the crawler's value back.
+- Signing in uses Supabase Auth with your own email and password, and the session lasts only while the tab is open.
+- Anyone can read the fixes. Only accounts in `public.admins` can write them, which row-level security enforces in the database, not just in the page.
+
+One-time setup, in the Supabase dashboard:
+1. **SQL Editor:** run [`supabase/admin.sql`](supabase/admin.sql).
+2. **Authentication → Users → Add user → Create new user:** enter your email and a password you choose, and tick **Auto Confirm User**.
+3. **SQL Editor:** add that account to the admins list, with your own email:
+   `insert into public.admins (user_id) select id from auth.users where email = 'you@example.com';`
+4. **Authentication → Sign In / Providers:** turn off **Allow new users to sign up**. Other accounts couldn't edit anyway, but this keeps the user list to you.
+
+To change your password later: **Authentication → Users →** your user **→ Send password recovery**, or set a new one there.
+
+`foundries.yaml` per-font overrides still work and are kept in git. An admin fix applies on top of them.

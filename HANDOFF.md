@@ -67,6 +67,16 @@ Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 and 
 - Deleted the stray Kyiv font screenshots, which came from before it was paused.
 - Committed the crawler's `.pre` backups (see Gotchas) and removed two whose fonts no longer exist.
 
+### Admin page (2026-11-27)
+- **What it is:** `site/admin.html` plus `supabase/admin.sql`. The owner signs in with Supabase Auth (an email-and-password account they create in the dashboard) and fixes a font's category, name or hidden flag, one font or a selection at a time.
+- **Storage and access:**
+  - Fixes go in `public.font_overrides`.
+  - Writes are allowed only by RLS for users listed in `public.admins` (checked by the `is_admin()` function).
+  - Anyone can read the fixes. `index.html` and `play.html` apply them at load, so they go live straight away; hidden fonts drop out.
+- **Kept out of `data.json` on purpose:** the admin page compares a fix with the base value, which is the crawl plus the `foundries.yaml` overrides. That keeps "Undo fix" exact.
+- **Setup:** the owner must do it once (README → "Admin: fix fonts yourself"). Until then the pages work without fixes (the table returns 404 and is ignored).
+- **Tested** in the local preview with faked Supabase responses: sign-in, wrong password, category/name/hide, undo, bulk, filters, phone width.
+
 ### Next up
 - **Play:**
   - Run `supabase/casting.sql` in Supabase (owner).

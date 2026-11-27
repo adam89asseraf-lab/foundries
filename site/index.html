@@ -1470,10 +1470,14 @@ select.ctl{height:38px}
   const clean = arr => (arr||[]).filter(i => safeUrl(i.url)).map(i => ({ ...i, url: safeUrl(i.url), name: String(i.name || nameFromUrl(i.url)), tags: Array.isArray(i.tags) ? i.tags.map(String) : [], typefaces: Array.isArray(i.typefaces) ? i.typefaces.map(String) : [], newReleases: Array.isArray(i.newReleases) ? i.newReleases.map(String) : [] }));
   (async () => {
     try {
+      // fixes made on admin.html (category, name, hidden), read alongside the data
+      const ovReq = VOTES.url ? fetch(VOTES.url + "/rest/v1/font_overrides?select=font_id,category,name,hidden", { headers: { apikey: VOTES.key, Authorization: "Bearer " + VOTES.key } }).then(x => x.ok ? x.json() : []).catch(() => []) : Promise.resolve([]);
       const r = await fetch("data/data.json", { cache: "no-cache" });
       if (!r.ok) throw new Error(r.status);
       const snap = await r.json();
-      fonts = (snap.fonts||[]).filter(f => safeUrl(f.url) && f.name).map(f => ({ ...f, url: safeUrl(f.url), name: String(f.name) }));
+      const ov = new Map((await ovReq).map(o => [o.font_id, o]));
+      fonts = (snap.fonts||[]).filter(f => safeUrl(f.url) && f.name && !ov.get(f.id)?.hidden)
+        .map(f => { const o = ov.get(f.id) || {}; return { ...f, url: safeUrl(f.url), name: String(o.name || f.name), ...(o.category ? { category: o.category } : {}) }; });
       items = clean(snap.foundries);
       const d = snap.updatedAt ? new Date(snap.updatedAt) : null;
       $("#status").textContent = $("#status").dataset.base = d ? "Updated " + d.toLocaleDateString(undefined, {day:"numeric", month:"short", year:"numeric"}) : "";

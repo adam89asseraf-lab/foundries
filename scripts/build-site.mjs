@@ -7,7 +7,8 @@ const out = path.join(ROOT, "_site");
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, "data"), { recursive: true });
 fs.copyFileSync(path.join(ROOT, "site/index.html"), path.join(out, "index.html"));
-fs.copyFileSync(path.join(ROOT, "site/play.html"), path.join(out, "play.html")); // games prototype
+fs.copyFileSync(path.join(ROOT, "site/play.html"), path.join(out, "play.html")); // games
+fs.copyFileSync(path.join(ROOT, "site/admin.html"), path.join(out, "admin.html")); // owner-only font fixes (Supabase login)
 const { data } = merge(loadData(), yamlEntries(loadYamlDoc()));
 data.repo = process.env.GITHUB_REPOSITORY || data.repo || null;
 // a paused foundry (skip: true) keeps its card, but fonts from a bad catalogue scan stay off the site

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Found rizz — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Rethink+Sans:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ededea; --tile:#f7f7f5; --ink:#121214; --muted:#6b6b72; --line:#cfcfcb; --accent:#2b36e8; --good:#00a316; --bad:#d4351c;
+  --stat:"Rethink Sans","Instrument Sans",Arial,sans-serif; --body:"Instrument Sans","Helvetica Neue",Arial,sans-serif; --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --accent:#8790ff; --good:#3ddc55; --bad:#ff6b57; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --paper:#0e0e11; --tile:#16161a; --ink:#ececee; --muted:#8e8e98; --line:#2a2a31; --accent:#8790ff; --good:#3ddc55; --bad:#ff6b57; color-scheme:dark; }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 48px}
+.top{display:flex;align-items:center;gap:16px;padding:40px 0 20px;border-bottom:1px solid var(--ink)}
+.brand{font:700 30px/1.3 var(--stat);letter-spacing:-.03em;text-decoration:none;color:inherit}
+.badge{font:500 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--ink);padding:6px 8px}
+.top .grow{flex:1}
+.who{font:400 13px/1.3 var(--mono);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
+.btn{height:42px;padding:0 18px;border:1px solid var(--ink);background:transparent;cursor:pointer;font:500 15px/1 var(--body);display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.small{height:32px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:not(:disabled):hover{outline:2px solid var(--ink);outline-offset:1px}
+.link{border:0;background:none;padding:0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.eyebrow{font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0}
+/* login */
+.login{max-width:400px;margin:72px auto;display:grid;gap:14px}
+.login h1{font:700 48px/1.1 var(--stat);letter-spacing:-.03em;margin:0 0 4px}
+.login p{color:var(--muted);margin:0 0 8px}
+label.f{display:grid;gap:6px;font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.inp{height:46px;border:1px solid var(--ink);background:var(--tile);padding:0 12px;font:400 16px/1 var(--body);text-transform:none;letter-spacing:0;color:var(--ink);width:100%}
+.inp:focus-visible,.sel:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.err{color:var(--bad);font-size:14px;min-height:20px;margin:0}
+/* toolbar */
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:20px 0 12px}
+.bar .inp{width:auto;flex:1 1 260px;height:42px}
+.sel{height:42px;border:1px solid var(--ink);background:transparent;padding:0 10px;font:500 14px/1 var(--body);color:var(--ink);max-width:240px}
+.count{font:500 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:4px 0 12px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.bulk{display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:5;margin-bottom:8px}
+.bulk .sel{border-color:var(--paper);color:var(--paper);height:32px}
+.bulk .btn{border-color:var(--paper);color:var(--paper)}
+.bulk .grow{flex:1}
+/* rows */
+.rows{display:grid;gap:0;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px 200px minmax(0,1fr) 150px 92px 90px;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row.changed{background:color-mix(in srgb, var(--accent) 6%, transparent)}
+.row.isHidden .spec{opacity:.35}
+.spec{aspect-ratio:5/2;background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;display:block}
+.spec img{width:100%;height:100%;object-fit:cover;display:block}
+.meta{display:grid;gap:4px;min-width:0}
+.meta .inp{height:34px;font-size:15px;font-weight:600;background:transparent;border-color:transparent;padding:0 6px;margin-left:-7px}
+.meta .inp:hover{border-color:var(--line)}
+.meta .inp:focus{border-color:var(--ink);background:var(--tile)}
+.by{font:400 11px/1.3 var(--mono);text-transform:uppercase;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.by a{color:inherit}
+.was{font:400 11px/1.3 var(--mono);color:var(--accent)}
+.row .sel{max-width:none;width:100%;height:36px}
+.hide{display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}
+.state{font:500 11px/1.2 var(--mono);text-transform:uppercase;text-align:right}
+.state.ok{color:var(--good)} .state.bad{color:var(--bad)} .state.busy{color:var(--muted)}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--ink);margin:0}
+.more{display:flex;justify-content:center;padding:24px 0 80px}
+.empty{color:var(--muted);padding:40px 0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.toast.show{opacity:1}
+@media (max-width:900px){
+  .wrap{padding:0 16px}.top{padding-top:20px;flex-wrap:wrap}.who{max-width:100%;order:3;flex-basis:100%}
+  .row{grid-template-columns:22px 110px minmax(0,1fr);row-gap:8px}
+  .row .sel,.row .hide,.row .state{grid-column:3}
+  .row .state{text-align:left}
+  .sel{max-width:none;flex:1 1 140px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">Found rizz</a><span class="badge">Admin</span><span class="grow"></span>
+    <span class="who" id="who" hidden></span>
+    <button class="btn small" id="signout" type="button" hidden>Sign out</button>
+  </header>
+
+  <form class="login" id="login" hidden autocomplete="on">
+    <h1>Sign in</h1>
+    <p>Fix font categories, names and hidden fonts. Only the owner's account can make changes.</p>
+    <label class="f">Email<input class="inp" id="email" type="email" autocomplete="username" required></label>
+    <label class="f">Password<input class="inp" id="password" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn primary" type="submit" id="loginBtn">Sign in</button>
+  </form>
+
+  <main id="app" hidden>
+    <div class="bar">
+      <input class="inp" id="q" type="search" placeholder="Search fonts, foundries or ids…" aria-label="Search">
+      <select class="sel" id="fFoundry" aria-label="Foundry"><option value="">All foundries</option></select>
+      <select class="sel" id="fCat" aria-label="Category">
+        <option value="">All categories</option>
+        <option value="Sans">Sans</option><option value="Serif">Serif</option><option value="Slab">Slab</option>
+        <option value="Mono">Mono</option><option value="Display">Display</option><option value="Script">Script</option>
+        <option value="-">No category</option><option value="*fixed">Fixed here</option><option value="*hidden">Hidden</option>
+      </select>
+    </div>
+    <div class="count"><span id="count"></span><label class="hide"><input type="checkbox" id="selAll"> Select all shown</label></div>
+    <div class="bulk" id="bulk" hidden>
+      <span id="bulkN"></span><span class="grow"></span>
+      <select class="sel" id="bulkCat" aria-label="Category for selected fonts"><option value="">Set category…</option>
+        <option>Sans</option><option>Serif</option><option>Slab</option><option>Mono</option><option>Display</option><option>Script</option></select>
+      <button class="btn small" id="bulkHide" type="button">Hide</button>
+      <button class="btn small" id="bulkShow" type="button">Show</button>
+      <button class="btn small" id="bulkClear" type="button">Clear selection</button>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="more"><button class="btn" id="more" type="button" hidden>Show more</button></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+  const API = { url: "https://lulglxebjchreghaexjd.supabase.co", key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1bGdseGViamNocmVnaGFleGpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MjMzNTgsImV4cCI6MjExMDk5OTM1OH0.G7g865fMppnvLe9khxq96f67obFMWCdNqHc8jmFX4w4" };
+  const CATS = ["Sans", "Serif", "Slab", "Mono", "Display", "Script"];
+  const PAGE = 60;
+  const $ = s => document.querySelector(s);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2600); };
+  const shot = f => "shots/" + f.shotId.split("/").map(encodeURIComponent).join("/") + ".thumb.webp" + (f.shotAt ? "?v=" + (Date.parse(f.shotAt) || 0) : "");
+
+  /* ---------- session: kept in this tab only (sessionStorage), refreshed before it expires ---------- */
+  const SKEY = "fdx-admin-session";
+  let session = null;
+  const loadSession = () => { try { return JSON.parse(sessionStorage.getItem(SKEY)); } catch (e) { return null; } };
+  const saveSession = s => { session = s; try { s ? sessionStorage.setItem(SKEY, JSON.stringify(s)) : sessionStorage.removeItem(SKEY); } catch (e) {} };
+  async function auth(grant, body) {
+    const r = await fetch(`${API.url}/auth/v1/token?grant_type=${grant}`, { method: "POST", headers: { apikey: API.key, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error_description || j.msg || j.message || "Sign-in failed");
+    return { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: j.user?.email || "" };
+  }
+  async function token() {
+    if (!session) throw new Error("signed out");
+    if (Date.now() > session.exp - 60000) {
+      try { saveSession({ ...(await auth("refresh_token", { refresh_token: session.refresh })), email: session.email }); }
+      catch (e) { signedOut("Your session ended. Sign in again."); throw e; }
+    }
+    return session.access;
+  }
+  async function api(path, opt = {}) {
+    const r = await fetch(API.url + path, { ...opt, headers: { apikey: API.key, Authorization: "Bearer " + await token(), "Content-Type": "application/json", ...(opt.headers || {}) } });
+    if (r.status === 401) { signedOut("Your session ended. Sign in again."); throw new Error("401"); }
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || r.status); }
+    return r.status === 204 ? null : r.json().catch(() => null);
+  }
+
+  /* ---------- views ---------- */
+  function signedOut(msg) {
+    saveSession(null);
+    $("#app").hidden = true; $("#who").hidden = true; $("#signout").hidden = true; $("#login").hidden = false;
+    $("#loginErr").textContent = msg || ""; $("#password").value = ""; $("#email").focus();
+  }
+  $("#login").addEventListener("submit", async e => {
+    e.preventDefault();
+    const btn = $("#loginBtn"); btn.disabled = true; $("#loginErr").textContent = "";
+    try { saveSession(await auth("password", { email: $("#email").value.trim(), password: $("#password").value })); $("#password").value = ""; await start(); }
+    catch (err) { $("#loginErr").textContent = /invalid/i.test(err.message) ? "That email and password don't match." : err.message; }
+    finally { btn.disabled = false; }
+  });
+  $("#signout").onclick = async () => {
+    try { await fetch(API.url + "/auth/v1/logout", { method: "POST", headers: { apikey: API.key, Authorization: "Bearer " + session.access } }); } catch (e) {}
+    signedOut("Signed out.");
+  };
+
+  /* ---------- data ---------- */
+  let FONTS = [], OV = new Map(), MAKER = new Map(), shown = PAGE;
+  const sel = new Set();
+  const eff = f => { const o = OV.get(f.id) || {}; return { category: o.category || f.category || "", name: o.name || f.name, hidden: !!o.hidden }; };
+
+  async function start() {
+    const ok = await api("/rest/v1/rpc/is_admin", { method: "POST", body: "{}" }).catch(() => false);
+    if (ok !== true) { signedOut("This account can sign in but can't make changes. Add it to the admins list (see README → Admin)."); return; }
+    $("#login").hidden = true; $("#who").textContent = session.email; $("#who").hidden = false; $("#signout").hidden = false;
+    $("#rows").replaceChildren(el("p", "empty", "Loading fonts…")); $("#app").hidden = false;
+    const [snap, rows] = await Promise.all([fetch("data/data.json", { cache: "no-cache" }).then(r => r.json()), api("/rest/v1/font_overrides?select=*")]);
+    for (const f of snap.foundries || []) MAKER.set(f.id, f.kind === "Typeface" ? (f.by || f.name) : f.name);
+    FONTS = (snap.fonts || []).filter(f => f.name).sort((a, b) => (MAKER.get(a.foundryId) || "").localeCompare(MAKER.get(b.foundryId) || "") || a.name.localeCompare(b.name));
+    OV = new Map((rows || []).map(o => [o.font_id, o]));
+    const fsel = $("#fFoundry");
+    [...new Set(FONTS.map(f => f.foundryId))].sort((a, b) => (MAKER.get(a) || a).localeCompare(MAKER.get(b) || b))
+      .forEach(id => fsel.append(Object.assign(el("option", "", MAKER.get(id) || id), { value: id })));
+    readUrl(); draw();
+  }
+
+  /* ---------- filters (kept in the URL hash, so a reload keeps your place) ---------- */
+  function readUrl() { const p = new URLSearchParams(location.hash.slice(1)); $("#q").value = p.get("q") || ""; $("#fFoundry").value = p.get("foundry") || ""; $("#fCat").value = p.get("cat") || ""; }
+  function writeUrl() { const p = new URLSearchParams(); if ($("#q").value) p.set("q", $("#q").value); if ($("#fFoundry").value) p.set("foundry", $("#fFoundry").value); if ($("#fCat").value) p.set("cat", $("#fCat").value); history.replaceState(null, "", "#" + p); }
+  function list() {
+    const q = $("#q").value.trim().toLowerCase(), fd = $("#fFoundry").value, cat = $("#fCat").value;
+    return FONTS.filter(f => {
+      const e = eff(f);
+      if (fd && f.foundryId !== fd) return false;
+      if (cat === "-" && e.category) return false;
+      if (cat === "*fixed" && !OV.has(f.id)) return false;
+      if (cat === "*hidden" && !e.hidden) return false;
+      if (cat && !cat.startsWith("*") && cat !== "-" && e.category !== cat) return false;
+      if (q && !(e.name + " " + f.name + " " + (MAKER.get(f.foundryId) || "") + " " + f.id).toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+  let t; const redraw = () => { clearTimeout(t); t = setTimeout(() => { shown = PAGE; writeUrl(); draw(); }, 120); };
+  $("#q").addEventListener("input", redraw); $("#fFoundry").addEventListener("change", redraw); $("#fCat").addEventListener("change", redraw);
+  $("#more").onclick = () => { shown += PAGE * 2; draw(); };
+
+  function draw() {
+    const all = list(), rows = $("#rows");
+    $("#count").textContent = `${all.length.toLocaleString()} font${all.length === 1 ? "" : "s"} · ${OV.size} fixed here`;
+    rows.replaceChildren(...all.slice(0, shown).map(row));
+    if (!all.length) rows.append(el("p", "empty", "No fonts match."));
+    $("#more").hidden = all.length <= shown;
+    $("#selAll").checked = all.length > 0 && all.every(f => sel.has(f.id));
+    paintBulk();
+  }
+  function row(f) {
+    const o = OV.get(f.id), e = eff(f);
+    const r = el("div", "row" + (o ? " changed" : "") + (e.hidden ? " isHidden" : "")); r.dataset.id = f.id;
+    const ck = el("input"); ck.type = "checkbox"; ck.checked = sel.has(f.id); ck.setAttribute("aria-label", "Select " + e.name);
+    ck.onchange = () => { ck.checked ? sel.add(f.id) : sel.delete(f.id); paintBulk(); };
+    const sp = el("a", "spec"); sp.href = f.url || "#"; sp.target = "_blank"; sp.rel = "noopener noreferrer"; sp.title = "Open the font's page";
+    if (f.shotId) { const img = el("img"); img.src = shot(f); img.alt = ""; img.loading = "lazy"; img.decoding = "async"; sp.append(img); }
+    const meta = el("div", "meta");
+    const nm = el("input", "inp"); nm.value = e.name; nm.setAttribute("aria-label", "Name of " + f.name); nm.spellcheck = false;
+    nm.onkeydown = ev => { if (ev.key === "Enter") nm.blur(); if (ev.key === "Escape") { nm.value = eff(f).name; nm.blur(); } };
+    nm.onchange = () => save(f, { name: nm.value.trim() && nm.value.trim() !== f.name ? nm.value.trim() : null });
+    const by = el("div", "by"); by.append(MAKER.get(f.foundryId) || f.foundryId, " · " + f.id.split("--").slice(1).join("--"));
+    meta.append(nm, by);
+    const was = [];
+    if (o?.category && o.category !== (f.category || "")) was.push("category was " + (f.category || "none"));
+    if (o?.name) was.push("name was " + f.name);
+    if (was.length || o) {
+      const w = el("div", "was", was.join(" · "));
+      const undo = el("button", "link", "Undo fix"); undo.type = "button"; undo.onclick = () => clear(f);
+      if (o) { if (was.length) w.append(" · "); w.append(undo); }
+      meta.append(w);
+    }
+    const cs = el("select", "sel"); cs.setAttribute("aria-label", "Category of " + e.name);
+    cs.append(Object.assign(el("option", "", "No category"), { value: "" }), ...CATS.map(c => Object.assign(el("option", "", c), { value: c })));
+    cs.value = e.category;
+    cs.onchange = () => save(f, { category: cs.value && cs.value !== (f.category || "") ? cs.value : null });
+    const hl = el("label", "hide"); const hk = el("input"); hk.type = "checkbox"; hk.checked = e.hidden; hl.append(hk, "Hide");
+    hk.onchange = () => save(f, { hidden: hk.checked });
+    const st = el("span", "state");
+    r.append(ck, sp, meta, cs, hl, st);
+    return r;
+  }
+
+  /* ---------- saving ---------- */
+  const stateOf = id => document.querySelector(`.row[data-id="${CSS.escape(id)}"] .state`);
+  const mark = (id, cls, txt) => { const s = stateOf(id); if (s) { s.className = "state " + cls; s.textContent = txt; } };
+  async function save(f, patch, quiet) {
+    const cur = OV.get(f.id) || { font_id: f.id, category: null, name: null, hidden: false };
+    const next = { font_id: f.id, category: cur.category, name: cur.name, hidden: cur.hidden, ...patch };
+    if (!quiet) mark(f.id, "busy", "Saving…");
+    try {
+      if (!next.category && !next.name && !next.hidden) { await api("/rest/v1/font_overrides?font_id=eq." + encodeURIComponent(f.id), { method: "DELETE" }); OV.delete(f.id); }
+      else { const [row] = await api("/rest/v1/font_overrides?on_conflict=font_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(next) }); OV.set(f.id, row || next); }
+      if (!quiet) { refreshRow(f); mark(f.id, "ok", "Saved"); }
+      return true;
+    } catch (e) {
+      if (!quiet) { refreshRow(f); mark(f.id, "bad", "Not saved"); toast("That change didn't save: " + e.message); }
+      return false;
+    }
+  }
+  const clear = f => save(f, { category: null, name: null, hidden: false });
+  function refreshRow(f) { const old = document.querySelector(`.row[data-id="${CSS.escape(f.id)}"]`); if (old) old.replaceWith(row(f)); $("#count").textContent = `${list().length.toLocaleString()} fonts · ${OV.size} fixed here`; }
+
+  /* ---------- bulk ---------- */
+  function paintBulk() { $("#bulk").hidden = !sel.size; $("#bulkN").textContent = `${sel.size} selected`; }
+  $("#selAll").onchange = e => { list().forEach(f => e.target.checked ? sel.add(f.id) : sel.delete(f.id)); draw(); };
+  $("#bulkClear").onclick = () => { sel.clear(); draw(); };
+  async function bulk(patchFor, label) {
+    const fs = FONTS.filter(f => sel.has(f.id)); let ok = 0;
+    for (const f of fs) if (await save(f, patchFor(f), true)) ok++;
+    draw(); toast(ok === fs.length ? `${label} ${ok} font${ok === 1 ? "" : "s"}.` : `${ok} of ${fs.length} saved; the rest didn't go through.`);
+  }
+  $("#bulkCat").onchange = e => { const c = e.target.value; e.target.value = ""; if (c) bulk(f => ({ category: c !== (f.category || "") ? c : null }), "Set " + c + " on"); };
+  $("#bulkHide").onclick = () => bulk(() => ({ hidden: true }), "Hid");
+  $("#bulkShow").onclick = () => bulk(() => ({ hidden: false }), "Showed");
+
+  /* ---------- boot ---------- */
+  session = loadSession();
+  if (session) start().catch(() => signedOut()); else signedOut();
+})();
+</script>
+</body>
+</html>
