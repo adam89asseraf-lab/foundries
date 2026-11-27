@@ -68,6 +68,8 @@ foundries:
     order: 6
     addedAt: 2026-11-22T08:00:00Z
     price: 50 USD
+    fonts:
+      trust: { category: Sans }
   - id: avantt
     name: Avantt
     by: Displaay
@@ -91,6 +93,8 @@ foundries:
     order: 10
     addedAt: 2026-11-22T08:00:00Z
     price: 50 CHF
+    fonts:
+      antarctica: { category: Sans }
   - id: w-type-foundry
     name: W Type Foundry
     url: https://wtypefoundry.com/typefaces
@@ -98,6 +102,12 @@ foundries:
     order: 11
     addedAt: 2026-11-22T08:00:00Z
     price: 25 USD
+    fonts:
+      juno: { category: Serif }
+      adorno: { category: Display }
+      besser: { category: Sans }
+      hattrick: { category: Sans }
+      urbani: { category: Sans }
   - id: open
     name: Open Foundry
     url: https://open-foundry.com/
@@ -124,6 +134,22 @@ foundries:
     note: In-progress typefaces from many independent designers
     paginate: true
     capture: image
+    fonts:
+      cstm-xprmntl-01: { category: Display }
+      digestive: { category: Display }
+      diplosopher: { category: Display }
+      elmira: { category: Display }
+      ghimli-antique: { category: Display }
+      indole: { category: Serif }
+      min-sans-stencil: { category: Display }
+      ringi: { category: Display }
+      tatras-shaded: { category: Display }
+      transept: { category: Display }
+      zangezi: { category: Serif }
+      metamorbit: { category: Display }
+      missive-bead: { category: Display }
+      tlayuda: { category: Display }
+      zc-casual: { category: Display }
   - id: fonderie
     name: Fonderie
     by: Pépite
@@ -140,6 +166,8 @@ foundries:
     order: 15
     addedAt: 2026-11-22T08:00:00Z
     price: 45 EUR
+    fonts:
+      skolarpe: { category: Serif }
   - id: oh-no
     name: OH no Type Co.
     url: https://ohnotype.co/
@@ -157,6 +185,13 @@ foundries:
     source: fontshare
     price: free
     note: Full catalogue
+    fonts:
+      azeret-mono: { category: Mono }
+      jetbrains-mono: { category: Mono }
+      melodrama: { category: Display }
+      rx100: { category: Mono }
+      tabular: { category: Mono }
+      aktura: { category: Display }
   - id: shriftovik
     name: Shriftovik
     url: https://shriftovik.com/
@@ -178,6 +213,25 @@ foundries:
     exclude:
       - /en/(fonts|catalog|cart|search|journal|collections?|designers?|store|shop|in-use|info|account|services|custom)$
     price: 60 USD
+    fonts:
+      algorytm-sport: { category: Display }
+      feature-deck: { category: Serif }
+      feature-text: { category: Serif }
+      oceanic: { category: Serif }
+      oceanic-text: { category: Serif }
+      crimp-variable: { category: Sans }
+      fluxtype-caption-grande: { category: Sans }
+      fluxtype-caption-normal: { category: Sans }
+      fluxtype-caption-petite: { category: Sans }
+      fluxtype-text-grande: { category: Sans }
+      fluxtype-text-normal: { category: Sans }
+      fluxtype-text-petite: { category: Sans }
+      fluxtype-title-grande: { category: Sans }
+      fluxtype-title-normal: { category: Sans }
+      fluxtype-title-petite: { category: Sans }
+      fluxtype-variable: { category: Sans }
+      nekst-rounded: { category: Sans }
+      opague: { category: Sans }
   - id: collletttivo
     name: Collletttivo
     url: https://www.collletttivo.it/
@@ -192,6 +246,8 @@ foundries:
     kind: Foundry
     order: 21
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      36dope: { category: Display }
   - id: lift
     name: Lift Type
     url: https://www.lift-type.fr/
@@ -199,6 +255,12 @@ foundries:
     tags: [ France ]
     order: 22
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      aerobik: { category: Display }
+      bouuuuuh: { category: Display }
+      parade: { category: Display }
+      tartuffo: { category: Serif }
+      vroum-gti: { category: Display }
   - id: klim
     name: Klim Type Foundry
     url: https://klim.co.nz/
@@ -207,6 +269,9 @@ foundries:
     addedAt: 2026-11-22T08:00:00Z
     catalogUrl: https://klim.co.nz/fonts/
     price: 60 USD
+    fonts:
+      maelstrom-sans: { category: Display }
+      pitch-sans: { category: Mono }
   - id: uncut
     name: UNCUT
     url: https://uncut.wtf/?ref=uigoodies.com
@@ -222,6 +287,11 @@ foundries:
     order: 25
     addedAt: 2026-11-22T08:00:00Z
     price: 160 CHF
+    fonts:
+      champion: { category: Slab }
+      champion-cond: { category: Slab }
+      superstudio: { category: Mono }
+      thermo: { category: Mono }
   - id: free-faces
     name: Free Faces
     url: https://www.freefaces.gallery/
@@ -260,6 +330,10 @@ foundries:
     tags: [ Swiss ]
     order: 30
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      didot-modern: { category: Serif }
+      knit-grotesk: { category: Display }
+      rekja: { category: Serif }
   - id: polytype
     name: Polytype
     url: https://polytype.co.uk/typefaces
@@ -274,6 +348,14 @@ foundries:
     order: 32
     addedAt: 2026-11-22T08:00:00Z
     price: 40 USD
+    fonts:
+      beival: { category: Display }
+      luxus-gothic: { category: Display }
+      strato: { category: Display }
+      averta: { category: Sans }
+      grandmaster: { category: Sans }
+      serica: { category: Display }
+      tocapu: { category: Sans }
   - id: grilli
     name: Grilli Type
     url: https://www.grillitype.com/
@@ -282,6 +364,8 @@ foundries:
     order: 33
     addedAt: 2026-11-22T08:00:00Z
     price: 80 USD
+    fonts:
+      gt-america: { category: Sans }
   - id: groteskly-yours
     name: Groteskly Yours
     url: https://groteskly.xyz/
@@ -290,6 +374,11 @@ foundries:
     order: 34
     addedAt: 2026-11-22T08:00:00Z
     price: 35 EUR
+    fonts:
+      gelatic: { category: Display }
+      gys-pixels: { category: Display }
+      noad-sans: { category: Display }
+      porte-neue: { category: Serif }
   - id: dinamo
     name: Dinamo
     by: ABC Dinamo
@@ -298,6 +387,11 @@ foundries:
     order: 35
     addedAt: 2026-11-22T08:00:00Z
     price: 90 EUR
+    fonts:
+      arizona: { category: Serif }
+      diatype-extra: { category: Mono }
+      oracle: { category: Sans }
+      oracle-rounded: { category: Sans }
   - id: bueno
     name: Bueno
     by: Rajesh Rajput
@@ -314,6 +408,32 @@ foundries:
     order: 37
     addedAt: 2026-11-22T08:00:00Z
     price: 35 USD
+    fonts:
+      bn-finland: { category: Serif }
+      harrold: { category: Serif }
+      hellmade: { category: Display }
+      hillsidegrotesk: { category: Display }
+      keystone: { category: Serif }
+      mrmiesha: { category: Serif }
+      rigidly: { category: Serif }
+      andies: { category: Display }
+      blacklettra: { category: Display }
+      decos: { category: Display }
+      fatporn: { category: Sans }
+      gallant: { category: Sans }
+      hillman: { category: Sans }
+      kendall: { category: Sans }
+      langthorne: { category: Display }
+      mighty: { category: Sans }
+      minay: { category: Sans }
+      modexe: { category: Sans }
+      nightmare: { category: Script }
+      queen: { category: Sans }
+      rollcall: { category: Sans }
+      rumble: { category: Sans }
+      sonic: { category: Sans }
+      trainwreck: { category: Sans }
+      ventura: { category: Sans }
   - id: mango-grotesque
     name: Mango Grotesque
     by: Rajesh Rajput
@@ -342,6 +462,8 @@ foundries:
     kind: Foundry
     order: 41
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      orbikular: { category: Serif }
   - id: booton
     name: Booton
     by: Displaay
@@ -367,6 +489,8 @@ foundries:
     order: 45
     addedAt: 2026-11-22T08:00:00Z
     price: 40 EUR
+    fonts:
+      nan-success: { category: Display }
   - id: schick-toikka
     name: Schick Toikka
     url: https://www.schick-toikka.com/
@@ -385,6 +509,9 @@ foundries:
     tags: [ Subscription ]
     order: 48
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      polliwog-font-of-the-month: { category: Display }
+      zenith-djr-font-of-the-month: { category: Display }
   - id: frost
     name: FROST
     url: https://www.frostype.xyz/
@@ -570,6 +697,8 @@ foundries:
     order: 64
     addedAt: 2026-11-22T08:00:00Z
     price: 50 EUR
+    fonts:
+      revetra: { category: Display }
   - id: limitype
     name: Limitype
     url: https://limitype.com/
@@ -632,6 +761,8 @@ foundries:
     kind: Foundry
     order: 73
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      sltf-spanish-archer-ligature-rich-display-serif-font: { category: Display }
   - id: rajesh-rajput
     name: Rajesh Rajput
     by: Gumroad store
@@ -646,6 +777,8 @@ foundries:
     kind: Foundry
     order: 75
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      final: { category: Serif }
   - id: general-type-studio
     name: General Type Studio
     url: https://www.generaltypestudio.com/
@@ -688,6 +821,8 @@ foundries:
     kind: Foundry
     order: 82
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      ashcroft: { category: Sans }
   - id: type-mania
     name: Type Mania
     url: https://typemania.eu/
@@ -695,6 +830,9 @@ foundries:
     order: 83
     addedAt: 2026-11-22T08:00:00Z
     price: 75 ILS
+    fonts:
+      bullet-sans-tm: { category: Mono }
+      prestige-tm: { category: Mono }
   - id: a-foundry
     name: a.Foundry
     url: https://a-foundry.com/
@@ -747,6 +885,14 @@ foundries:
     order: 89
     addedAt: 2026-11-22T12:00:00Z
     price: 500 ILS
+    fonts:
+      alenbiserif: { category: Serif }
+      colbo: { category: Display }
+      thesmokerserif: { category: Serif }
+      editorsansprohlar: { category: Sans }
+      lava-prohl: { category: Sans }
+      newfont: { category: Sans }
+      sirucaheb: { category: Display }
   - id: alefalefalef
     name: Alefalefalef
     url: https://alefalefalef.co.il/
@@ -763,6 +909,9 @@ foundries:
     order: 91
     addedAt: 2026-11-22T12:00:00Z
     price: 400 ILS
+    fonts:
+      hashmal: { category: Display }
+      arfilit: { category: Sans }
   - id: pizza-typefaces
     name: Pizza Typefaces
     url: https://typefaces.pizza/
@@ -777,6 +926,8 @@ foundries:
     addedAt: 2026-11-25T12:00:00Z
     catalogUrl: https://goodtypefoundry.com/
     fontLinkPattern: "goodtypefoundry\\.com/(?!(goods|about|cart)/?$)(?!custom-fonts|my-account|product)[a-z]+/?$"
+    fonts:
+      ridder: { category: Display }
   - id: fontef
     name: Fontef
     url: https://fontef.com/
@@ -786,6 +937,10 @@ foundries:
     addedAt: 2026-11-25T12:00:00Z
     catalogUrl: https://fontef.com/fonts
     fontLinkPattern: "fontef\\.com/(?!fonts$|tester$|custom$|in-use|shop|read|info$|trial|he$|account|cart)[a-z0-9-]+$"
+    fonts:
+      graphik: { category: Sans }
+      liebling: { category: Sans }
+      narkissim: { category: Sans }
   - id: ezer-type-house
     name: Ezer Type House
     url: https://www.ezertypehouse.com/
@@ -793,6 +948,8 @@ foundries:
     tags: [ Hebrew ]
     order: 96
     addedAt: 2026-11-25T12:00:00Z
+    fonts:
+      ezerblock: { category: Sans }
   - id: rag-design
     name: RAG Design
     url: https://ragdesign.co/
@@ -824,6 +981,8 @@ foundries:
     kind: Foundry
     order: 99
     addedAt: 2026-11-25T12:00:00Z
+    fonts:
+      tabac-micro: { category: Sans }
   - id: optimo
     name: Optimo
     url: https://optimo.ch/
@@ -833,6 +992,10 @@ foundries:
     addedAt: 2026-11-25T12:00:00Z
     catalogUrl: https://optimo.ch/typefaces
     fontLinkPattern: "optimo\\.ch/typefaces/[a-z0-9_]+$"
+    fonts:
+      artesk: { category: Sans }
+      plain-arabic: { category: Sans }
+      plain1: { category: Sans }
   - id: blast-foundry
     name: Blast Foundry
     url: https://blast-foundry.com/
@@ -854,6 +1017,9 @@ foundries:
     kind: Foundry
     order: 103
     addedAt: 2026-11-25T12:00:00Z
+    fonts:
+      kinckq: { category: Display }
+      triptych: { category: Serif }
   - id: kyiv-type-foundry
     name: Kyiv Type Foundry
     url: https://kyivtypefoundry.com/
@@ -879,6 +1045,8 @@ foundries:
     catalogUrl: https://spoketype.com/fonts/
     fontLinkPattern: "spoketype\\.com/fonts/[a-z0-9-]+/?$"
     nameStrip: "^About\\s+"
+    fonts:
+      vokal: { category: Display }
   - id: sm-foundry
     name: SM Foundry
     url: https://s-m.nu/
@@ -964,3 +1132,5 @@ foundries:
       - Bellefair
       - Heebo
       - Assistant
+    fonts:
+      rubik-mono-one: { category: Mono }

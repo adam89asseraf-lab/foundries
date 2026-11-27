@@ -211,6 +211,17 @@ Everything below is on `main` and live unless marked otherwise.
 
 ## Gotchas
 
+- **Categories (review on 2026-11-27):**
+  - Every Sans and Serif specimen was checked by eye, and 135 fonts were moved:
+    - 23 Sans → Serif
+    - 50 Serif → Sans
+    - 35 to Mono or Slab
+    - 49 to Display
+    - 1 to Script
+  - Each fix is a `fonts: { <slug>: { category: … } }` override in `foundries.yaml`. `merge()` now applies these at build time as well as during a crawl.
+  - **Recaptures:** they now keep a font's existing category (`crawl.mjs`). Before, page-text rules replaced it, which undid categories that had been set by eye.
+  - **Wrong-face specimens:** a "Serif"-named font with a sans specimen is usually a specimen drawn in the site's own font (Kogi Rounded Serif → AlmarenaClassic, BN Cathedral → Manrope). Fix the specimen, not the category.
+
 - **`.pre.webp` files are undo backups. Keep them in git.**
   - Before drawing a uniform specimen with a face that isn't named like the font, the crawler copies the old screenshot to `<id>.pre.webp`.
   - If a later check finds that face on 2+ fonts of one foundry (the site's own font), it renames the backup back.

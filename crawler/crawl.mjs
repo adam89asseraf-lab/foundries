@@ -381,7 +381,8 @@ async function finishFont(page, font, f, q) {
   if (!category) category = await categoriseWithHaiku({ ...text, name: font.name, listText: font.listText });
   Object.assign(font, {
     shotId: `fonts/${font.id}`, shotAt: now(), scan: "done", attemptAt: now(), ...(q.cover ? { shot: "image" } : {}),
-    category: ov.category || category || font.category || null,
+    // a recapture keeps the category the font already has (many were set by eye); page-text rules only fill a missing one
+    category: ov.category || font.category || category || null,
     styles: ov.styles ?? c.styles ?? font.styles ?? null,
     variable: ov.variable ?? (c.variable || !!font.variable),
     // "free" is never guessed from page text (it matched "download free trial fonts"); it comes from

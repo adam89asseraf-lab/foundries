@@ -119,9 +119,11 @@ export function merge(data, entries) {
   for (const f of out) { const p = parsePrice(entries.find(e => e.id === f.id)?.price); if (p) f.price = p; else delete f.price; }
   for (const x of data.fonts) {
     const fd = cfgById.get(x.foundryId); if (!fd) continue;
-    const ov = fd.cfg?.fonts?.[x.id.split("--").slice(1).join("--")]?.price;
-    const p = ov != null ? parsePrice(ov) : fd.price || null;
+    const fov = fd.cfg?.fonts?.[x.id.split("--").slice(1).join("--")] || {};
+    const p = fov.price != null ? parsePrice(fov.price) : fd.price || null;
     if (p) x.price = p; else delete x.price;
+    // a manual category in foundries.yaml always wins (applied here too, so it goes live without a recapture)
+    if (fov.category) x.category = fov.category;
   }
   const removed = [...byId.keys()];
   const removedFonts = data.fonts.filter(f => removed.includes(f.foundryId));
