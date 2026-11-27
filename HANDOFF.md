@@ -1,12 +1,69 @@
 # Handoff — Found rizz (type & foundry index)
 
-Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 (see “Session summary — 2026-11-25” below). Read this together with `README.md`, which documents how to run and configure everything.
+Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 and again 2026-11-27, after a second account move. Start with “Current state — 2026-11-27” just below; the older sections are kept for history. Read this together with `README.md`, which documents how to run and configure everything.
 
 - **Repo:** https://github.com/adam89asseraf-lab/foundries (public)
 - **Live site:** https://adam89asseraf-lab.github.io/foundries/ (GitHub Pages)
 - **Branch:** `main` (the `uniform-specimens` branch is merged).
 - **Design:** Figma file `7J30UXQ9UxdziRxxmPCWOT` (GUTS team). It has the Components section and the Fonts desktop, Fonts mobile and Foundries desktop screens.
 - **Votes database:** Supabase project `lulglxebjchreghaexjd` (https://lulglxebjchreghaexjd.supabase.co, Tokyo, free plan).
+
+## Current state — 2026-11-27
+
+**Coverage:** 104 entries in `foundries.yaml` and 2,480 fonts in `data/data.json` (the nightly crawl on 2026-11-27 captured 2,421 of them). About 1,470 fonts have uniform specimens, and about 1,460 have script coverage for the language filter.
+
+**Paused (`skip: true`):** only Kyiv Type Foundry (its pages give no clean specimen, just scrolled pages with text and buttons) and DDOTT (headless Chrome is refused). Good Type, Fontef, RAG, Non Foundry, Optimo and Spoke were fixed and re-crawled on 2026-11-26.
+
+### Session summary — 2026-11-26
+
+**Main site (`site/index.html`)**
+- **Four tabs:** Fonts, Foundries, Libraries and **Play**. The tabs are 36px tall as in Figma, and their counts are hidden on phones.
+- **Layout from the updated Figma pages (auto-layout spacing):**
+  - Fonts toolbar: row 1 has search, foundry, language and sort; row 2 has the category grid (All, Free, categories, Variable), grid size, styles, price and reset.
+  - Foundries toolbar: search, sort and grid size in one row. The tag row only shows active tags, and clicking a tag on a card filters by it.
+  - Phones: centred masthead, a round expand button on screenshots, and the status line under the list.
+- **Filters:**
+  - The foundry and language filters are type-ahead multi-selects with chips, and the foundry filter is kept in the URL.
+  - The foundry picker's first option selects all liked foundries. When all of them are picked, they show as one "♥ Liked foundries N" chip.
+  - **Language filter:** Latin, Extended Latin, Cyrillic, Greek, Hebrew, Arabic and more. The data comes from the new `--scripts` crawl phase, which checks which writing systems each font's webfont draws.
+  - All also turns off Free, Variable and New releases.
+- **Sort:** "Most popular" is the default. It combines Tier List averages (pulled towards B) with hearts.
+- **Grid-size toggle:** 2/3/4/5 columns.
+- **Compare:** each font card has a compare toggle; you can pick up to 6 fonts.
+  - The tray at the bottom opens a full-screen side-by-side view with category, styles, variable, price and votes.
+  - **Your own sentence:** free fonts draw it live. For paid fonts, confirming the sentence queues it in Supabase (`supabase/previews.sql`). That starts `.github/workflows/previews.yml`, where `crawler/previews.mjs` draws it on the foundry's own page in the webfont the uniform specimen found, and uploads a 1600×640 picture. The same sentence and font are drawn only once.
+  - Clicking a specimen opens the full-screen viewer; ← → step through the compared fonts.
+- **Full-screen viewer:** it has a heart, and L likes or unlikes the font or foundry on screen.
+- **Font cards:** an "Examine font" bar slides up on hover. It's always shown on touch screens.
+- **Title animation:** a pause/play button sits above the title. It remembers the choice, and the animation starts paused under reduced motion.
+
+**Play (`site/play.html`, opened from the Play tab)**
+- **Tier List (default game):** rank one foundry's fonts from S to D.
+  - The lobby shows 9 foundry cards. Ranking shows specimen-only cards in 98px rows and a one-line unranked strip, and the result screen shows your tiers next to the crowd's average.
+  - Cards are 339×108 in tiers and 329×93 unranked. Hovering a card zooms into the specimen and follows the pointer.
+  - Tiers are saved anonymously in Supabase (`supabase/tiers.sql`).
+- **Casting Call, Type Quiz and Font Bracket:** these are prototypes in the same page.
+  - Picks stay in the browser, and crowd results are **simulated** (stable per role or matchup, nudged by hearts) until real game votes exist.
+  - Casting Call uses a 2×2 grid. The quiz places fonts on four axes from their category and makes a downloadable 4:5 share card.
+
+**Crawler**
+- **Dinamo fix:** Dinamo keeps its `@font-face` styles in `<body>`, and emptying the page used to delete them. Style tags now move to `<head>` first, both for specimens and for paid-font previews.
+  - 45 of 46 Dinamo fonts and 88 earlier failures now have uniform specimens.
+  - A Foundry keeps its old screenshots, because its site CSS breaks the specimen layout.
+
+**Tidy-up on 2026-11-27**
+- Pulled the nightly crawl.
+- Deleted the stray Kyiv font screenshots, which came from before it was paused.
+- Committed the crawler's `.pre` backups (see Gotchas) and removed two whose fonts no longer exist.
+
+### Next up
+- **Play:**
+  - Replace the simulated crowd results in Casting Call, Quiz and Bracket with real votes. This needs a game-votes table.
+  - The nightly crawl turns votes into per-font scores, which drive badges and a "Best for…" filter.
+  - Matchmaking should favour fonts with few votes.
+- **Figma:** the Quiz and Bracket wireframes are still to do (page `49:572`).
+- **Kyiv and DDOTT:** both are still paused.
+- **Older open items:** see "Other open items" below. The API key, 205TF 404s and unpriced foundries are all still open.
 
 ## What we built
 
@@ -143,6 +200,12 @@ Everything below is on `main` and live unless marked otherwise.
 - **Figma:** the masthead on the Figma screens still says "Found it!" while the site says "Found rizz". The Font card component has the foundry name underlined, but the screens and the site don't.
 
 ## Gotchas
+
+- **`.pre.webp` files are undo backups. Keep them in git.**
+  - Before drawing a uniform specimen with a face that isn't named like the font, the crawler copies the old screenshot to `<id>.pre.webp`.
+  - If a later check finds that face on 2+ fonts of one foundry (the site's own font), it renames the backup back.
+  - That check can happen in a later nightly run, so the Action commits these files along with `public/shots`. Don't add them to `.gitignore`.
+  - A backup whose font no longer exists in `data.json` can be deleted.
 
 - **Concurrent writes to `data.json`:** the nightly Action commits `data/data.json`. Always `git pull --rebase` before pushing, and never run two crawls at once.
 - **Rescans:**
