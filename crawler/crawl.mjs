@@ -12,7 +12,7 @@ import { categorise, categoriseWithHaiku, CATS } from "./categorise.mjs";
 import { googleFamilies, specimenHtml, googleFontRecord, googleSubsets } from "./google-fonts.mjs";
 import { fontshareFamilies } from "./fontshare.mjs";
 import { ratePersonality, personalityEnabled } from "./personality.mjs";
-import { SAMPLE, detectFace, renderUniform, fallbackGlyphs, SCRIPT_TESTS, scriptsFromSubsets } from "./uniform.mjs";
+import { SAMPLE, detectFace, renderUniform, fallbackGlyphs, SCRIPT_TESTS, scriptsFromSubsets, wrongFace } from "./uniform.mjs";
 import { writeSpecimen } from "./lib/specimen-frame.mjs";
 
 /* ---------- args ---------- */
@@ -439,8 +439,11 @@ async function uniformOne(ctx, page, cdp, font, f) {
     for (let i = 0; i < 4; i++) { await page.evaluate(() => { document.scrollingElement.scrollTop += innerHeight; }); await sleep(300); } // lazy webfonts
     await page.evaluate(() => { document.scrollingElement.scrollTop = 0; });
   }
-  const cands = await page.evaluate(detectFace, font.name);
-  if (!cands.length) return "no webfont for this font on its page";
+  const found = await page.evaluate(detectFace, font.name);
+  if (!found.length) return "no webfont for this font on its page";
+  // never draw with a face that is plainly another design or font (a mono sibling, the site's font, another family)
+  const cands = found.filter(c => !wrongFace(c.fam, font, f, data.fonts));
+  if (!cands.length) return "only wrong faces on its page: " + wrongFace(found[0].fam, font, f, data.fonts);
   // the first candidate that draws a whole sample by itself (Hebrew fonts show Hebrew; Cyrillic only when Latin is missing)
   // a face not named like the font that another font of this foundry already uses is the site's own font, not this one
   const taken = new Set(data.fonts.filter(x => x.foundryId === font.foundryId && x.id !== font.id && x.shot === "uniform").map(x => x.uniformFace));
@@ -460,7 +463,8 @@ async function uniformOne(ctx, page, cdp, font, f) {
 }
 async function uniform() {
   const ids = new Set(foundries.map(f => f.id));
-  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId &&
+  const noUniform = x => byId.get(x.foundryId)?.cfg?.fonts?.[x.id.split("--").slice(1).join("--")]?.uniform === false; // `uniform: false` in foundries.yaml
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && !noUniform(x) &&
     (x.uniformFail ? olderThan(x.uniformAt, UNIFORM_RETRY_DAYS) && x.uniformAt < x.shotAt || olderThan(x.uniformAt, UNIFORM_RETRY_DAYS) : !x.uniformAt || x.uniformAt < x.shotAt))
     .sort((a, b) => (byId.get(a.foundryId).order - byId.get(b.foundryId).order) || (a.order - b.order)).slice(0, LIMIT);
   log(`uniform: ${due.length} fonts due`);
@@ -565,7 +569,8 @@ async function scripts() {
 async function personality() {
   if (!personalityEnabled()) { log("personality: skipped (no ANTHROPIC_API_KEY)"); return; }
   const ids = new Set(foundries.map(f => f.id));
-  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && (!x.mood || !x.moodAt || x.moodAt < x.shotAt || !x.category)).slice(0, LIMIT);
+  const noUniform = x => byId.get(x.foundryId)?.cfg?.fonts?.[x.id.split("--").slice(1).join("--")]?.uniform === false; // `uniform: false` in foundries.yaml
+  const due = data.fonts.filter(x => ids.has(x.foundryId) && x.scan === "done" && x.shotId && !noUniform(x) && (!x.mood || !x.moodAt || x.moodAt < x.shotAt || !x.category)).slice(0, LIMIT);
   log(`personality: ${due.length} fonts to rate`);
   let done = 0, failed = 0;
   await pool(due, 6, async x => {

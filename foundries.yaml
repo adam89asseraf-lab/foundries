@@ -14,6 +14,7 @@
 #   price                 basic price for ONE weight (single style, smallest desktop licence): "60 USD", "€45", "75 NZD" or free
 #   fonts:                per-font overrides, keyed by font slug (the part after "<id>--")
 #     some-font: { category: Serif, styles: 12, variable: true, free: false, name: "Some Font", price: "40 EUR", skip: true }
+#     uniform: false      (per font) never draw a uniform specimen; keep the page screenshot (its page only offers the wrong face)
 
 foundries:
   - id: space-grotesk
@@ -202,6 +203,8 @@ foundries:
     tags: [ Cyrillic ]
     order: 18
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      sk-saturnika: { uniform: false }
   - id: type-today
     name: type.today
     url: https://type.today/en
@@ -389,7 +392,7 @@ foundries:
     price: 90 EUR
     fonts:
       arizona: { category: Serif }
-      diatype-extra: { category: Mono }
+      diatype-extra: { category: Sans }
       oracle: { category: Sans }
       oracle-rounded: { category: Sans }
   - id: bueno
@@ -434,6 +437,7 @@ foundries:
       sonic: { category: Sans }
       trainwreck: { category: Sans }
       ventura: { category: Sans }
+      cathedral: { uniform: false }
   - id: mango-grotesque
     name: Mango Grotesque
     by: Rajesh Rajput
@@ -498,6 +502,8 @@ foundries:
     order: 46
     addedAt: 2026-11-22T08:00:00Z
     price: 70 EUR
+    fonts:
+      phonic: { category: Sans }
   - id: font-of-the-month-club
     name: Font of the Month Club
     by: David Jonathan Ross
@@ -574,6 +580,8 @@ foundries:
     addedAt: 2026-11-22T08:00:00Z
     catalogUrl: https://weltkern.com/typefaces
     fontLinkPattern: /typefaces/[^/]+$
+    fonts:
+      everett: { category: Sans }
   - id: typeverything
     name: Typeverything
     url: https://typeverything.com/
@@ -704,6 +712,7 @@ foundries:
     url: https://limitype.com/
     fonts:
       all: { skip: true } # the "All" catalogue link, not a font
+      fonts: { skip: true }
     kind: Foundry
     order: 65
     addedAt: 2026-11-22T08:00:00Z
@@ -713,6 +722,8 @@ foundries:
     kind: Foundry
     order: 66
     addedAt: 2026-11-22T08:00:00Z
+    fonts:
+      btc-find-and-seek-2: { uniform: false }
   - id: extraset
     name: Extraset
     url: https://extraset.ch/
@@ -763,6 +774,7 @@ foundries:
     addedAt: 2026-11-22T08:00:00Z
     fonts:
       sltf-spanish-archer-ligature-rich-display-serif-font: { category: Display }
+      use-fonts-like-a-pro-live-typography-masterclass: { skip: true }
   - id: rajesh-rajput
     name: Rajesh Rajput
     by: Gumroad store
@@ -847,6 +859,9 @@ foundries:
     order: 85
     addedAt: 2026-11-22T08:00:00Z
     price: 40 EUR
+    fonts:
+      joyse-vintage-typography: { uniform: false }
+      almarena-monospaced-typeface: { uniform: false }
   - id: best-free
     name: Best Free Fonts
     url: https://bestfreefonts.com/

@@ -220,7 +220,19 @@ Everything below is on `main` and live unless marked otherwise.
     - 1 to Script
   - Each fix is a `fonts: { <slug>: { category: … } }` override in `foundries.yaml`. `merge()` now applies these at build time as well as during a crawl.
   - **Recaptures:** they now keep a font's existing category (`crawl.mjs`). Before, page-text rules replaced it, which undid categories that had been set by eye.
-  - **Wrong-face specimens:** a "Serif"-named font with a sans specimen is usually a specimen drawn in the site's own font (Kogi Rounded Serif → AlmarenaClassic, BN Cathedral → Manrope). Fix the specimen, not the category.
+  - **Wrong-face specimens:** a "Serif"-named font with a sans specimen is usually a specimen drawn in the site's own font. Fix the specimen, not the category.
+- **Wrong-face specimens (fixed 2026-11-27):**
+  - 16 specimens were drawn in the wrong face:
+    - the site's font (Manrope, AlmarenaClassic, Euclid);
+    - another font of the same foundry (SK Primo, Monument Grotesk, NaN SuperX, Hagilda's Ratzif, Secolo and FrankG);
+    - a mono sibling (Everett, Phonic, Diatype Extra).
+  - **The fix:** 4 got their `.pre` backup back and 12 were recaptured as page screenshots. The two non-fonts (Limitype "Fonts" and SilverStag's masterclass) were removed and are now `skip: true`.
+  - **The guard:** `wrongFace()` in `crawler/uniform.mjs` now rejects faces that are:
+    - a mono, stencil, outline or inline sibling (unless the font's name says so, or it's filed as Mono);
+    - named after the foundry;
+    - named after another font of the same foundry.
+    - A face that contains the font's own name always passes. A dry run over all 1,468 specimens rejected only the known-bad ones.
+  - **Per-font opt-out:** `uniform: false` in `foundries.yaml` turns uniform specimens off for one font. It's used where the page only offers a wrong face the rules can't detect: BN Cathedral, SK Saturnika, BTC Find and Seek, Joyse, Almarena Monospaced.
 
 - **`.pre.webp` files are undo backups. Keep them in git.**
   - Before drawing a uniform specimen with a face that isn't named like the font, the crawler copies the old screenshot to `<id>.pre.webp`.

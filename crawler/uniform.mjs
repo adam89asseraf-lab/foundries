@@ -143,3 +143,30 @@ export async function fallbackGlyphs(cdp) {
   }
   return n;
 }
+// A face that is plainly some other design or font: drawing with it would show the wrong font.
+const SIBLING = ["mono", "monospace", "monospaced", "stencil", "outline", "inline"]; // a different design of the family
+const FILLER = new Set(["type", "types", "typeface", "typefaces", "font", "fonts", "family", "the", "about", "discover", "buy", "variable", "vf", "display",
+  "text", "studio", "foundry", "shop", "design", "pro", "prohl", "hlar", "std", "new", "neue", "collection", "classic", "regular", "book", "medium", "bold",
+  "light", "thin", "black", "heavy", "extra", "semi", "demi", "italic", "roman", "upright", "grotesk", "grotesque", "sans", "serif", "web", "preview"]);
+const wordsOf = s => String(s || "").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()
+  .normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z0-9]+/).filter(Boolean);
+const keyWords = s => wordsOf(s).filter(x => x.length >= 4 && !FILLER.has(x) && !/^\d+$/.test(x));
+const hit = (fw, x) => fw === x || (x.length >= 5 && fw.length >= 5 && (fw.startsWith(x) || x.startsWith(fw)));
+/** Node side: why `face` can't be this font (another design of the family, the foundry's site font, or another font of the foundry), or null. */
+export function wrongFace(face, font, foundry, fonts) {
+  const fwords = wordsOf(face);
+  const own = [...new Set([...keyWords(font.name), ...keyWords(font.id.split("--").slice(1).join("-"))])];
+  const named = own.some(o => fwords.some(fw => hit(fw, o)) || fwords.join("").includes(o));
+  const nameAll = new Set([...wordsOf(font.name), ...wordsOf(font.id)]);
+  const sib = SIBLING.find(x => fwords.includes(x) && !nameAll.has(x) && !(x.startsWith("mono") && font.category === "Mono"));
+  if (sib) return `a ${sib} sibling, not this design`;
+  if (named) return null;
+  const fdw = [...new Set([...keyWords(foundry.name), ...keyWords(foundry.id)])];
+  if (fdw.some(x => fwords.some(fw => hit(fw, x)))) return "named after the foundry (its site font)";
+  for (const o of fonts) {
+    if (o.foundryId !== font.foundryId || o.id === font.id) continue;
+    const x = keyWords(o.id.split("--").slice(1).join("-")).find(x => !fdw.includes(x) && !own.includes(x));
+    if (x && fwords.some(fw => hit(fw, x))) return `another font of this foundry (${o.name})`;
+  }
+  return null;
+}
