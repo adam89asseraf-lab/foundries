@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Found rizz — Play</title>
-<meta name="description" content="Found rizz font games: Casting Call, Type Personality Quiz, Font Bracket and Tier List.">
+<meta name="description" content="Found rizz font games: Tier List and Casting Call.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Rethink+Sans:wght@500;700&family=Inter+Tight:wght@600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,6 @@ button{font:inherit;color:inherit}
 .games a{padding:9px 16px;text-decoration:none;font:500 14px/1 var(--body);white-space:nowrap}
 .games a[aria-current="page"]{background:var(--ink);color:var(--paper)}
 .back{font:400 14px/1 var(--body);white-space:nowrap}
-.proto{margin:14px 0 0;font:500 11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 main{padding:28px 0 80px;min-height:60vh}
 /* bits */
 .eyebrow{font:500 11px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0}
@@ -89,35 +88,6 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
 .li .n{font:700 20px/1 var(--stat)}
 .li .spec{border-radius:4px}
 .li small{display:block;color:var(--muted)}
-/* quiz */
-.progress{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-bottom:20px}
-.progress i{height:6px;background:var(--grey)}
-.progress i.on{background:var(--ink)}
-.axis{display:grid;gap:6px;margin:10px 0}
-.axis .lab{display:flex;justify-content:space-between;font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.03em}
-.axis .rail{height:4px;background:var(--grey);position:relative}
-.axis .rail i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%);transition:left .6s}
-.cardpreview{width:100%;max-width:360px;border:1px solid var(--line);display:block}
-/* bracket */
-.bracket{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr)) minmax(150px,1fr);gap:20px;overflow-x:auto;padding-bottom:8px}
-.bcol{display:flex;flex-direction:column;min-height:480px}
-.champ h3{margin:0 0 6px}
-.bcol .slots{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:6px}
-.bcol h3{margin:0 0 6px}
-.slot{display:flex;align-items:center;justify-content:space-between;gap:6px;height:28px;padding:0 8px;background:var(--tile);border:1px solid var(--line);font:400 12.5px/1 var(--body);white-space:nowrap;overflow:hidden}
-.slot.win{font-weight:600;background:#fff;color:#121214}
-.slot.lose{opacity:.5}
-.slot.live{border:2px solid var(--ink)}
-.slot.empty{color:var(--muted);background:transparent}
-.slot em{font:500 10px/1 var(--mono);font-style:normal;color:var(--muted)}
-.champ{display:flex;flex-direction:column}
-.champ .slots{flex:1;display:flex;flex-direction:column;justify-content:center}
-.champbox{background:var(--ink);color:var(--paper);border-radius:6px;padding:16px;display:grid;gap:8px;text-align:center;font:700 18px/1.2 var(--stat)}
-.vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:20px;align-items:center}
-.vs .v{font:700 28px/1 var(--stat);color:var(--muted)}
-.themes{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 20px}
-.themes button{all:unset;cursor:pointer;font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.02em;border:1px solid var(--line);padding:7px 10px}
-.themes button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .empty{color:var(--muted)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
 .toast.show{opacity:1}
@@ -146,7 +116,7 @@ h2.role{font:700 clamp(28px,4vw,48px)/1.05 var(--stat);letter-spacing:-.03em;mar
 @media (max-width:640px){.trow{grid-template-columns:48px minmax(0,1fr);min-height:84px}.tlab{font-size:24px}.tcard{width:calc(50% - 4px)}.tcmp{grid-template-columns:24px 84px minmax(0,1fr) auto auto;gap:8px}.fsel{min-width:0;width:100%}}
 @media (max-width:900px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr;gap:32px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.wrap{padding:0 16px}.top{flex-wrap:wrap;gap:12px}.games{margin-left:0;order:3;width:100%}.games a{flex:1;text-align:center;padding:10px 6px;font-size:13px}.back{margin-left:auto}
-  .choices.two{grid-template-columns:1fr}.vs{grid-template-columns:1fr}.vs .v{text-align:center}.tiles{grid-template-columns:1fr}.score{font-size:48px}}
+  .choices.two{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.score{font-size:48px}}
 @media (prefers-reduced-motion:reduce){.track i,.axis .rail i{transition:none}}
 
 /* ===== Figma v4: site header + Tier List (values from the frames' auto layout) ===== */
@@ -247,10 +217,7 @@ main{padding:24px 0 80px}
   <nav class="games" aria-label="Games">
     <a href="#tiers" data-g="tiers">Tier List</a>
     <a href="#casting" data-g="casting">Casting Call</a>
-    <a href="#quiz" data-g="quiz">Type Quiz</a>
-    <a href="#bracket" data-g="bracket">Font Bracket</a>
   </nav>
-  <p class="proto" id="proto" hidden>Prototype · your picks stay in this browser · crowd results are simulated until enough people play</p>
   <main id="app" aria-live="polite"><p class="empty">Loading fonts…</p></main>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -281,6 +248,8 @@ main{padding:24px 0 80px}
   function btn(label, primary, on) { const b = el("button", "btn" + (primary ? " primary" : ""), label); b.type = "button"; if (on) b.onclick = on; return b; }
 
   /* =================== Casting Call =================== */
+  // One role, 4 fonts from one category: pick the star and the flop (best–worst scaling). Answers are saved anonymously
+  // (supabase/casting.sql), and the reveal compares you with everyone who cast those fonts for that role before you.
   const ROLES = {
     Display: ["The poster for a monster truck opera", "A heavy metal bakery", "Your villain origin story", "A cereal box from 2087", "A wrestler's entrance banner", "The sign above a haunted arcade", "A pizza place on Mars"],
     Serif: ["A wedding invite for two lighthouse keepers", "A cursed museum label", "The menu at a pretentious soup bar", "A ransom note from a poet", "An apology letter from a duke", "The label on a 200-year-old jam"],
@@ -289,10 +258,31 @@ main{padding:24px 0 80px}
     Mono: ["A hacker's grocery list", "The terminal on a haunted spaceship", "A robot's diary", "The receipt from a time machine", "A spy's shopping list"],
   };
   const CATS = Object.keys(ROLES);
+  const MIN_CROWD = 3;            // showings a font needs in a role before the crowd's view of it counts
+  const CAST_SHOWN = new Map();   // font id -> times shown in any role (for matchmaking)
   let cc = null;
+  const apiHeaders = () => ({ apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key });
+  async function loadCastShown() {
+    try {
+      for (let from = 0; ; from += 1000) {
+        const r = await fetch(VOTE_API.url + "/rest/v1/cast_font_scores?select=font_id,shown", { headers: { ...apiHeaders(), Range: `${from}-${from + 999}` } });
+        if (!r.ok) break;
+        const rows = await r.json(); rows.forEach(x => CAST_SHOWN.set(x.font_id, x.shown));
+        if (rows.length < 1000) break;
+      }
+    } catch (e) {}
+  }
+  async function castScores(role) {
+    const m = new Map();
+    try {
+      const r = await fetch(VOTE_API.url + "/rest/v1/cast_scores?select=font_id,shown,best,worst&role=eq." + encodeURIComponent(role), { headers: apiHeaders() });
+      if (r.ok) (await r.json()).forEach(x => m.set(x.font_id, x));
+    } catch (e) {}
+    return m;
+  }
   function ccLobby() {
-    app.replaceChildren();
-    app.append(el("p", "eyebrow", "Play · Casting call"), el("h1", "big", "Casting Call"), el("p", "lede", "We wrote the script. You cast the font. Pick the star and the flop, and score when you agree with the crowd."));
+    cc = null; app.replaceChildren();
+    app.append(el("p", "eyebrow", "Play · Casting call"), el("h1", "big", "Casting Call"), el("p", "lede", "We wrote the script. You cast the font. Pick the star and the flop, and score when you agree with everyone who cast it before you."));
     app.append(el("p", "eyebrow", "Pick a category · 5 roles"));
     const tiles = el("div", "tiles");
     for (const c of CATS) {
@@ -308,16 +298,34 @@ main{padding:24px 0 80px}
   }
   function ccStart(cat) {
     const roles = shuffle(ROLES[cat]).slice(0, 5);
-    cc = { cat, roles, i: 0, score: 0, matched: 0, history: [], used: new Set() };
+    cc = { cat, roles, i: 0, score: 0, matched: 0, judged: 0, history: [], used: new Set() };
     ccRound();
   }
-  function ccPickFonts() {
-    let pool = shuffle(byCat(cc.cat)).filter(f => !cc.used.has(f.id));
-    if (pool.length < 4) pool = shuffle(byCat(cc.cat));
-    const four = pool.slice(0, 4); four.forEach(f => cc.used.add(f.id)); return four;
+  // weighted draw without replacement
+  function weightedPick(list, weight, n) {
+    const pool = list.map(f => ({ f, w: weight(f) })), out = [];
+    while (out.length < n && pool.length) {
+      let r = Math.random() * pool.reduce((s, x) => s + x.w, 0), i = 0;
+      while (i < pool.length - 1 && (r -= pool[i].w) > 0) i++;
+      out.push(pool.splice(i, 1)[0].f);
+    }
+    return out;
   }
-  function ccRound() {
-    const role = cc.roles[cc.i]; const fonts = ccPickFonts(); let best = null, worst = null;
+  // up to 2 fonts the crowd has already judged for this role (so there's something to match), the rest favour fonts with few votes
+  function ccPickFonts(stats) {
+    let pool = byCat(cc.cat).filter(f => !cc.used.has(f.id));
+    if (pool.length < 4) pool = byCat(cc.cat);
+    const roleN = f => stats.get(f.id)?.shown || 0;
+    const known = shuffle(pool.filter(f => roleN(f) >= MIN_CROWD)).slice(0, 2);
+    const rest = weightedPick(pool.filter(f => !known.includes(f)), f => 1 / (1 + roleN(f) + 0.25 * (CAST_SHOWN.get(f.id) || 0)), 4 - known.length);
+    const four = shuffle([...known, ...rest]); four.forEach(f => cc.used.add(f.id)); return four;
+  }
+  async function ccRound() {
+    const role = cc.roles[cc.i], run = cc;
+    app.replaceChildren(el("p", "empty", "Setting the stage…"));
+    const stats = await castScores(role);
+    if (cc !== run || cc.roles[cc.i] !== role) return; // left the game while loading
+    const fonts = ccPickFonts(stats); let best = null, worst = null;
     app.replaceChildren();
     const bar = el("div", "bar"); bar.append(el("span", "mono", `Round ${cc.i + 1} / ${cc.roles.length}`), el("span", "tag", cc.cat), el("span", "grow"), el("span", "mono", "Score " + cc.score)); app.append(bar);
     app.append(el("p", "eyebrow", "The role"), el("h2", "role", role));
@@ -330,7 +338,7 @@ main{padding:24px 0 80px}
       b.setAttribute("aria-label", `${f.name}${best === f ? ", your star" : worst === f ? ", your flop" : ""}`);
       go.disabled = !(best && worst);
     });
-    const go = btn("Lock it in →", true, () => ccReveal(role, fonts, best, worst));
+    const go = btn("Lock it in →", true, () => { go.disabled = true; ccReveal(role, fonts, best, worst, stats); });
     for (const f of fonts) {
       const b = el("button", "choice"); b.type = "button"; b.append(specCard(f)); nameBlock(f, b);
       b.onclick = () => {
@@ -344,32 +352,49 @@ main{padding:24px 0 80px}
     const row = el("div", "row"); row.append(go, btn("Skip this role", false, () => { cc.i++; cc.i < cc.roles.length ? ccRound() : ccWrap(); })); app.append(row);
     paint();
   }
-  // simulated crowd until real votes exist: stable per role + font, nudged by heart votes
-  function ccCrowd(role, fonts) {
-    const castW = fonts.map(f => 0.25 + hash(role + "|" + f.id) + Math.min(1, (VOTES.get(f.id) || 0) * 0.15));
-    const notW = fonts.map(f => 0.25 + hash("not|" + role + "|" + f.id) * (1.4 - hash(role + "|" + f.id)));
-    const pct = w => { const s = w.reduce((a, b) => a + b, 0); const p = w.map(x => Math.round(100 * x / s)); p[p.indexOf(Math.max(...p))] += 100 - p.reduce((a, b) => a + b, 0); return p; };
-    return { cast: pct(castW), not: pct(notW) };
+  // the crowd before you: score = (star − flop) / (shown + 1), only for fonts shown at least MIN_CROWD times in this role
+  function ccCrowd(fonts, stats) {
+    const rows = fonts.map(f => stats.get(f.id) || { shown: 0, best: 0, worst: 0 });
+    const known = fonts.map((f, k) => k).filter(k => rows[k].shown >= MIN_CROWD);
+    if (known.length < 2) return { rows, has: false };
+    const s = k => (rows[k].best - rows[k].worst) / (rows[k].shown + 1);
+    const byScore = [...known].sort((a, b) => s(b) - s(a));
+    return { rows, has: true, top: fonts[byScore[0]], flop: fonts[byScore[byScore.length - 1]] };
   }
-  function ccReveal(role, fonts, best, worst) {
-    const crowd = ccCrowd(role, fonts);
-    const top = fonts[crowd.cast.indexOf(Math.max(...crowd.cast))], flop = fonts[crowd.not.indexOf(Math.max(...crowd.not))];
-    let pts = 0; const hitStar = best === top, hitFlop = worst === flop;
-    if (hitStar) pts += 100; if (hitFlop) pts += 50; if (!pts) pts = 10;
-    cc.score += pts; if (hitStar) cc.matched++;
-    cc.history.push({ role, best, top });
+  async function ccSave(role, fonts, best, worst) {
+    try {
+      const r = await fetch(VOTE_API.url + "/rest/v1/rpc/cast_vote", { method: "POST", headers: { ...apiHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ p_voter: voterId, p_role: role, p_shown: fonts.map(f => f.id), p_best: best.id, p_worst: worst.id, p_category: cc.cat }) });
+      if (!r.ok) throw new Error(r.status);
+      fonts.forEach(f => CAST_SHOWN.set(f.id, (CAST_SHOWN.get(f.id) || 0) + 1));
+    } catch (e) { if (!cc.saveWarned) { cc.saveWarned = true; toast("Your casting didn't save. You can keep playing."); } }
+  }
+  function ccReveal(role, fonts, best, worst, stats) {
+    ccSave(role, fonts, best, worst);
+    const crowd = ccCrowd(fonts, stats);
+    let pts, msg; const hitStar = crowd.has && best === crowd.top, hitFlop = crowd.has && worst === crowd.flop;
+    if (crowd.has) {
+      pts = (hitStar ? 100 : 0) + (hitFlop ? 50 : 0) || 10; cc.judged++; if (hitStar) cc.matched++;
+      msg = hitStar && hitFlop ? "You matched the crowd on the star and the flop." : hitStar ? "The crowd agrees with your star." : hitFlop ? "The crowd agrees with your flop." : "Bold casting. The crowd went another way.";
+    } else { pts = 25; msg = "Hardly anyone has cast these fonts for this role yet. Your picks are some of the first."; }
+    cc.score += pts;
+    cc.history.push({ role, best, top: crowd.has ? crowd.top : null });
     const log = store.get("fdx-cc-log", []); log.push({ role, cat: cc.cat, fonts: fonts.map(f => f.id), best: best.id, worst: worst.id, at: Date.now() }); store.set("fdx-cc-log", log.slice(-500));
     app.replaceChildren();
     const bar = el("div", "bar"); bar.append(el("span", "mono", `Round ${cc.i + 1} / ${cc.roles.length}`), el("span", "tag", cc.cat), el("span", "grow"), el("span", "mono", "Score " + cc.score)); app.append(bar);
-    const p = el("div", "points"); const msg = hitStar && hitFlop ? "You matched the crowd on the star and the flop." : hitStar ? "The crowd agrees with your star." : hitFlop ? "The crowd agrees with your flop." : "Bold casting. The crowd went another way.";
-    p.append(el("div", "score", "+" + pts), el("div", "lede", msg)); p.lastChild.style.margin = "0"; app.append(p);
+    const p = el("div", "points"); p.append(el("div", "score", "+" + pts), el("div", "lede", msg)); p.lastChild.style.margin = "0"; app.append(p);
     app.append(el("p", "eyebrow", role));
     const grid = el("div", "choices two"); grid.style.marginTop = "12px";
     fonts.forEach((f, k) => {
       const c = el("div", "choice" + (f === best ? " best" : f === worst ? " worst" : "")); c.style.cursor = "default";
       c.append(specCard(f)); nameBlock(f, c);
-      c.append(meter("Cast it", crowd.cast[k]), meter("Absolutely not", crowd.not[k], true));
+      const x = crowd.rows[k];
+      if (x.shown >= MIN_CROWD) {
+        c.append(meter("Cast it", Math.round(100 * x.best / x.shown)), meter("Absolutely not", Math.round(100 * x.worst / x.shown), true));
+        c.append(el("div", "fby", x.shown + " castings before you"));
+      } else c.append(Object.assign(el("div", "fby", x.shown ? `Only ${x.shown} casting${x.shown === 1 ? "" : "s"} so far` : "New face · first casting"), { style: "margin-top:6px" }));
       if (f === best) c.append(Object.assign(el("span", "tag fill", hitStar ? "Your star · crowd agrees" : "Your star"), { style: "justify-self:start;margin-top:6px" }));
+      else if (crowd.has && f === crowd.top) c.append(Object.assign(el("span", "tag ink", "Crowd’s star"), { style: "justify-self:start;margin-top:6px" }));
       if (f === worst) c.append(Object.assign(el("span", "tag ink", hitFlop ? "Your flop · crowd agrees" : "Your flop"), { style: "justify-self:start;margin-top:6px" }));
       grid.append(c);
     });
@@ -384,207 +409,20 @@ main{padding:24px 0 80px}
     app.replaceChildren();
     const s = el("div", "split");
     const L = el("div"); L.append(el("p", "eyebrow", "That’s a wrap"), Object.assign(el("div", "score", String(cc.score)), { style: "font-size:120px;color:var(--ink)" }),
-      el("p", "lede", `You agreed with the crowd on ${cc.matched} of ${cc.roles.length} roles. Best score: ${best}.`));
-    const lvl = cc.matched >= 4 ? "Casting director" : cc.matched >= 2 ? "Assistant casting director" : "Wildcard agent";
+      el("p", "lede", cc.judged ? `You agreed with the crowd on ${cc.matched} of ${cc.judged} role${cc.judged === 1 ? "" : "s"} it had judged. Best score: ${best}.` : `The crowd hadn’t judged these fonts yet, so your picks are among the first. Best score: ${best}.`));
+    const ratio = cc.judged ? cc.matched / cc.judged : 0;
+    const lvl = !cc.judged ? "Talent scout" : ratio >= .8 ? "Casting director" : ratio >= .4 ? "Assistant casting director" : "Wildcard agent";
     L.append(Object.assign(el("span", "tag ink", lvl), { style: "margin-bottom:20px" }));
-    const r = el("div", "row"); r.append(btn("Play again", true, () => ccStart(cc.cat)), btn("Pick another category", false, ccLobby)); L.append(r);
-    const R = el("div", "panel"); R.append(el("p", "eyebrow", "The crowd’s stars this round"));
+    const r = el("div", "row"); const cat = cc.cat; r.append(btn("Play again", true, () => ccStart(cat)), btn("Pick another category", false, ccLobby)); L.append(r);
+    const R = el("div", "panel"); R.append(el("p", "eyebrow", "Who got the part"));
     const list = el("div", "list");
-    cc.history.forEach((h, i) => { const li = el("div", "li"); li.append(el("span", "n", String(i + 1)), specCard(h.top)); const t = el("div"); t.append(el("strong", "", h.top.name), el("small", "", h.role)); li.append(t); list.append(li); });
+    cc.history.forEach((h, i) => {
+      const f = h.top || h.best; const li = el("div", "li"); li.append(el("span", "n", String(i + 1)), specCard(f));
+      const t = el("div"); t.append(el("strong", "", f.name), el("small", "", h.role), el("small", "", h.top ? (h.top === h.best ? "Crowd’s star · you agreed" : "Crowd’s star") : "Your star · no crowd yet")); li.append(t); list.append(li);
+    });
     if (!cc.history.length) list.append(el("p", "empty", "You skipped every role."));
     R.append(list); s.append(L, R); app.append(s);
   }
-
-  /* =================== Type Personality Quiz =================== */
-  // Four axes, 0 = left word, 1 = right word. Until crowd scores exist, each font is placed by its category (plus a stable nudge).
-  const AXES = [["Calm", "Loud"], ["Serious", "Playful"], ["Classic", "Futuristic"], ["Clean", "Rough"]];
-  const CAT_AXES = { Display: [.9, .65, .6, .7], Script: [.55, .9, .3, .65], Serif: [.3, .3, .15, .35], Slab: [.55, .4, .35, .5], Sans: [.35, .35, .7, .15], Mono: [.4, .45, .9, .3] };
-  const axesOf = f => { const b = CAT_AXES[f.category] || [.5, .5, .5, .5]; return b.map((v, i) => Math.max(0, Math.min(1, v + (hash(f.id + "|ax" + i) - .5) * .3))); };
-  const PROMPTS = ["Which one would you text your ex in?", "Name your boat in…", "Get it tattooed:", "Your wedding invite:", "Your band’s first album cover:", "The sign on your dream café:", "Your out-of-office email:", "A note on the shared fridge:", "Your protest sign:", "The app you’d build:", "Your plant’s name tag:", "The menu at your dinner party:", "Your villain monologue:", "Your gravestone (sorry):"];
-  const TYPE_A = { "loud,playful": "Chaotic", "loud,serious": "Brutalist", "calm,playful": "Whimsical", "calm,serious": "Quiet" };
-  const TYPE_B = { "classic,clean": "Classicist", "classic,rough": "Romantic", "futuristic,clean": "Modernist", "futuristic,rough": "Punk" };
-  const DESC_A = { Chaotic: "You want letters that make noise and have fun doing it.", Brutalist: "You like your type heavy, direct and unbothered.", Whimsical: "You lean gentle, with a wink in every curve.", Quiet: "You like type that lets the words do the talking." };
-  const DESC_B = { Classicist: "Underneath, you trust proportions that have worked for centuries.", Romantic: "There’s a soft spot for drama, history and a little ink spread.", Modernist: "Clean geometry and tidy systems keep you calm.", Punk: "You’d rather it look made by hand, today, slightly out of line." };
-  let qz = null;
-  function quizIntro() {
-    app.replaceChildren();
-    const s = el("div", "split");
-    const L = el("div"); L.append(el("p", "eyebrow", "Play · Type personality quiz"), el("h1", "big", "What’s your type?"), el("p", "lede", "10 quick picks between two fonts. Get your type personality, and the fonts that match it."));
-    const r = el("div", "row"); r.append(btn("Start the quiz →", true, quizStart)); L.append(r);
-    const last = store.get("fdx-quiz-last", null);
-    if (last) { const p = el("p", "hint", "Last time you were a "); p.append(el("strong", "", last)); p.append("."); L.append(p); }
-    const R = el("div", "panel"); R.append(el("p", "eyebrow", "How it works"));
-    const ul = el("div", "list"); ["Each question shows two fonts that differ a lot on one trait.", "Ten answers place you on four traits: calm or loud, serious or playful, classic or futuristic, clean or rough.", "You get one of 16 types, the fonts closest to it, and a card to share."].forEach((t, i) => { const li = el("div", "li"); li.style.gridTemplateColumns = "28px 1fr"; li.append(el("span", "n", String(i + 1)), el("span", "", t)); ul.append(li); });
-    R.append(ul); s.append(L, R); app.append(s);
-  }
-  function quizStart() {
-    const prompts = shuffle(PROMPTS).slice(0, 10);
-    qz = { prompts, i: 0, picks: [], used: new Set() };
-    quizQ();
-  }
-  function quizPair(axis) {
-    const scored = shuffle(FONTS).filter(f => !qz.used.has(f.id)).map(f => ({ f, a: axesOf(f) }));
-    const hi = scored.find(x => x.a[axis] > .62), lo = scored.find(x => x.a[axis] < .38 && (!hi || x.f.category !== hi.f.category));
-    const pair = [hi || scored[0], lo || scored[1]].map(x => x.f); pair.forEach(f => qz.used.add(f.id));
-    return Math.random() < .5 ? pair : pair.reverse();
-  }
-  function quizQ() {
-    const axis = qz.i % 4; const pair = quizPair(axis);
-    app.replaceChildren();
-    const prog = el("div", "progress"); for (let k = 0; k < 10; k++) prog.append(el("i", k <= qz.i ? "on" : "")); app.append(prog);
-    app.append(el("p", "eyebrow", `Question ${qz.i + 1} of 10`), el("h2", "role", qz.prompts[qz.i]));
-    const grid = el("div", "choices two");
-    const choose = f => { qz.picks.push(f); qz.i++; qz.i >= 10 ? quizResult() : quizQ(); };
-    pair.forEach((f, k) => {
-      const b = el("button", "choice"); b.type = "button"; b.append(specCard(f, { full: true }));
-      const r = el("div", "row"); r.style.marginTop = "6px"; r.append(el("span", "tag ink", k ? "B" : "A"), el("span", "fby", (k ? "→" : "←") + " key")); b.append(r);
-      b.setAttribute("aria-label", "Option " + (k ? "B" : "A") + ": " + f.name); b.onclick = () => choose(f); grid.append(b);
-    });
-    app.append(grid);
-    const row = el("div", "row"); row.style.marginTop = "20px";
-    const skip = el("button", "link", "Can’t decide? Skip"); skip.type = "button"; skip.onclick = () => { qz.i++; qz.i >= 10 ? quizResult() : quizQ(); };
-    row.append(skip); app.append(row);
-    qz.keys = pair;
-  }
-  function quizProfile() {
-    if (!qz.picks.length) return [.5, .5, .5, .5];
-    const sum = [0, 0, 0, 0]; qz.picks.forEach(f => axesOf(f).forEach((v, i) => sum[i] += v)); return sum.map(v => v / qz.picks.length);
-  }
-  function quizResult() {
-    qz.keys = null;
-    const p = quizProfile();
-    const a = TYPE_A[[p[0] >= .5 ? "loud" : "calm", p[1] >= .5 ? "playful" : "serious"].join(",")];
-    const b = TYPE_B[[p[2] >= .5 ? "futuristic" : "classic", p[3] >= .5 ? "rough" : "clean"].join(",")];
-    const name = `${a} ${b}`; store.set("fdx-quiz-last", name);
-    const dist = f => axesOf(f).reduce((s, v, i) => s + (v - p[i]) ** 2, 0);
-    const matches = [...FONTS].sort((x, y) => dist(x) - dist(y)).slice(0, 3);
-    app.replaceChildren();
-    const s = el("div", "split");
-    const L = el("div"); L.append(el("p", "eyebrow", "Your type"), el("h1", "big", name), el("p", "lede", DESC_A[a] + " " + DESC_B[b]));
-    AXES.forEach(([l, r], i) => { const ax = el("div", "axis"); const lab = el("div", "lab"); lab.append(el("span", "", l), el("span", "", r)); const rail = el("div", "rail"); const dot = el("i"); dot.style.left = "50%"; rail.append(dot); ax.append(lab, rail); L.append(ax); requestAnimationFrame(() => requestAnimationFrame(() => dot.style.left = Math.round(p[i] * 100) + "%")); });
-    const r = el("div", "row"); r.style.marginTop = "24px";
-    r.append(btn("Make my share card", true, () => quizCard(name, matches, L)), btn("Retake", false, quizStart)); L.append(r);
-    const R = el("div"); R.append(el("p", "eyebrow", "Your fonts"));
-    const list = el("div", "list"); list.style.gap = "18px";
-    matches.forEach(f => { const c = el("a", ""); c.href = f.url; c.target = "_blank"; c.rel = "noopener noreferrer"; c.style.textDecoration = "none"; c.append(specCard(f, { full: true })); nameBlock(f, c); list.append(c); });
-    R.append(list);
-    const more = el("a", "", "Find more in the index →"); more.href = "./"; more.style.display = "inline-block"; more.style.marginTop = "16px"; R.append(more);
-    s.append(L, R); app.append(s);
-  }
-  async function quizCard(name, fonts, where) {
-    const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
-    await document.fonts.load("700 96px 'Rethink Sans'"); await document.fonts.load("500 28px 'DM Mono'");
-    g.fillStyle = "#121214"; g.fillRect(0, 0, W, H);
-    g.fillStyle = "#9a9aa2"; g.font = "500 30px 'DM Mono'"; g.fillText("MY TYPE IS", 80, 130);
-    g.fillStyle = "#ededea"; g.font = "700 104px 'Rethink Sans'";
-    const words = name.split(" "); words.forEach((w, i) => g.fillText(w, 76, 250 + i * 108));
-    const imgs = await Promise.all(fonts.map(f => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = shot(f, true); })));
-    let y = 250 + words.length * 108 + 10;
-    for (const im of imgs) { if (!im) continue; g.fillStyle = "#fff"; g.beginPath(); g.roundRect(80, y, 920, 230, 16); g.fill(); g.save(); g.beginPath(); g.roundRect(80, y, 920, 230, 16); g.clip(); const sh = 920 * im.height / im.width; g.drawImage(im, 80, y + (230 - sh) / 2, 920, sh); g.restore(); y += 254; }
-    g.fillStyle = "#9a9aa2"; g.font = "500 26px 'DM Mono'"; g.fillText("FOUND RIZZ · WHAT’S YOUR TYPE?", 80, H - 70);
-    const url = c.toDataURL("image/png");
-    where.querySelector(".cardwrap")?.remove();
-    const w = el("div", "cardwrap"); w.style.marginTop = "24px";
-    const img = el("img", "cardpreview"); img.src = url; img.alt = "Share card: my type is " + name;
-    const a = el("a", "btn", "Download card"); a.href = url; a.download = "my-type-" + name.toLowerCase().replace(/\s+/g, "-") + ".png"; a.style.marginTop = "12px";
-    w.append(img, el("br"), a); where.append(w); a.focus();
-  }
-
-  /* =================== Font Bracket =================== */
-  const THEMES = [{ id: "grotesk", title: "Best grotesk of 2026", cat: "Sans" }, { id: "display", title: "Loudest display face", cat: "Display" }, { id: "serif", title: "Best serif for a menu", cat: "Serif" }];
-  let br = null;
-  function brSeed(theme) {
-    const pool = byCat(theme.cat).map(f => ({ f, s: (VOTES.get(f.id) || 0) + hash(theme.id + "|" + f.id + "|" + (br?.gen || 0)) }));
-    return pool.sort((a, b) => b.s - a.s).slice(0, 16).map(x => x.f);
-  }
-  function brNew(themeId, gen = 0) {
-    const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
-    br = { theme, gen }; const seeds = brSeed(theme);
-    // standard seeding: 1v16, 8v9, …
-    const order = [0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10];
-    br.rounds = [order.map(i => seeds[i]), [], [], [], []]; br.splits = {}; br.picks = 0;
-    brOverview();
-  }
-  const RN = ["Round of 16", "Quarter-finals", "Semi-finals", "Final"];
-  function brNext() { for (let r = 0; r < 4; r++) { const cur = br.rounds[r], nxt = br.rounds[r + 1]; if (cur.length && nxt.length < cur.length / 2) return { r, m: nxt.length }; } return null; }
-  function brOverview() {
-    app.replaceChildren();
-    const nx = brNext();
-    app.append(el("p", "eyebrow", "Play · Font bracket · Week 48"));
-    const head = el("div", "bar"); const h = el("h1", "big", br.theme.title); h.style.margin = "4px 0"; head.append(h, el("span", "grow"));
-    if (nx) head.append(btn(br.picks ? "Keep voting →" : "Start voting →", true, brMatch)); else head.append(btn("See the champion →", true, brChampion));
-    app.append(head);
-    app.append(el("p", "mono", nx ? `${RN[nx.r]} · match ${nx.m + 1} of ${br.rounds[nx.r].length / 2} · voting closes Sunday 20:00` : "Bracket complete"));
-    const th = el("div", "themes"); THEMES.forEach(t => { const b = el("button", "", t.title); b.type = "button"; b.setAttribute("aria-pressed", t.id === br.theme.id); b.onclick = () => { if (t.id !== br.theme.id) brNew(t.id); }; th.append(b); }); app.append(th);
-    const grid = el("div", "bracket");
-    for (let r = 0; r < 4; r++) {
-      const col = el("div", "bcol"); col.append(el("h3", "mono", RN[r])); const slots = el("div", "slots"); col.append(slots);
-      const size = 16 >> r;
-      for (let k = 0; k < size; k++) {
-        const f = br.rounds[r][k]; const s = el("div", "slot" + (f ? "" : " empty"));
-        if (f) {
-          const winner = br.rounds[r + 1]?.includes(f); const decided = br.rounds[r + 1] && br.rounds[r + 1].length > Math.floor(k / 2);
-          if (decided) s.classList.add(winner ? "win" : "lose");
-          if (nx && nx.r === r && Math.floor(k / 2) === nx.m) s.classList.add("live");
-          s.append(el("span", "", f.name)); const pct = br.splits[r + ":" + f.id]; if (pct != null) s.append(el("em", "", pct + "%"));
-        } else s.append(el("span", "", "?"));
-        slots.append(s);
-      }
-      grid.append(col);
-    }
-    const ch = el("div", "champ"); ch.append(el("h3", "mono", "Champion")); const cs = el("div", "slots"); const cb = el("div", "champbox", br.rounds[4][0] ? br.rounds[4][0].name : "Sunday 20:00"); cs.append(cb); ch.append(cs); grid.append(ch);
-    app.append(grid);
-    const reset = el("button", "link", "Reseed this bracket"); reset.type = "button"; reset.style.marginTop = "16px"; reset.onclick = () => brNew(br.theme.id, br.gen + 1); app.append(reset);
-  }
-  function brMatch() {
-    const nx = brNext(); if (!nx) return brChampion();
-    const a = br.rounds[nx.r][nx.m * 2], b = br.rounds[nx.r][nx.m * 2 + 1];
-    app.replaceChildren();
-    const bar = el("div", "bar"); bar.append(el("span", "mono", `${RN[nx.r]} · match ${nx.m + 1} of ${br.rounds[nx.r].length / 2}`), el("span", "tag", br.theme.title), el("span", "grow"), el("span", "mono", br.picks + " voted")); app.append(bar);
-    app.append(el("h2", "role", nx.r === 3 ? "The final. Who takes the crown?" : "Which one goes through?"));
-    const vs = el("div", "vs"); const cards = [];
-    const vote = pick => {
-      // simulated crowd: lean towards your pick a little, stable per matchup
-      const base = 30 + Math.round(hash(br.theme.id + a.id + b.id + br.gen) * 40); let pa = Math.max(15, Math.min(85, base + (pick === a ? 9 : -9))); if (pa === 50) pa = pick === a ? 51 : 49;
-      br.splits[nx.r + ":" + a.id] = pa; br.splits[nx.r + ":" + b.id] = 100 - pa;
-      const winner = pa >= 50 ? a : b; br.rounds[nx.r + 1].push(winner); br.picks++;
-      cards.forEach(({ c, f }) => { c.disabled = true; c.style.cursor = "default"; c.classList.toggle("best", f === pick); const pct = f === a ? pa : 100 - pa; c.append(meter(f === pick ? "Your pick" : "", pct, f !== pick)); });
-      const total = 800 + Math.round(hash(a.id + b.id) * 900);
-      const res = el("p", "mono", `${winner.name} goes through · ${total.toLocaleString()} votes${winner === pick ? " · you called it" : ""}`); res.style.marginTop = "20px";
-      const row = el("div", "row"); row.style.marginTop = "12px";
-      const more = brNext();
-      row.append(btn(more ? "Next matchup →" : "See the champion →", true, more ? brMatch : brChampion), btn("Back to the bracket", false, brOverview));
-      app.append(res, row); row.querySelector("button").focus();
-    };
-    [a, b].forEach((f, k) => {
-      const c = el("button", "choice"); c.type = "button"; c.append(specCard(f, { full: true })); nameBlock(f, c); c.onclick = () => vote(f); cards.push({ c, f });
-      vs.append(c); if (!k) vs.append(el("span", "v", "vs"));
-    });
-    app.append(vs);
-    br.keys = [a, b];
-  }
-  function brChampion() {
-    br.keys = null;
-    const champ = br.rounds[4][0]; if (!champ) return brOverview();
-    app.replaceChildren();
-    app.append(el("p", "eyebrow", "Week 48 champion · " + br.theme.title), el("h1", "big", champ.name + " takes the crown"));
-    const s = el("div", "split");
-    const L = el("div"); L.append(specCard(champ, { full: true }));
-    const path = []; for (let r = 0; r < 4; r++) { const k = br.rounds[r].indexOf(champ); const opp = br.rounds[r][k ^ 1]; if (opp) path.push(`${opp.name} ${br.splits[r + ":" + champ.id]}%`); }
-    L.append(el("p", "mono", "Beat " + path.join(" · "))); L.lastChild.style.marginTop = "12px";
-    const r = el("div", "row"); r.style.marginTop = "16px"; const open = el("a", "btn primary", "Open " + champ.name + " ↗"); open.href = champ.url; open.target = "_blank"; open.rel = "noopener noreferrer"; r.append(open, btn("Back to the bracket", false, brOverview)); L.append(r);
-    const R = el("div", "panel"); R.append(el("p", "eyebrow", "Hall of fame"));
-    const list = el("div", "list");
-    [["W47", "Best mono for code", "Mono"], ["W46", "Loudest script", "Script"], ["W45", "Best slab for a poster", "Slab"]].forEach(([w, t, cat]) => {
-      const pool = byCat(cat); if (!pool.length) return; const f = pool[Math.floor(hash(w + cat) * pool.length)];
-      const li = el("div", "li"); li.append(el("span", "mono", w), specCard(f)); const tx = el("div"); tx.append(el("strong", "", f.name), el("small", "", t)); li.append(tx); list.append(li);
-    });
-    R.append(list);
-    const next = el("div", "panel"); next.style.marginTop = "16px"; next.append(el("p", "eyebrow", "Next week"), Object.assign(el("div", "fname", "Best serif for a cookbook"), { style: "font-size:20px;margin:6px 0 12px" }), btn("Suggest a theme", false, () => toast("Thanks! Theme suggestions open with the real launch.")));
-    R.append(next);
-    s.append(L, R); app.append(s);
-  }
-
 
   /* =================== Tier List =================== */
   // Rank one foundry's fonts S–D. Tiers are saved anonymously (one per browser per font) and averaged into the
@@ -778,19 +616,10 @@ main{padding:24px 0 80px}
     const g = (location.hash || "#tiers").slice(1);
     document.querySelectorAll(".games a").forEach(a => a.dataset.g === g ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (!FONTS.length) return;
-    $("#proto").hidden = g === "tiers"; // tier lists are real and shared, not simulated
-    if (g === "quiz") quizIntro(); else if (g === "bracket") { br ? brOverview() : brNew("grotesk"); } else if (g === "tiers") { tl ? tlBoard() : tlLobby(); } else ccLobby();
+    if (g === "casting") ccLobby(); else { tl ? tlBoard() : tlLobby(); }
     window.scrollTo({ top: 0 });
   }
   window.addEventListener("hashchange", route);
-  document.addEventListener("keydown", e => {
-    if (e.target.closest && e.target.closest("input,textarea")) return;
-    const g = (location.hash || "#tiers").slice(1);
-    const keys = g === "quiz" ? qz && qz.keys : g === "bracket" ? br && br.keys : null;
-    if (!keys) return;
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { const cards = app.querySelectorAll(".choice:not(:disabled)"); const c = cards[e.key === "ArrowLeft" ? 0 : 1]; if (c) { e.preventDefault(); c.click(); } }
-  });
-
   (async () => {
     try {
       const r = await fetch("data/data.json", { cache: "no-cache" }); const snap = await r.json();
@@ -805,7 +634,7 @@ main{padding:24px 0 80px}
       const r = await fetch(VOTE_API.url + "/rest/v1/vote_counts?select=font_id,n", { headers: { apikey: VOTE_API.key, Authorization: "Bearer " + VOTE_API.key } });
       if (r.ok) (await r.json()).forEach(x => VOTES.set(x.font_id, x.n));
     } catch (e) {}
-    await loadTierScores();
+    await Promise.all([loadTierScores(), loadCastShown()]);
     route();
   })();
 })();

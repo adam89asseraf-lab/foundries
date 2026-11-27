@@ -42,14 +42,25 @@ Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 and 
   - The lobby shows 9 foundry cards. Ranking shows specimen-only cards in 98px rows and a one-line unranked strip, and the result screen shows your tiers next to the crowd's average.
   - Cards are 339×108 in tiers and 329×93 unranked. Hovering a card zooms into the specimen and follows the pointer.
   - Tiers are saved anonymously in Supabase (`supabase/tiers.sql`).
-- **Casting Call, Type Quiz and Font Bracket:** these are prototypes in the same page.
-  - Picks stay in the browser, and crowd results are **simulated** (stable per role or matchup, nudged by hearts) until real game votes exist.
-  - Casting Call uses a 2×2 grid. The quiz places fonts on four axes from their category and makes a downloadable 4:5 share card.
+- **Casting Call (real votes since 2026-11-27):** one role and 4 fonts from one category (2×2 grid); you pick the star and the flop. See "Casting Call votes" below.
+- **Type Quiz and Font Bracket were removed on 2026-11-27.** The owner chose to keep only Tier List and Casting Call. The code is in git history before that date.
 
 **Crawler**
 - **Dinamo fix:** Dinamo keeps its `@font-face` styles in `<body>`, and emptying the page used to delete them. Style tags now move to `<head>` first, both for specimens and for paid-font previews.
   - 45 of 46 Dinamo fonts and 88 earlier failures now have uniform specimens.
   - A Foundry keeps its old screenshots, because its site CSS breaks the specimen layout.
+
+### Casting Call votes (2026-11-27)
+
+- **SQL:** `supabase/casting.sql`. **The owner must run it once in the Supabase SQL Editor.** Until then, rounds still work: every font shows as "New face", you get +25 per round, and a toast says the casting didn't save.
+- **What's stored:** one row per browser, role and set of 4 fonts, with the star and the flop (best–worst scaling). The `cast_vote()` RPC checks that there are exactly 4 different fonts and that the star and flop are two of them. Playing the same set again replaces the earlier answer.
+- **Public views:**
+  - `cast_scores`: per role and font, how many times it was shown, picked as the star, and picked as the flop.
+  - `cast_font_scores`: the same summed over all roles.
+- **Reveal:** compares you with everyone who played before you. A font counts once it has been shown 3 times (`MIN_CROWD`) in that role, and the crowd's star and flop are only decided when at least 2 of the 4 fonts count.
+  - Crowd score = (star − flop) / (shown + 1).
+  - Points: 100 for matching the star, 50 for the flop, 10 for neither, and 25 when there's no crowd yet.
+- **Matchmaking:** each round has up to 2 fonts the crowd has already judged for that role, so there is something to match. The rest are drawn with weight 1 / (1 + shown in this role + 0.25 × shown in all roles), which favours fonts with few votes.
 
 **Tidy-up on 2026-11-27**
 - Pulled the nightly crawl.
@@ -58,10 +69,9 @@ Written 2026-11-24 when the owner moved Claude accounts; updated 2026-11-25 and 
 
 ### Next up
 - **Play:**
-  - Replace the simulated crowd results in Casting Call, Quiz and Bracket with real votes. This needs a game-votes table.
-  - The nightly crawl turns votes into per-font scores, which drive badges and a "Best for…" filter.
-  - Matchmaking should favour fonts with few votes.
-- **Figma:** the Quiz and Bracket wireframes are still to do (page `49:572`).
+  - Run `supabase/casting.sql` in Supabase (owner).
+  - The nightly crawl should turn `cast_font_scores` into per-font scores in `data.json`, which drive badges and a "Best for…" filter. Casting could also feed the "Most popular" sort.
+- **Figma:** the Games page (`49:572`) still has the Casting Call wireframes. Quiz and Bracket are dropped, so they don't need wireframes.
 - **Kyiv and DDOTT:** both are still paused.
 - **Older open items:** see "Other open items" below. The API key, 205TF 404s and unpriced foundries are all still open.
 

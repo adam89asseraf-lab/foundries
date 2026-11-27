@@ -154,3 +154,9 @@ Each font card has an upvote button (one vote per browser per font, click again 
 3. In **Project Settings → API**, copy the **Project URL** and the **anon public** key, and paste them into `const VOTES = { url: "", key: "" }` near the top of the script in `site/index.html`. The anon key is designed to be public.
 
 While `VOTES` is empty, the vote buttons and the sort stay hidden.
+
+The games on the Play page (`site/play.html`) use the same project. Run these once in the SQL Editor:
+- [`supabase/tiers.sql`](supabase/tiers.sql) for Tier List.
+- [`supabase/casting.sql`](supabase/casting.sql) for Casting Call.
+
+Both store answers anonymously, keyed by the browser's random ID. Visitors can only call the `rate_tiers()` and `cast_vote()` functions and read the totals.
